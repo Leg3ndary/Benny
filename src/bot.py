@@ -4,12 +4,17 @@ import os
 from dotenv import load_dotenv
 from gears.useful import load_cogs
 from discord_slash import SlashCommand
+import json
 
 bot = commands.Bot(
     command_prefix="s",
     description="The coolest bot ever",
     Intents=discord.Intents.all()
 )
+
+bot.config = json.load(open("config.json"))
+
+print(bot.config)
 
 slash = SlashCommand(bot)
 
