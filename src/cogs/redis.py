@@ -20,6 +20,7 @@ This is tracking all our data about commands
 
 class Redis(commands.Cog):
     """Our Redis DB, we mainly use this for logging command information"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -31,11 +32,11 @@ class Redis(commands.Cog):
             "redis://redis-15657.c253.us-central1-1.gce.cloud.redislabs.com:15657",
             username="",
             password=os.getenv("RedisPass"),
-            decode_responses=True
+            decode_responses=True,
         )
         end = time.monotonic()
         print(f"Connected to Redis in {(round((end - start) * 1000, 2))/1000} seconds.")
-    
+
     @commands.group()
     @commands.is_owner()
     async def redis(self, ctx):
@@ -52,7 +53,7 @@ class Redis(commands.Cog):
             not_found = discord.Embed(
                 title=f"Key {key} Not Found",
                 description="""
-                """
+                """,
             )
             return await ctx.send(embed=not_found)
 
@@ -62,10 +63,10 @@ class Redis(commands.Cog):
 {data}
 ```""",
             timestamp=datetime.datetime.utcnow(),
-            color=c_get_color()
+            color=c_get_color(),
         )
         await ctx.send(embed=embed)
-    
+
     @redis.command()
     async def add(self, ctx, key, value):
         """Add something to our db"""
@@ -75,7 +76,7 @@ class Redis(commands.Cog):
                 title=f"""Added Key""",
                 description=f"""```md
 [{key}]({value})
-```"""
+```""",
             )
             return await ctx.send(embed=embed)
 
@@ -86,11 +87,11 @@ class Redis(commands.Cog):
 - {e}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=c_get_color("red")
+                color=c_get_color("red"),
             )
 
     @redis.command()
-    async def search(self, ctx, *, pattern: str="*"):
+    async def search(self, ctx, *, pattern: str = "*"):
         """List all our keys"""
         keys = ""
         for count, value in enumerate(await self.bot.redis.keys(pattern), start=1):
@@ -105,7 +106,7 @@ class Redis(commands.Cog):
 {keys}
 ```""",
             timestamp=datetime.datetime.utcnow(),
-            color=c_get_color()
+            color=c_get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -124,7 +125,7 @@ class Redis(commands.Cog):
 
 = Misc =
 [ Database Size (Keys): {await self.bot.redis.dbsize()} ]
-```"""
+```""",
         )
         await ctx.send(embed=embed)
 
@@ -136,7 +137,9 @@ class Redis(commands.Cog):
         visual = ""
 
         for item in data.keys():
-            visual = f"""{visual}\n[ {item.replace("_", " ").capitalize()}: {data[item]} ]"""
+            visual = (
+                f"""{visual}\n[ {item.replace("_", " ").capitalize()}: {data[item]} ]"""
+            )
 
         embed = discord.Embed(
             title="Redis Complex Info",
@@ -145,18 +148,18 @@ class Redis(commands.Cog):
 {visual}
 ```""",
             timestamp=datetime.datetime.utcnow(),
-            color=c_get_color()
+            color=c_get_color(),
         )
         await ctx.send(embed=embed)
-    
+
     @redis.command()
     async def sa(self, ctx):
         """Show all data"""
         embed = discord.Embed(
-           title="Attempting to fetch all data",
-           description=f"""ETA {await self.bot.redis.dbsize() * 0.1} seconds""",
-           timestamp=datetime.datetime.utcnow(),
-           color=c_get_color("red")
+            title="Attempting to fetch all data",
+            description=f"""ETA {await self.bot.redis.dbsize() * 0.1} seconds""",
+            timestamp=datetime.datetime.utcnow(),
+            color=c_get_color("red"),
         )
         msg = await ctx.send(embed=embed)
 
@@ -164,16 +167,18 @@ class Redis(commands.Cog):
 
         visualiser = ""
         for key in keys[1]:
-            visualiser = f"""{visualiser}\n{key:15}: {await self.bot.redis.get(key):>5}"""
+            visualiser = (
+                f"""{visualiser}\n{key:15}: {await self.bot.redis.get(key):>5}"""
+            )
             await asyncio.sleep(0.1)
 
         embed_done = discord.Embed(
-           title="Finished",
-           description=f"""```yaml
+            title="Finished",
+            description=f"""```yaml
 {visualiser}
 ```""",
-           timestamp=datetime.datetime.utcnow(),
-           color=c_get_color("green")
+            timestamp=datetime.datetime.utcnow(),
+            color=c_get_color("green"),
         )
         await msg.edit(embed=embed_done)
 
