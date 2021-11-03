@@ -2,12 +2,14 @@ import discord
 import traceback
 import sys
 from discord.ext import commands
-from gears.style import c_get_color
+from gears.style import c_get_color, c_get_emoji
 import datetime
+from gears.useful import report_error
 
 
 class Errors(commands.Cog):
     """Handling all our bots errors"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -27,21 +29,76 @@ class Errors(commands.Cog):
         if cog:
             if cog._get_overridden_method(cog.cog_command_error) is not None:
                 return
-        ignored = (commands.CommandNotFound, )
+        ignored = (commands.CommandNotFound,)
 
         error = getattr(error, "original", error)
 
         if isinstance(error, ignored):
             return
 
-        if isinstance(error, commands.DisabledCommand):
+        if isinstance(error, commands.ConversionError):
+            url = self.bot.dispatch(
+                "create_error_pastebin", "ConversionError", ctx.message.id, error
+            )
+
+            conversion_error = discord.Embed(
+                title=f"Error",
+                description=f"""This error has been reported to the dev successfully.
+Please do not spam this command as it will now likely not work.
+```yaml
+Error ID: {ctx.message.id}
+Type: {error.converter}
+```""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
+            )
+            conversion_error.set_thumbnail(url=await c_get_emoji("image", "cancel"))
+            await report_error(
+                self.bot,
+                f"""
+[Error Report]({url})
+```yaml
+Error ID: {ctx.message.id}
+Type: {error.converter}
+```""",
+            )
+            await ctx.send(embed=conversion_error)
+
+        elif isinstance(error, commands.MissingRequiredArgument):
+            missing_argument = discord.Embed(
+                title=f"Error",
+                description=f"""Missing parameter:
+```md
+[Command](Error)
+[{ctx.command}]({str(error.param).split(":")[0]})
+```""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
+            )
+            missing_argument.set_thumbnail(url=await c_get_emoji("image", "cancel"))
+            await ctx.send(embed=missing_argument)
+
+        elif isinstance(error, commands.DisabledCommand):
             await ctx.send(f"{ctx.command} has been disabled.")
 
         elif isinstance(error, commands.NoPrivateMessage):
             try:
-                await ctx.author.send(f"{ctx.command} can not be used in Private Messages.")
+                await ctx.author.send(
+                    f"{ctx.command} can not be used in Private Messages."
+                )
             except discord.HTTPException:
                 pass
+
+        elif isinstance(error, commands.ChannelNotFound):
+            if ctx.command.qualified_name == "modlogs channel":
+                no_channel = discord.Embed(
+                    title=f"Error",
+                    description=f"""Channel `{error.argument}` was not found""",
+                    timestamp=datetime.datetime.utcnow(),
+                    color=await c_get_color("red"),
+                )
+                no_channel.set_thumbnail(url=await c_get_emoji("image", "cancel"))
+                return await ctx.send(embed=no_channel)
 
         elif isinstance(error, commands.BadArgument):
             if ctx.command.qualified_name == "tag list":
@@ -52,18 +109,21 @@ class Errors(commands.Cog):
                     title=f"",
                     description=f"""""",
                     timestamp=datetime.datetime.utcnow(),
-                    color=await c_get_color()
+                    color=await c_get_color(),
                 )
                 await ctx.send(embed=embed)
-                await ctx.send()
-        
+
         elif isinstance(error, commands.BadInviteArgument):
             pass
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
-            print("Ignoring exception in command {}:".format(ctx.command), file=sys.stderr)
-            traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
+            print(
+                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
+            )
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
 
 
 def setup(bot):
