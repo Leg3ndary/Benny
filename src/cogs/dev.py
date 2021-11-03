@@ -15,8 +15,10 @@ def cleanup_code(content):
     if content.startswith("```") and content.endswith("```"):
         return "\n".join(content.split("\n")[1:-1])
 
+
 class Dev(commands.Cog):
     """Commands that are for bot development"""
+
     def __init__(self, bot):
         self.bot = bot
 
@@ -26,19 +28,19 @@ class Dev(commands.Cog):
         """Commands thats sole purpose is for me to experiment."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
-            title=f"{ctx.author.display_name} is the Dev",
-            description=f"This message is only displayable by him.",
-            timestamp=datetime.datetime.utcnow(),
-            color=await c_get_color("black")
-        )
+                title=f"{ctx.author.display_name} is the Dev",
+                description=f"This message is only displayable by him.",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("black"),
+            )
             await ctx.send(embed=embed)
 
     @dev.command(
         help="Load a cog",
-        brief="Loading Cogs", 
+        brief="Loading Cogs",
         usage="<cog = FileName>",
         description="None",
-        hidden=True
+        hidden=True,
     )
     async def load(self, ctx, *, cog: str):
         try:
@@ -51,10 +53,10 @@ class Dev(commands.Cog):
 - Reason: {e}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             return await ctx.send(embed=embed_fail)
-            
+
         else:
             embed = discord.Embed(
                 title=f"__{cog}__ Loaded",
@@ -62,16 +64,16 @@ class Dev(commands.Cog):
 + {cog} loaded successfuly
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             await ctx.send(embed=embed)
 
     @dev.command(
         help="Unload a cog",
-        brief="Unloading Cogs", 
+        brief="Unloading Cogs",
         usage="<cog = FileName>",
         description="None",
-        hidden=True
+        hidden=True,
     )
     async def unload(self, ctx, *, cog: str):
         try:
@@ -84,7 +86,7 @@ class Dev(commands.Cog):
 - Reason: {e}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             return await ctx.send(embed=embed_fail)
 
@@ -95,16 +97,16 @@ class Dev(commands.Cog):
 + {cog} unloaded successfully
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             await ctx.send(embed=embed)
 
     @dev.command(
         help="Unload then Load a cog",
-        brief="Reloading Cogs", 
+        brief="Reloading Cogs",
         usage="<cog = FileName>",
         description="None",
-        hidden=True
+        hidden=True,
     )
     async def reload(self, ctx, *, cog: str):
         try:
@@ -118,7 +120,7 @@ class Dev(commands.Cog):
 - Reason: {e}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             return await ctx.send(embed=embed_fail)
 
@@ -129,16 +131,16 @@ class Dev(commands.Cog):
 + {cog} reloaded successfully
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             return await ctx.send(embed=embed)
 
     @dev.command(
         help="Shows a list of all servers that Tenshi is in.",
-        brief="Servers List", 
+        brief="Servers List",
         usage="",
         description="None",
-        hidden=True
+        hidden=True,
     )
     async def servers(self, ctx):
         servers = self.bot.guilds
@@ -151,16 +153,16 @@ class Dev(commands.Cog):
 {servers_var}
 ```""",
             timestamp=datetime.datetime.utcnow(),
-            color=await c_get_color()
+            color=await c_get_color(),
         )
         await ctx.send(embed=embed)
 
     @dev.command(
         help="Tries to reload every cog",
-        brief="Syncing Cogs", 
+        brief="Syncing Cogs",
         usage="",
         description="None",
-        hidden=True
+        hidden=True,
     )
     async def sync(self, ctx):
         cog_statuslist = []
@@ -174,7 +176,7 @@ class Dev(commands.Cog):
             except Exception as e:
                 cog_statuslist.append(f"- {cog} failed\n- {e}")
                 fails += 1
-            
+
             else:
                 cog_statuslist.append(f"+ {cog} reloaded")
                 success += 1
@@ -193,23 +195,23 @@ class Dev(commands.Cog):
             `{success}` cogs have been reloaded.
             `{fails}` cogs have failed loading.""",
             timestamp=datetime.datetime.utcnow(),
-            color=embed_color
+            color=embed_color,
         )
         await ctx.send(embed=embed)
 
     @dev.command(
         help="Clears Terminal by making a massive space",
-        brief="Terminal Cleared", 
+        brief="Terminal Cleared",
         usage="",
         description="None",
-        hidden=True
+        hidden=True,
     )
     async def ct(self, ctx):
         print("\x1b[2J")
         embed = discord.Embed(
             title="Terminal Cleared",
             timestamp=datetime.datetime.utcnow(),
-            color=await c_get_color("black")
+            color=await c_get_color("black"),
         )
         await ctx.send(embed=embed)
 
@@ -220,27 +222,27 @@ class Dev(commands.Cog):
             await ctx.send_help("dev status")
 
     @status.command()
-    async def playing(self, ctx, *, status:str):
+    async def playing(self, ctx, *, status: str):
         """Set a playing status"""
         try:
             await self.bot.change_presence(activity=discord.Game(name=status))
             embed = discord.Embed(
-               title="Status Changed",
-               description=f"""Changed successfully.""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("green")
+                title="Status Changed",
+                description=f"""Changed successfully.""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("green"),
             )
             await ctx.send(embed=embed)
-        
+
         except Exception as e:
             embed_error = discord.Embed(
-               title="Status Change Fail",
-               description=f"""Failed
+                title="Status Change Fail",
+                description=f"""Failed
 ```diff
 - {e}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("red")
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
             )
             await ctx.send(embed=embed_error)
 
@@ -248,74 +250,84 @@ class Dev(commands.Cog):
     async def streaming(self, ctx, url: str, *, status: str):
         """Set a streaming status"""
         try:
-            await self.bot.change_presence(activity=discord.Streaming(name=status, url=url))
+            await self.bot.change_presence(
+                activity=discord.Streaming(name=status, url=url)
+            )
             embed = discord.Embed(
-               title="Status Changed",
-               description=f"""Changed successfully.""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("green")
+                title="Status Changed",
+                description=f"""Changed successfully.""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("green"),
             )
             await ctx.send(embed=embed)
-        
+
         except Exception as e:
             embed_error = discord.Embed(
-               title="Status Change Fail",
-               description=f"""Failed
+                title="Status Change Fail",
+                description=f"""Failed
 ```diff
 - {e}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("red")
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
             )
             await ctx.send(embed=embed_error)
-    
+
     @status.command()
     async def listening(self, ctx, *, status: str):
         """Set a listening status"""
         try:
-            await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.listening, name=status))
+            await self.bot.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.listening, name=status
+                )
+            )
             embed = discord.Embed(
-               title="Status Changed",
-               description=f"""Changed successfully.""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("green")
+                title="Status Changed",
+                description=f"""Changed successfully.""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("green"),
             )
             await ctx.send(embed=embed)
-        
+
         except Exception as e:
             embed_error = discord.Embed(
-               title="Status Change Fail",
-               description=f"""Failed
+                title="Status Change Fail",
+                description=f"""Failed
 ```diff
 - {e}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("red")
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
             )
             await ctx.send(embed=embed_error)
-    
+
     @status.command()
     async def competing(self, ctx, *, status: str):
         """Set a competing status"""
         try:
-            await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.competing, name=status))
+            await self.bot.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.competing, name=status
+                )
+            )
             embed = discord.Embed(
-               title="Status Changed",
-               description=f"""Changed successfully.""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("green")
+                title="Status Changed",
+                description=f"""Changed successfully.""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("green"),
             )
             await ctx.send(embed=embed)
-        
+
         except Exception as e:
             embed_error = discord.Embed(
-               title="Status Change Fail",
-               description=f"""Failed
+                title="Status Change Fail",
+                description=f"""Failed
 ```diff
 - {e}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("red")
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
             )
             await ctx.send(embed=embed_error)
 
@@ -323,24 +335,28 @@ class Dev(commands.Cog):
     async def watching(self, ctx, *, status: str):
         """Set a watching status"""
         try:
-            await self.bot.change_presence(activity=discord.Activity(type=discord.ActivityType.watching, name=status))
+            await self.bot.change_presence(
+                activity=discord.Activity(
+                    type=discord.ActivityType.watching, name=status
+                )
+            )
             embed = discord.Embed(
-               title="Status Changed",
-               description=f"""Changed successfully.""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("green")
+                title="Status Changed",
+                description=f"""Changed successfully.""",
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("green"),
             )
             await ctx.send(embed=embed)
-        
+
         except Exception as e:
             embed_error = discord.Embed(
-               title="Status Change Fail",
-               description=f"""Failed
+                title="Status Change Fail",
+                description=f"""Failed
 ```diff
 - {e}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("red")
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
             )
             await ctx.send(embed=embed_error)
 
@@ -350,23 +366,23 @@ class Dev(commands.Cog):
         try:
             await ctx.guild.leave()
             embed = discord.Embed(
-               title=f"Left {guild.name}",
-               description=f"""```md
+                title=f"Left {guild.name}",
+                description=f"""```md
 - Owned by {guild.owner} - {guild.owner_id}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color()
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color(),
             )
             await ctx.send(embed=embed)
 
         except Exception as e:
             embed_error = discord.Embed(
-               title="Error",
-               description=f"""```diff
+                title="Error",
+                description=f"""```diff
 - {e}
 ```""",
-               timestamp=datetime.datetime.utcnow(),
-               color=await c_get_color("red")
+                timestamp=datetime.datetime.utcnow(),
+                color=await c_get_color("red"),
             )
             await ctx.send(embed=embed_error)
 
@@ -388,14 +404,11 @@ class Dev(commands.Cog):
             title="Charinfo",
             description=msg,
             timestamp=datetime.datetime.utcnow(),
-            color=await c_get_color()
+            color=await c_get_color(),
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
-        name="eval",
-        aliases=["exec"]
-    )
+    @commands.command(name="eval", aliases=["exec"])
     @commands.is_owner()
     async def _eval(self, ctx, *, code: str):
         """Evaluates code given"""
@@ -406,14 +419,11 @@ class Dev(commands.Cog):
                 title="Error",
                 description="Include a code block dumb fuck",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color()
+                color=await c_get_color(),
             )
             return await ctx.send(embed=no_cb)
 
-        env = {
-            "bot": self.bot,
-            "ctx": ctx
-        }
+        env = {"bot": self.bot, "ctx": ctx}
 
         env.update(globals())
 
@@ -431,7 +441,7 @@ class Dev(commands.Cog):
 {e.__class__.__name__}: {e}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color("red")
+                color=await c_get_color("red"),
             )
             return await ctx.send(embed=embed_e1)
 
@@ -449,7 +459,7 @@ class Dev(commands.Cog):
 {value}{traceback.format_exc()}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=await c_get_color("red")
+                color=await c_get_color("red"),
             )
             return await ctx.send(embed=embed_e2)
 
@@ -468,7 +478,7 @@ class Dev(commands.Cog):
 {value}
 ```""",
                         timestamp=datetime.datetime.utcnow(),
-                        color=await c_get_color("green")
+                        color=await c_get_color("green"),
                     )
                     return await ctx.send(embed=evaluated)
 
@@ -479,7 +489,7 @@ class Dev(commands.Cog):
 {value}{out}
 ```""",
                     timestamp=datetime.datetime.utcnow(),
-                    color=await c_get_color("red")
+                    color=await c_get_color("red"),
                 )
                 return await ctx.send(embed=embed_e3)
 
@@ -487,12 +497,12 @@ class Dev(commands.Cog):
     async def botinfo(self, ctx):
         """Will expand as I go but showing some basic bot info"""
         embed = discord.Embed(
-           title=f"Bot Info",
-           description=f"""```json
+            title=f"Bot Info",
+            description=f"""```json
 {json.dumps(self.bot.file_len_dict, indent=4)}
 ```""",
-           timestamp=datetime.datetime.utcnow(),
-           color=await c_get_color()
+            timestamp=datetime.datetime.utcnow(),
+            color=await c_get_color(),
         )
         await ctx.send(embed=embed)
 
