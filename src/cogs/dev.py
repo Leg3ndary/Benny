@@ -1,4 +1,3 @@
-
 import discord
 from discord.ext import commands
 from gears.style import c_get_color
