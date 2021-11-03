@@ -20,6 +20,7 @@ async def get_prefix(bot, message):
     else:
         return bot.prefix_cache[str(message.guild.id)]
 
+
 intents = discord.Intents(
     bans=True,
     dm_messages=True,
@@ -38,31 +39,37 @@ intents = discord.Intents(
     reactions=True,
     typing=True,
     voice_states=True,
-    webhooks=True
+    webhooks=True,
 )
 
 bot = commands.Bot(
     command_prefix="s",
     intents=intents,
     description="The coolest bot ever",
-    Intents=discord.Intents.all()
+    Intents=discord.Intents.all(),
 )
 
 bot.config = config
 print("Loaded Bot Config")
 bot.prefix = prefix
 
-mongo_uri = config.get("Mongo_URL").replace("<Username>", config.get("Mongo_User")).replace("<Password>", os.getenv("Mongo_Pass"))
+mongo_uri = (
+    config.get("Mongo_URL")
+    .replace("<Username>", config.get("Mongo_User"))
+    .replace("<Password>", os.getenv("Mongo_Pass"))
+)
 
 bot.mongo = AsyncIOMotorClient(mongo_uri)
 print("Loaded Bot DB")
 
 load_cogs(bot, os.listdir("src/cogs"))
 
+
 @bot.event
 async def on_ready():
     """On ready tell us"""
     print(f"Bot {bot.user} logged in.")
+
 
 @bot.event
 async def on_cache_prefixes():
@@ -70,7 +77,8 @@ async def on_cache_prefixes():
     prefix_db = bot.mongo["Prefixes"]
 
     for server in prefix_db:
-        pass    
+        pass
+
 
 bot.dispatch("cache_prefixes")
 
