@@ -1,5 +1,6 @@
 import random
 
+
 async def c_get_color(color=None):
     """Return a color, return a random hex if none provided"""
     if not color:
@@ -7,9 +8,13 @@ async def c_get_color(color=None):
     else:
         return colors.get(color, f"ERROR [{color}]")
 
-async def c_get_emoji(type: str, emoji: str):
+
+async def c_get_emoji(kind: str, emoji: str):
     """Get an emoji from tenshis emoji dict..."""
-    return emojis.get(type, ).get(emoji, f"ERROR [{emoji}]")
+    return emojis.get(kind, f"ERROR [Styles - TYPE: {kind}]").get(
+        emoji, f"ERROR [Styles - Emoji {emoji}]"
+    )
+
 
 colors = {
     "navy": 0x001F3F,
@@ -22,13 +27,13 @@ colors = {
     "yellow": 0xFFDC00,
     "orange": 0xFF851B,
     "red": 0xFF4136,
-    "maroon": 0x85144b,
+    "maroon": 0x85144B,
     "pink": 0xF012BE,
     "purple": 0xB10DC9,
     "black": 0x111111,
     "gray": 0xAAAAAA,
     "silver": 0xDDDDDD,
-    "white": 0xFFFFFF
+    "white": 0xFFFFFF,
 }
 
 reversed_colors = {
@@ -48,38 +53,56 @@ reversed_colors = {
     1118481: "black",
     11184810: "gray",
     14540253: "silver",
-    16777215: "white"
+    16777215: "white",
 }
 
-emojis = {
-    "check": "<:tenshi_checkmark:873657241876705300>",
-    "cancel": "<:tenshi_cancel:873659861395718227>",
-    "left": "<:tenshi_left:873755995074101248>",
-    "right": "<:tenshi_right:873755994486890497>",
-    "pauseplay": "<:tenshi_pp:873758110030888990>",
-    "stop": "<:tenshi_stop:873758679378321458>",
-    "search": "<:tenshi_search:874031008733863956>",
-    "checka": ":tenshi_checkmark:873657241876705300",
-    "cancela": ":tenshi_cancel:873659861395718227",
-    "lefta": ":tenshi_left:873755995074101248",
-    "righta": ":tenshi_right:873755994486890497",
-    "pauseplaya": ":tenshi_pp:873758110030888990",
-    "stopa": ":tenshi_stop:873758679378321458",
-    "searcha": ":tenshi_search:874031008733863956"
-}
 
-color_list = ["navy", "blue", "aqua", "teal", "olive", "green", "lime", "yellow", "orange", "red", "maroon", "pink", "purple", "black", "gray", "silver", "white"]
+color_list = [
+    "navy",
+    "blue",
+    "aqua",
+    "teal",
+    "olive",
+    "green",
+    "lime",
+    "yellow",
+    "orange",
+    "red",
+    "maroon",
+    "pink",
+    "purple",
+    "black",
+    "gray",
+    "silver",
+    "white",
+]
 
 emojis = {
     "regular": {
-        "check": "",
-        "cancel": "",
-        "": "",
-        
+        "check": "<:check:891088754176036885>",
+        "cancel": "<:cancel:891088754599682059>",
+        "left": "<:left:891088754398330991>",
+        "right": "<:right:891088754494808134>",
+        "pauseplay": "<:pp:891088754754871316>",
+        "stop": "<:stop:891088754134089749>",
+        "search": "<:search:891088754121506867> ",
     },
     "id": {
-        "check": "",
-        "cancel" : "",
-        "": ""
-    }
+        "check": "891088754176036885",
+        "cancel": "891088754599682059",
+        "left": "891088754398330991",
+        "right": "891088754494808134",
+        "pauseplay": "891088754754871316",
+        "stop": "891088754134089749",
+        "search": "891088754121506867",
+    },
+    "image": {
+        "check": "https://cdn.discordapp.com/emojis/891088754176036885.png?size=256",
+        "cancel": "https://cdn.discordapp.com/emojis/891088754599682059.png?size=256",
+        "left": "https://cdn.discordapp.com/emojis/891088754398330991.png?size=256",
+        "right": "https://cdn.discordapp.com/emojis/891088754494808134.png?size=256",
+        "pauseplay": "https://cdn.discordapp.com/emojis/891088754754871316.png?size=256",
+        "stop": "https://cdn.discordapp.com/emojis/891088754134089749.png?size=256",
+        "search": "https://cdn.discordapp.com/emojis/891088754121506867.png?size=256",
+    },
 }
