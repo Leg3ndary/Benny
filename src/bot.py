@@ -54,8 +54,9 @@ print("Loaded Bot Config")
 bot.prefix = prefix
 
 mongo_uri = (
-    config.get("Mongo_URL")
-    .replace("<Username>", config.get("Mongo_User"))
+    config.get("Mongo")
+    .get("URL")
+    .replace("<Username>", config.get("Mongo").get("User"))
     .replace("<Password>", os.getenv("Mongo_Pass"))
 )
 
