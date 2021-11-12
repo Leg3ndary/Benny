@@ -20,7 +20,7 @@ def load_cogs(bot, cogs):
     cog_list = []
     for file in cogs:
         try:
-            if file.endswith(".py") and not file.endswith("cog_template.py"):
+            if file.endswith(".py") and not file.endswith("cog_template.py") and file.endswith("redis.py"):
                 bot.load_extension(f"cogs.{file[:-3]}")
                 cog_list.append(f"cogs.{file[:-3]}")
                 print(f"Loaded {file[:-3]}")
