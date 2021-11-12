@@ -1,2 +1,3 @@
-# ShrimpE
-The totally famous shrimpy bot, open source because its just for fun
+# Benny Bot
+
+Open source bot that I made for fun and educational purposes, previously shrimpy, idk i think benny bot has a better ring to it
