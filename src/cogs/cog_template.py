@@ -1,8 +1,6 @@
 import discord
 from discord.ext import commands
 import datetime
-
-from discord.ext.commands.core import command
 from gears.style import c_get_color, c_get_emoji
 import asyncio
 
