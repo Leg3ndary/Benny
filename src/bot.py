@@ -81,6 +81,6 @@ async def on_cache_prefixes():
         pass
 
 
-bot.dispatch("cache_prefixes")
+#bot.dispatch("cache_prefixes")
 
 bot.run(os.getenv("Bot_Token"))

@@ -1,11 +1,13 @@
 import discord
 from discord.ext import commands
 import datetime
+
+from discord.ext.commands.core import bot_has_any_role
 from gears.style import c_get_color, c_get_emoji
 import asyncio
 
 
-class CogExample(commands.Cog):
+class Base(commands.Cog):
     """Cog Example Description"""
 
     def __init__(self, bot):
@@ -38,4 +40,4 @@ class CogExample(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(CogExample(bot))
+    bot.add_cog(Base(bot))
