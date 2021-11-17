@@ -1,7 +1,10 @@
 aioredis==2.0.0a1
-discord.py==1.7.3
+async_timeout==3.0.1
+git+https://github.com/Pycord-Development/pycord
 motor==2.4.0
 pbwrap==1.3.1
 psutil==5.8.0
-pymongo[srv]==3.11
 python-dotenv==0.19.2
+youtube_dl==2021.6.6
+pymongo[srv]==3.11
+pynacl==1.4.0

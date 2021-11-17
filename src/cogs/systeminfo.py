@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-import datetime
+import discord.utils
 from gears.style import c_get_color
 import psutil
 import platform
@@ -42,7 +42,7 @@ class SystemInfo(commands.Cog):
 ```fix
 t>system {random.choice(options)}
 ```""",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
                 color=await c_get_color(),
             )
             return await ctx.send(embed=embed)
@@ -72,7 +72,7 @@ t>system {random.choice(options)}
 [ Processor ]
 = {uname.processor} =
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
         )
         return await ctx.send(embed=embed)
@@ -90,15 +90,13 @@ t>system {random.choice(options)}
 [ Boot Time ]
 = {bt.year}/{bt.month}/{bt.day} {bt.hour}:{bt.minute}:{bt.second} =
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
         )
         return await ctx.send(embed=embed)
 
     @system.command(
-        help="Display CPU information",
-        brief="CPU Info", usage="",
-        description="None"
+        help="Display CPU information", brief="CPU Info", usage="", description="None"
     )
     async def cpu(self, ctx):
         """Showing our cpu information"""
@@ -126,7 +124,7 @@ t>system {random.choice(options)}
 [ Total CPU Usage ]
 = {psutil.cpu_percent()}% =
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
         )
         return await ctx.send(embed=embed)
@@ -152,7 +150,7 @@ t>system {random.choice(options)}
 [ Percentage ]
 = {svmem.percent}% =
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
         )
         return await ctx.send(embed=embed)
@@ -172,7 +170,7 @@ t>system {random.choice(options)}
 [ Total Write ]
 = {get_size(disk_io.write_bytes)} =
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
         )
         for partition in partitions:

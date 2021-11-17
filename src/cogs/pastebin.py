@@ -2,7 +2,7 @@ from pbwrap import Pastebin
 import os
 import discord
 from discord.ext import commands
-import datetime
+import discord.utils
 from gears.style import c_get_color, c_get_emoji
 import asyncio
 

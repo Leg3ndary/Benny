@@ -5,7 +5,7 @@ import aioredis
 import os
 import time
 import asyncio
-import datetime
+import discord.utils
 
 
 """
@@ -62,7 +62,7 @@ class Redis(commands.Cog):
             description=f"""```
 {data}
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=c_get_color(),
         )
         await ctx.send(embed=embed)
@@ -86,7 +86,7 @@ class Redis(commands.Cog):
                 description=f"""```diff
 - {e}
 ```""",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
                 color=c_get_color("red"),
             )
 
@@ -105,7 +105,7 @@ class Redis(commands.Cog):
             description=f"""```md
 {keys}
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=c_get_color(),
         )
         await ctx.send(embed=embed)
@@ -147,7 +147,7 @@ class Redis(commands.Cog):
 = Info =
 {visual}
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=c_get_color(),
         )
         await ctx.send(embed=embed)
@@ -158,7 +158,7 @@ class Redis(commands.Cog):
         embed = discord.Embed(
             title="Attempting to fetch all data",
             description=f"""ETA {await self.bot.redis.dbsize() * 0.1} seconds""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=c_get_color("red"),
         )
         msg = await ctx.send(embed=embed)
@@ -177,7 +177,7 @@ class Redis(commands.Cog):
             description=f"""```yaml
 {visualiser}
 ```""",
-            timestamp=datetime.datetime.utcnow(),
+            timestamp=discord.utils.utcnow(),
             color=c_get_color("green"),
         )
         await msg.edit(embed=embed_done)

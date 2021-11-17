@@ -1,5 +1,5 @@
 from gears.style import c_get_color, c_get_emoji
-import datetime
+import discord.utils
 import discord
 
 
@@ -20,7 +20,12 @@ def load_cogs(bot, cogs):
     cog_list = []
     for file in cogs:
         try:
-            if file.endswith(".py") and not file.endswith("cog_template.py") and not file.endswith("redis.py") and not file.endswith("pastebin.py"):
+            if (
+                file.endswith(".py")
+                and not file.endswith("cog_template.py")
+                and not file.endswith("redis.py")
+                and not file.endswith("pastebin.py")
+            ):
                 bot.load_extension(f"cogs.{file[:-3]}")
                 cog_list.append(f"cogs.{file[:-3]}")
                 print(f"Loaded {file[:-3]}")
@@ -44,7 +49,7 @@ async def report_error(bot, error_descrip):
     embed = discord.Embed(
         title=f"Error Report",
         description=f"""""",
-        timestamp=datetime.datetime.utcnow(),
+        timestamp=discord.utils.utcnow(),
         color=await c_get_color("red"),
     )
     embed.set_thumbnail(url=c_get_emoji("image", "cancel"))

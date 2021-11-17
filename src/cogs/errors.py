@@ -3,7 +3,7 @@ import traceback
 import sys
 from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
-import datetime
+import discord.utils
 from gears.useful import report_error
 
 
@@ -49,7 +49,7 @@ Please do not spam this command as it will now likely not work.
 Error ID: {ctx.message.id}
 Type: {error.converter}
 ```""",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
                 color=await c_get_color("red"),
             )
             conversion_error.set_thumbnail(url=await c_get_emoji("image", "cancel"))
@@ -72,7 +72,7 @@ Type: {error.converter}
 [Command](Error)
 [{ctx.command}]({str(error.param).split(":")[0]})
 ```""",
-                timestamp=datetime.datetime.utcnow(),
+                timestamp=discord.utils.utcnow(),
                 color=await c_get_color("red"),
             )
             missing_argument.set_thumbnail(url=await c_get_emoji("image", "cancel"))
@@ -94,11 +94,20 @@ Type: {error.converter}
                 no_channel = discord.Embed(
                     title=f"Error",
                     description=f"""Channel `{error.argument}` was not found""",
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=discord.utils.utcnow(),
                     color=await c_get_color("red"),
                 )
                 no_channel.set_thumbnail(url=await c_get_emoji("image", "cancel"))
                 return await ctx.send(embed=no_channel)
+
+        elif isinstance(error, commands.CommandOnCooldown):
+            embed = discord.Embed(
+                title=f"{ctx.command} is on Cooldown",
+                description=f"""Please retry this command after {error.retry_after}""",
+                timestamp=discord.utils.utcnow(),
+                color=await c_get_color("red"),
+            )
+            return await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadArgument):
             if ctx.command.qualified_name == "tag list":
@@ -108,8 +117,17 @@ Type: {error.converter}
                 embed = discord.Embed(
                     title=f"",
                     description=f"""""",
-                    timestamp=datetime.datetime.utcnow(),
+                    timestamp=discord.utils.utcnow(),
                     color=await c_get_color(),
+                )
+                await ctx.send(embed=embed)
+
+            else:
+                embed = discord.Embed(
+                    title=f"Not found",
+                    description=f"""Conversion Error""",
+                    timestamp=discord.utils.utcnow(),
+                    color=await c_get_color("red"),
                 )
                 await ctx.send(embed=embed)
 

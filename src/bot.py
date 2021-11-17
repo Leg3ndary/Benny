@@ -43,15 +43,13 @@ intents = discord.Intents(
 )
 
 bot = commands.Bot(
-    command_prefix="s",
-    intents=intents,
-    description="The coolest bot ever",
-    Intents=discord.Intents.all(),
+    command_prefix="s", intents=intents, description="The coolest bot ever"
 )
 
 bot.config = config
 print("Loaded Bot Config")
 bot.prefix = prefix
+print("Loaded default prefix")
 
 mongo_uri = (
     config.get("Mongo")
@@ -77,10 +75,12 @@ async def on_cache_prefixes():
     """Cache Prefixes"""
     prefix_db = bot.mongo["Prefixes"]
 
-    for server in prefix_db:
-        pass
+
+@bot.command()
+async def tt(ctx):
+    await ctx.respond("Hello")
 
 
-#bot.dispatch("cache_prefixes")
+# bot.dispatch("cache_prefixes")
 
 bot.run(os.getenv("Bot_Token"))
