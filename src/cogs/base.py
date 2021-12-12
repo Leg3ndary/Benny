@@ -1,9 +1,14 @@
 import discord
-from discord.ext import commands
-from discord.commands import slash_command, Option
-from gears.style import c_get_color, c_get_emoji
-import asyncio
 import discord.utils
+from discord.commands import Option, slash_command
+from discord.ext import commands
+from gears.msg_views import DeleteView
+from gears.style import c_get_color
+
+
+'''@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
+async def ping(ctx):
+    await ctx.send("pong")'''
 
 
 class Base(commands.Cog):
@@ -24,8 +29,9 @@ class Base(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def avatar(self, ctx, *, user: discord.Member = None):
+    async def avatar_cmd(self, ctx, *, user: discord.Member = None):
         """Show a users avatar"""
+        view = DeleteView()
         if not user:
             user = ctx.author
 
@@ -33,21 +39,23 @@ class Base(commands.Cog):
             title=user.display_name, timestamp=discord.utils.utcnow(), color=user.color
         )
         embed.set_image(url=user.avatar.url)
-        await ctx.send(embed=embed)
+        view.bctx = await ctx.send(embed=embed, view=view)
 
     @slash_command(guild_ids=[787106686535860244])
     async def avatar(
         self, ctx, user: Option(str, "Enter someone's Name", required=False)
     ):
         """Show a users avatar"""
-        user = await self.MemberConverter.convert(ctx, user)
+        view = DeleteView(True)
         if not user:
             user = ctx.author
+        else:
+            user = await self.MemberConverter.convert(ctx, user)
         embed = discord.Embed(
             title=user.display_name, timestamp=discord.utils.utcnow(), color=user.color
         )
         embed.set_image(url=user.avatar.url)
-        await ctx.respond(embed=embed)
+        view.bctx = await ctx.respond(embed=embed, view=view)
 
     @commands.command(
         name="info",
