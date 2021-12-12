@@ -1,25 +1,14 @@
-from discord.ext import commands
 import discord
+import json
 import os
+from discord.ext import commands
 from dotenv import load_dotenv
 from gears.useful import load_cogs
-import json
 from motor.motor_asyncio import AsyncIOMotorClient
-
-config = json.load(open("config.json"))
 
 load_dotenv()
 
-prefix = config.get("Bot").get("Prefix")
-
-
-async def get_prefix(bot, message):
-    """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
-    if message.guild is None:
-        return bot.prefix
-    else:
-        return bot.prefix_cache[str(message.guild.id)]
-
+config = json.load(open("config.json"))
 
 intents = discord.Intents(
     bans=True,
@@ -42,15 +31,6 @@ intents = discord.Intents(
     webhooks=True,
 )
 
-bot = commands.Bot(
-    command_prefix="s", intents=intents, description="The coolest bot ever"
-)
-
-bot.config = config
-print("Loaded Bot Config")
-bot.prefix = prefix
-print("Loaded default prefix")
-
 mongo_uri = (
     config.get("Mongo")
     .get("URL")
@@ -58,8 +38,29 @@ mongo_uri = (
     .replace("<Password>", os.getenv("Mongo_Pass"))
 )
 
+prefix = config.get("Bot").get("Prefix")
+
+'''async def get_prefix(bot, message):
+    """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
+    if message.guild is None:
+        return bot.prefix
+    else:
+        return bot.prefix_cache[str(message.guild.id)]
+'''
+
+
+bot = commands.Bot(
+    command_prefix="//", intents=intents, description="The coolest bot ever"
+)
+
+bot.config = config
+print("Loaded Bot Config")
+
+bot.prefix = prefix
+print("Loaded default prefix")
+
 bot.mongo = AsyncIOMotorClient(mongo_uri)
-print("Loaded Bot DB")
+print("Initiated Bot DB (Not Loaded)")
 
 load_cogs(bot, os.listdir("src/cogs"))
 
@@ -74,11 +75,6 @@ async def on_ready():
 async def on_cache_prefixes():
     """Cache Prefixes"""
     prefix_db = bot.mongo["Prefixes"]
-
-
-@bot.command()
-async def tt(ctx):
-    await ctx.respond("Hello")
 
 
 # bot.dispatch("cache_prefixes")
