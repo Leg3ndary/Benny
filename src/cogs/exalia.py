@@ -1,8 +1,8 @@
-import discord
-from discord.ext import commands
-import discord.utils
-from gears.style import c_get_color, c_get_emoji
 import asyncio
+import discord
+import discord.utils
+from discord.ext import commands
+from gears.style import c_get_color, c_get_emoji
 
 
 class Exalia(commands.Cog):

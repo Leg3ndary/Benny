@@ -1,14 +1,14 @@
-import asyncio
-import functools
 import itertools
 import math
-import random
+
+import asyncio
 import discord
+import discord.utils
+import functools
+import random
 import youtube_dl
 from async_timeout import timeout
 from discord.ext import commands
-import discord.utils
-import asyncio
 from gears.style import c_get_color
 
 

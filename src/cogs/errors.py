@@ -1,9 +1,10 @@
-import discord
-import traceback
 import sys
+
+import discord
+import discord.utils
+import traceback
 from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
-import discord.utils
 from gears.useful import report_error
 
 
@@ -36,7 +37,16 @@ class Errors(commands.Cog):
         if isinstance(error, ignored):
             return
 
-        if isinstance(error, commands.ConversionError):
+        if isinstance(error, commands.MemberNotFound):
+            embed = discord.Embed(
+                title=f"Member Not Found",
+                description=f"""The member {error.argument} was not found""",
+                timestamp=discord.utils.utcnow(),
+                color=await c_get_color("red")
+            )
+            return await ctx.send(embed=embed)
+
+        elif isinstance(error, commands.ConversionError):
             url = self.bot.dispatch(
                 "create_error_pastebin", "ConversionError", ctx.message.id, error
             )
@@ -110,17 +120,14 @@ Type: {error.converter}
             return await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadArgument):
-            if ctx.command.qualified_name == "tag list":
-                await ctx.send("I could not find that member. Please try again.")
-
-            elif ctx.command.qualified_name == "":
+            if ctx.command.qualified_name == "":
                 embed = discord.Embed(
                     title=f"",
                     description=f"""""",
                     timestamp=discord.utils.utcnow(),
                     color=await c_get_color(),
                 )
-                await ctx.send(embed=embed)
+                return await ctx.send(embed=embed)
 
             else:
                 embed = discord.Embed(
@@ -129,7 +136,8 @@ Type: {error.converter}
                     timestamp=discord.utils.utcnow(),
                     color=await c_get_color("red"),
                 )
-                await ctx.send(embed=embed)
+                return await ctx.send(embed=embed)
+
 
         elif isinstance(error, commands.BadInviteArgument):
             pass

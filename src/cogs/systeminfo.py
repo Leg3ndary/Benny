@@ -1,10 +1,10 @@
 import discord
-from discord.ext import commands
 import discord.utils
-from gears.style import c_get_color
-import psutil
 import platform
+import psutil
 import random
+from discord.ext import commands
+from gears.style import c_get_color
 
 
 def get_size(bytes, suffix="B"):

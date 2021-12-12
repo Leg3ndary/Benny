@@ -1,11 +1,12 @@
+import time
+
+import aioredis
+import asyncio
 import discord
+import discord.utils
+import os
 from discord.ext import commands
 from gears.style import c_get_color
-import aioredis
-import os
-import time
-import asyncio
-import discord.utils
 
 
 """
