@@ -2,6 +2,7 @@ from gears.style import c_get_color, c_get_emoji
 import discord.utils
 import discord
 from discord.ext import commands
+import numpy
 
 
 def len_file(file: str) -> int:
@@ -18,7 +19,7 @@ def len_file(file: str) -> int:
 
 def load_cogs(bot, cogs):
     """
-    Print and load a live feed, 
+    Print and load a live feed,
         Parameters:
             bot (obj): Bot Instance
             cogs (list): List of files that are in cogs in src/cogs
@@ -85,11 +86,38 @@ def default_cooldown_manager(msg, global_db):
         return commands.Cooldown(3.0, 5.0)
     elif user.get("PatronLevel") == 2:
         return commands.Cooldown(3.0, 6.0)
-        
 
-    #if msg.author.permissions.manage_messages:
-        #return None
-    #elif discord.utils.get(msg.author.roles, name="Nitro Booster"):
-        #return commands.Cooldown(2, 60)  # 2 per minute
+    # if msg.author.permissions.manage_messages:
+    # return None
+    # elif discord.utils.get(msg.author.roles, name="Nitro Booster"):
+    # return commands.Cooldown(2, 60)  # 2 per minute
     # 3 Commands per 8 seconds if nothings been set
     return commands.Cooldown(3.0, 8.0)
+
+
+def match_calc(string1, string2):
+    """Calculate how much 2 different strings match each other"""
+    rows = len(string1) + 1
+    cols = len(string2) + 1
+    distance = numpy.zeros((rows, cols), dtype=int)
+
+    for i in range(1, rows):
+        for k in range(1, cols):
+            distance[i][0] = i
+            distance[0][k] = k
+
+    for col in range(1, cols):
+        for row in range(1, rows):
+            if string1[row - 1] == string2[col - 1]:
+                cost = 0
+            else:
+                cost = 2
+            distance[row][col] = min(
+                distance[row - 1][col] + 1,  # Cost of deletions
+                distance[row][col - 1] + 1,  # Cost of insertions
+                distance[row - 1][col - 1] + cost,  # Cost of substitutions
+            )
+    ratio = ((len(string1) + len(string2)) - distance[row][col]) / (
+        len(string1) + len(string2)
+    )
+    return int(ratio * 100)
