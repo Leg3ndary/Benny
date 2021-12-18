@@ -50,7 +50,7 @@ prefix = config.get("Bot").get("Prefix")
 
 
 bot = commands.Bot(
-    command_prefix="//", intents=intents, description="The coolest bot ever"
+    command_prefix=prefix, intents=intents, description="The coolest bot ever"
 )
 
 bot.config = config
@@ -61,6 +61,7 @@ print("Loaded default prefix")
 
 bot.mongo = AsyncIOMotorClient(mongo_uri)
 print("Initiated Bot DB (Not Loaded)")
+
 
 load_cogs(bot, os.listdir("src/cogs"))
 

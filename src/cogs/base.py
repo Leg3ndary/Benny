@@ -73,13 +73,26 @@ class Base(commands.Cog):
             person = ctx.author
 
         embed = discord.Embed(
-            title=f"",
-            description=f"""""",
+            title=f"{person.name}#{person.discriminator} Info",
+            description=f"""
+            {person.bot}
+            {person.color}
+            {person.created_at}
+            {person.display_name}
+            {person.id}
+            {person.mention}
+            {person.mutual_guilds}
+            {person.public_flags}
+            {person.system}""",
             timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
+        )
+        embed.set_thumbnail(
+            url=person.avatar
         )
         await ctx.send(embed=embed)
 
 
 def setup(bot):
     bot.add_cog(Base(bot))
+
