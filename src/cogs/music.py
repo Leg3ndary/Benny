@@ -442,8 +442,8 @@ class Music(commands.Cog):
             requester = await self.client.fetch_user(current.requester)
 
         embed.set_footer(
-            name=requester.nick,
-            url=requester.avatar.url
+            name=requester.display_name,
+            url=requester.display_avatar.url
         )
         
         embed.add_field(
