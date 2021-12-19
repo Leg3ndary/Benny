@@ -436,7 +436,7 @@ class Music(commands.Cog):
             color=await c_get_color()
         )
         
-        requester = await self.client.get_user(current.requester)
+        requester = self.client.get_user(current.requester)
 
         if not requester:
             requester = await self.client.fetch_user(current.requester)
