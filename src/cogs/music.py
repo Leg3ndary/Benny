@@ -435,10 +435,15 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=await c_get_color()
         )
-        print(current.extra)
-        embed.set_author(
-            name=current.extra.get("requester", "I can't find who requested the track"),
-            url=ctx.author.avatar.url
+        
+        requester = await self.client.get_user(current.requester)
+
+        if not requester:
+            requester = await self.client.fetch_user(current.requester)
+
+        embed.set_footer(
+            name=requester.nick,
+            url=requester.avatar.url
         )
         
         embed.add_field(
