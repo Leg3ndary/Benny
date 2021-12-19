@@ -233,9 +233,15 @@ class Music(commands.Cog):
         # Results could be None if Lavalink returns an invalid response (non-JSON/non-200 (OK)).
         # ALternatively, resullts['tracks'] could be an empty array if the query yielded no tracks.
         if not results or not results["tracks"]:
-            return await ctx.send("Nothing found!")
+            nothing_found = discord.Embed(
+                title=f"Error",
+                description=f"""Sorry, but nothing was found for the search `{query}`""",
+                timestamp=discord.utils.utcnow(),
+                color=await c_get_color("red")
+            )
+            return await ctx.send(embed=nothing_found)
 
-        embed = discord.Embed(color=discord.Color.blurple())
+        embed = discord.Embed(color=await c_get_color())
 
         # Valid loadTypes are:
         #   TRACK_LOADED    - single video/direct URL)
@@ -391,6 +397,54 @@ class Music(commands.Cog):
         )
         embed.set_footer(
             text=f"""Add the total time and loop info here dumbass"""
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(
+        name="np",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=["now"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def np_cmd(self, ctx):
+        """Showing whats now playing"""
+        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+
+        if not player.playing:
+            nothing_playing = discord.Embed(
+                title=f"",
+                description=f"""Nothing is playing!
+                Use `play` to queue a song!""",
+                timestamp=discord.utils.utcnow(),
+                color=await c_get_color("aqua")
+            )
+            await ctx.send(embed=nothing_playing)
+
+        current = player.current
+        cposition = player.position_timestamp
+
+        embed = discord.Embed(
+            title=f"{current.title}{current.author}",
+            url=current.uri,
+            description=f"""{cposition}/{current.duration}""",
+            timestamp=discord.utils.utcnow(),
+            color=await c_get_color()
+        )
+        print(current.extra)
+        embed.set_author(
+            name=current.extra.get("requester", "I can't find who requested the track"),
+            url=ctx.author.avatar.url
+        )
+        
+        embed.add_field(
+            name="Other tings",
+            value="other tings",
+            inline=False
         )
         await ctx.send(embed=embed)
             
