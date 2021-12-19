@@ -42,7 +42,7 @@ class Errors(commands.Cog):
                 title=f"Member Not Found",
                 description=f"""The member {error.argument} was not found""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("red")
+                color=await c_get_color("red"),
             )
             return await ctx.send(embed=embed)
 
@@ -137,7 +137,6 @@ Type: {error.converter}
                     color=await c_get_color("red"),
                 )
                 return await ctx.send(embed=embed)
-
 
         elif isinstance(error, commands.BadInviteArgument):
             pass
