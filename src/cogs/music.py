@@ -360,7 +360,7 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=c_get_color("aqua"),
         )
-        view.bctx = await ctx.send(embed=embed)
+        view.bctx = await ctx.send(embed=embed, view)
 
     @commands.command(
         name="queue",
