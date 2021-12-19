@@ -8,6 +8,7 @@ import unicodedata
 from contextlib import redirect_stdout
 from discord.ext import commands
 from gears.style import c_get_color
+import os
 
 
 def cleanup_code(content):
@@ -165,6 +166,7 @@ class Dev(commands.Cog):
         hidden=True,
     )
     async def sync(self, ctx):
+        os.system("git pull")
         cog_statuslist = []
         fails = 0
         success = 0

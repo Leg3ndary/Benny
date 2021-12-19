@@ -415,7 +415,7 @@ class Music(commands.Cog):
         """Showing whats now playing"""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
 
-        if not player.playing:
+        if not player.is_playing:
             nothing_playing = discord.Embed(
                 title=f"",
                 description=f"""Nothing is playing!
