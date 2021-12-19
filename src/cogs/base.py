@@ -6,9 +6,9 @@ from gears.msg_views import DeleteView
 from gears.style import c_get_color
 
 
-'''@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
+"""@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
 async def ping(ctx):
-    await ctx.send("pong")'''
+    await ctx.send("pong")"""
 
 
 class Base(commands.Cog):
@@ -87,12 +87,9 @@ class Base(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=await c_get_color(),
         )
-        embed.set_thumbnail(
-            url=person.avatar
-        )
+        embed.set_thumbnail(url=person.avatar)
         await ctx.send(embed=embed)
 
 
 def setup(bot):
     bot.add_cog(Base(bot))
-
