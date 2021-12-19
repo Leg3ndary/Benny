@@ -5,6 +5,7 @@ import lavalink
 from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
 import tekore
+from gears.msg_views import LoopButton
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
@@ -351,13 +352,15 @@ class Music(commands.Cog):
             title = "Unlooping"
             description = "Unlooping the current queue"
 
+        view = LoopButton(False, player.repeat, player)
+
         embed = discord.Embed(
             title=f"""{await c_get_emoji("regular", "loop")} {title}""",
             description=f"""{description}""",
             timestamp=discord.utils.utcnow(),
             color=await c_get_color("aqua"),
         )
-        await ctx.send(embed=embed)
+        view.bctx = await ctx.send(embed=embed)
 
     @commands.command(
         name="queue",
