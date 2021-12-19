@@ -97,7 +97,7 @@ class SpotifyClient:
                 description=f"""```diff
 - The spotify link {args} was not found. -""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("red"),
+                color=c_get_color("red"),
             )
             return await ctx.send(embed=embed)
 
@@ -112,7 +112,7 @@ class SpotifyClient:
                 title=f"Error",
                 description=f"""Sorry but currently type `{from_url[0]}` is not supported""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("red"),
+                color=c_get_color("red"),
             )
             await ctx.send(embed=not_supported)
 
@@ -168,7 +168,7 @@ class Music(commands.Cog):
 - {error.original} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("red"),
+                color=c_get_color("red"),
             )
             await ctx.send(embed=embed)
             print(error)
@@ -245,11 +245,11 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""Sorry, but nothing was found for the search `{query}`""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("red"),
+                color=c_get_color("red"),
             )
             return await ctx.send(embed=nothing_found)
 
-        embed = discord.Embed(color=await c_get_color())
+        embed = discord.Embed(color=c_get_color())
 
         # Valid loadTypes are:
         #   TRACK_LOADED    - single video/direct URL)
@@ -355,10 +355,10 @@ class Music(commands.Cog):
         view = LoopButton(False, player.repeat, player)
 
         embed = discord.Embed(
-            title=f"""{await c_get_emoji("regular", "loop")} {title}""",
+            title=f"""{c_get_emoji("regular", "loop")} {title}""",
             description=f"""{description}""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color("aqua"),
+            color=c_get_color("aqua"),
         )
         view.bctx = await ctx.send(embed=embed)
 
@@ -385,7 +385,7 @@ class Music(commands.Cog):
                 title=f"Nothing's been Queued!",
                 description=f"""Use the play command to queue more songs!""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("aqua"),
+                color=c_get_color("aqua"),
             )
             return await ctx.send(embed=embed)
 
@@ -400,7 +400,7 @@ class Music(commands.Cog):
 {queue_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color("green"),
+            color=c_get_color("green"),
         )
         embed.set_footer(text=f"""Add the total time and loop info here dumbass""")
         await ctx.send(embed=embed)
@@ -426,7 +426,7 @@ class Music(commands.Cog):
                 description=f"""Nothing is playing!
                 Use `play` to queue a song!""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color("aqua"),
+                color=c_get_color("aqua"),
             )
             await ctx.send(embed=nothing_playing)
 
@@ -437,7 +437,7 @@ class Music(commands.Cog):
             url=current.uri,
             description=f"""Duration: {lavalink.format_time(current.duration)}""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
 
         requester = self.client.get_user(current.requester)

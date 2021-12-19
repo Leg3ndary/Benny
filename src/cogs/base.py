@@ -85,7 +85,7 @@ class Base(commands.Cog):
             {person.public_flags}
             {person.system}""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
         embed.set_thumbnail(url=person.avatar)
         await ctx.send(embed=embed)

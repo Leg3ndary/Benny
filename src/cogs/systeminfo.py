@@ -43,7 +43,7 @@ class SystemInfo(commands.Cog):
 t>system {random.choice(options)}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=await c_get_color(),
+                color=c_get_color(),
             )
             return await ctx.send(embed=embed)
 
@@ -73,7 +73,7 @@ t>system {random.choice(options)}
 = {uname.processor} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -91,7 +91,7 @@ t>system {random.choice(options)}
 = {bt.year}/{bt.month}/{bt.day} {bt.hour}:{bt.minute}:{bt.second} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -125,7 +125,7 @@ t>system {random.choice(options)}
 = {psutil.cpu_percent()}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -151,7 +151,7 @@ t>system {random.choice(options)}
 = {svmem.percent}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -171,7 +171,7 @@ t>system {random.choice(options)}
 = {get_size(disk_io.write_bytes)} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color(),
+            color=c_get_color(),
         )
         for partition in partitions:
             try:

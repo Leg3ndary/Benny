@@ -63,7 +63,7 @@ async def report_error(bot, error_descrip):
         title=f"Error Report",
         description=f"""""",
         timestamp=discord.utils.utcnow(),
-        color=await c_get_color("red"),
+        color=c_get_color("red"),
     )
     embed.set_thumbnail(url=c_get_emoji("image", "cancel"))
     await ben.send(embed=embed)

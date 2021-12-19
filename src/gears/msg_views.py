@@ -21,6 +21,8 @@ class DeleteView(discord.ui.View):
             await self.bctx.delete_original_message()
         await interaction.response.send_message("Message Deleted", ephemeral=True)
 
+
+
 class LoopButton(discord.ui.View):
     """Loop or unloop the queue when this button's pressed"""
     def __init__(self, slash, is_repeat: bool, player):
@@ -31,7 +33,7 @@ class LoopButton(discord.ui.View):
         
         super().__init__()
 
-    @discord.ui.button(emoji=await c_get_emoji("regular", "loop"), label="", style=discord.ButtonStyle.primary)
+    @discord.ui.button(emoji=c_get_emoji("regular", "loop"), label="", style=discord.ButtonStyle.primary)
     async def button_callback(self, button, interaction):
         self.player.set_repeat(not self.is_repeat)
         if not self.is_repeat:
@@ -41,10 +43,10 @@ class LoopButton(discord.ui.View):
         button.label = repeat
         await interaction.response.edit_message(view=self)
         embed = discord.Embed(
-            title=f"""{await c_get_emoji("regular", "loop")} {repeat}ing""",
+            title=f"""{c_get_emoji("regular", "loop")} {repeat}ing""",
             description=f"""{repeat}ing the current queue""",
             timestamp=discord.utils.utcnow(),
-            color=await c_get_color("aqua"),
+            color=c_get_color("aqua"),
         )
         if not self.slash:
             await self.bctx.edit(embed=embed)
