@@ -465,7 +465,13 @@ class Music(commands.Cog):
 
         if not player.is_connected:
             # We can't disconnect, if we're not connected.
-            return await ctx.send("Not connected.")
+            nc = discord.Embed(
+                title=f"Error",
+                description=f"""Not connected, join a voice channel and use the `play` command to get started!""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color()
+            )
+            return await ctx.send(embed=nc)
 
         if not ctx.author.voice or (
             player.is_connected
@@ -473,7 +479,13 @@ class Music(commands.Cog):
         ):
             # Abuse prevention. Users not in voice channels, or not in the same voice channel as the client
             # may not disconnect the client.
-            return await ctx.send("You're not in my voicechannel!")
+            embed = discord.Embed(
+                title=f"Error",
+                description=f""""You're not in my voicechannel!""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color("red")
+            )
+            return await ctx.send(embed=embed, delete_after=10)
 
         # Clear the queue to ensure old tracks don't start playing
         # when someone else queues something.
@@ -483,7 +495,13 @@ class Music(commands.Cog):
         # Disconnect from the voice channel.
         # await ctx.voice_client.cleanup()
         await ctx.voice_client.disconnect(force=True)
-        await ctx.send("*⃣ | Disconnected.")
+        dc = discord.Embed(
+            title=f"Disconnected",
+            description=f"""Disconnected successfully.""",
+            timestamp=discord.utils.utcnow(),
+            color=c_get_color("green")
+        )
+        await ctx.send(embed=dc)
 
 
 def setup(client):
