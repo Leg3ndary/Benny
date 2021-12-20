@@ -1,21 +1,20 @@
-
 import aiohttp
 import os
 
 
-param_dict = {
-    "images": ""
-}
+param_dict = {"images": ""}
 
 
-class UnsplashClient():
+class UnsplashClient:
     """Accessing unsplash"""
+
     def __init__(self):
         self.client_id = os.getenv("UnsplashToken")
         self.latest_header = None
         self.api_url = "https://api.unsplash.com"
 
     """Cache for latest save data from unsplash NOT FINISHED"""
+
     async def set_latest_header(self, header):
         """Set the latest header"""
         self.latest_header = header
@@ -25,7 +24,8 @@ class UnsplashClient():
         return self.latest_header.get("X-Ratelimit-Remaining", -1)
 
     """Regular methods"""
-    async def get_random_photo(self, params: dict={}):
+
+    async def get_random_photo(self, params: dict = {}):
         """Get a completely random photo from unsplash"""
         request_string = await self.to_url(params)
         return await self.request_url(f"""/photos/random/{request_string}""")
@@ -37,7 +37,7 @@ class UnsplashClient():
     async def get_user_profile(self, username: str):
         """Return a public users profile information"""
         return await self.request_url(f"""/users/{username}/""")
-    
+
     async def get_user_portfolio(self, username: str):
         """Return a public users portfolio link"""
         return await self.request_url(f"""/users/{username}/portfolio/""")
@@ -55,7 +55,9 @@ class UnsplashClient():
     async def get_user_collections(self, username: str, params: dict):
         """Returns a list of all the collections a user has made"""
         request_url = await self.to_url(params)
-        return await self.request_url(f"""/users/{username}/collections/{request_url}""")
+        return await self.request_url(
+            f"""/users/{username}/collections/{request_url}"""
+        )
 
     async def get_user_statistics(self, username: str, params: dict):
         """Return a users statistics"""
@@ -71,7 +73,7 @@ class UnsplashClient():
         """Search for collections based on the params given"""
         request_url = await self.to_url(params)
         return await self.request_url(f"""/search/collections/{request_url}""")
-    
+
     async def search_users(self, params: dict):
         """Search for users based on the params given"""
         request_url = await self.to_url(params)
@@ -105,9 +107,7 @@ class UnsplashClient():
 
     async def request_url(self, url: str):
         """Get a url and update latest header"""
-        headers = {
-            "Authorization": f"""Client-ID {self.client_id}"""
-        }
+        headers = {"Authorization": f"""Client-ID {self.client_id}"""}
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.get(self.api_url + url) as request:
                 await self.set_latest_header(request.headers)

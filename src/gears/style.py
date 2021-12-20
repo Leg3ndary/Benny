@@ -87,7 +87,7 @@ emojis = {
         "stop": "<:stop:891088754134089749>",
         "search": "<:search:891088754121506867> ",
         "loop": "<:loop:920515414063218748>",
-        "spotify": "<:spotify:922245976226402306>"
+        "spotify": "<:spotify:922245976226402306>",
     },
     "id": {
         "check": "891088754176036885",
@@ -98,7 +98,7 @@ emojis = {
         "stop": "891088754134089749",
         "search": "891088754121506867",
         "loop": "920515414063218748",
-        "spotify": "922245976226402306"
+        "spotify": "922245976226402306",
     },
     "image": {
         "check": "https://cdn.discordapp.com/emojis/891088754176036885.png?size=256",
@@ -109,6 +109,6 @@ emojis = {
         "stop": "https://cdn.discordapp.com/emojis/891088754134089749.png?size=256",
         "search": "https://cdn.discordapp.com/emojis/891088754121506867.png?size=256",
         "loop": "https://cdn.discordapp.com/emojis/920515414063218748.png?size=256",
-        "spotify": "https://cdn.discordapp.com/emojis/922245976226402306.png?size=256"
+        "spotify": "https://cdn.discordapp.com/emojis/922245976226402306.png?size=256",
     },
 }
