@@ -41,7 +41,7 @@ class Base(commands.Cog):
         embed.set_image(url=user.avatar.url)
         view.bctx = await ctx.send(embed=embed, view=view)
 
-    @slash_command(guild_ids=[787106686535860244])
+    @slash_command()
     async def avatar(
         self, ctx, user: Option(str, "Enter someone's Name", required=False)
     ):
