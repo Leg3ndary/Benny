@@ -8,3 +8,4 @@ python-dotenv==0.19.2
 youtube_dl==2021.6.6
 pymongo[srv]==3.11
 pynacl==1.4.0
+numpy==1.21.5
