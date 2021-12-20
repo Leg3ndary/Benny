@@ -81,7 +81,7 @@ class PlayerManagerView(discord.ui.View):
     )
     async def select_callback(self, select, interaction):
         await interaction.response.send_message(
-            f"Your favourite colour is {select.values[0]}", ephemeral=True
+            f"You selected {select.values[0]}", ephemeral=True
         )
 
     @discord.ui.button(
