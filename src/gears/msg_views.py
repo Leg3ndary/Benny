@@ -1,19 +1,17 @@
 import discord
 from gears.style import c_get_emoji, c_get_color
 
+
 class DeleteView(discord.ui.View):
     """Delete view to delete the message from the bot"""
-    def __init__(self, slash: bool=False):
+
+    def __init__(self, slash: bool = False):
         """ctx: The context object needed to delete the original message"""
         self.bctx = None
         self.slash = slash
         super().__init__()
 
-    @discord.ui.button(
-        emoji="🗑️",
-        label="A button",
-        style=discord.ButtonStyle.danger
-    )
+    @discord.ui.button(emoji="🗑️", label="A button", style=discord.ButtonStyle.danger)
     async def button_callback(self, button, interaction):
         if not self.slash:
             await self.bctx.delete()
@@ -22,18 +20,22 @@ class DeleteView(discord.ui.View):
         await interaction.response.send_message("Message Deleted", ephemeral=True)
 
 
-
 class LoopButton(discord.ui.View):
     """Loop or unloop the queue when this button's pressed"""
+
     def __init__(self, slash, is_repeat: bool, player):
         self.bctx = None
         self.slash = slash
         self.player = player
         self.is_repeat = is_repeat
-        
+
         super().__init__()
 
-    @discord.ui.button(emoji=c_get_emoji("regular", "loop"), label="", style=discord.ButtonStyle.primary)
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "loop"),
+        label="",
+        style=discord.ButtonStyle.primary,
+    )
     async def button_callback(self, button, interaction):
         self.player.set_repeat(not self.is_repeat)
         if not self.is_repeat:
@@ -52,3 +54,69 @@ class LoopButton(discord.ui.View):
             await self.bctx.edit(embed=embed)
         else:
             await self.bctx.delete_original_message(embed=embed)
+
+
+class PlayerManagerView(discord.ui.View):
+    """View to manage a thing (not done)"""
+
+    def __init__(self, player):
+        self.player = player
+        super().__init__()
+
+    @discord.ui.select(
+        placeholder="Select song info",
+        min_values=1,
+        max_values=1,
+        options=[
+            discord.SelectOption(
+                label="Song", description="Selected song 1", emoji="🟥"
+            ),
+            discord.SelectOption(
+                label="Song2", description="selected song 2", emoji="🟩"
+            ),
+            discord.SelectOption(
+                label="Song3", description="seleceted song 3", emoji="🟦"
+            ),
+        ],
+    )
+    async def select_callback(self, select, interaction):
+        await interaction.response.send_message(
+            f"Your favourite colour is {select.values[0]}", ephemeral=True
+        )
+
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "loop"),
+        style=discord.ButtonStyle.primary
+    )
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_message('pretend this was looped', ephemeral=True)
+    
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "left"),
+        style=discord.ButtonStyle.primary
+    )
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_message('pretend this was rewinded to the start', ephemeral=True)
+    
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "stop"),
+        style=discord.ButtonStyle.primary
+    )
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_message('pretend this was stopped', ephemeral=True)
+    
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "right"),
+        style=discord.ButtonStyle.primary
+    )
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_message('pretend this was skipped and moved to the right', ephemeral=True)
+
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "search"),
+        style=discord.ButtonStyle.primary
+    )
+    async def button_callback(self, button, interaction):
+        await interaction.response.send_message('pretend you can now search for something', ephemeral=True)
+    
+    
