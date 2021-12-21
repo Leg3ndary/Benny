@@ -76,7 +76,6 @@ class Base(commands.Cog):
             title=f"{person.name}#{person.discriminator} Info",
             description=f"""
             {person.bot}
-            {person.color}
             {person.created_at}
             {person.display_name}
             {person.id}
@@ -85,7 +84,7 @@ class Base(commands.Cog):
             {person.public_flags}
             {person.system}""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=person.color,
         )
         embed.set_thumbnail(url=person.avatar)
         await ctx.send(embed=embed)
