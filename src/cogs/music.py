@@ -10,9 +10,6 @@ from gears.msg_views import LoopButton
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
 
-
-
-
 class LavalinkVoiceClient(discord.VoiceClient):
     """
     LavalinkVoiceClient that we use to stream music to a discord voice channel
@@ -77,7 +74,6 @@ class LavalinkVoiceClient(discord.VoiceClient):
 
 class SpotifyClient:
     """Convert music into song titles so we can search them accurately"""
-
     def __init__(self, client):
         """Init with a url that we can use"""
         self.client = client
@@ -86,9 +82,20 @@ class SpotifyClient:
             os.getenv("Spotify_ClientID"), os.getenv("Spotify_ClientSecret")
         )
         self.client.spotify = tekore.Spotify(spotify_token, asynchronous=True)
+        self.playlist_limit
 
-    async def search_spotify(self, ctx, args: str):
-        """Search a spotify link and return in the format `title artist`"""
+    async def search_spotify(self, player, ctx, args: str):
+        """
+        Search a spotify link and return in the format `title artist`
+        Parameters
+        ------------
+        Player:
+            The actual player
+        Ctx:
+            Command context
+        Args:
+            The search
+        """
         try:
             from_url = tekore.from_url(args)
         except:
@@ -99,13 +106,75 @@ class SpotifyClient:
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color("red"),
             )
-            return await ctx.send(embed=embed)
+            return await ctx.send(embed=embed, delete_after=10)
+
+
 
         if from_url[0] == "track":
-            pass
+            try:
+                track = await self.bot.spotify.track(from_url[1])
+            except:
+                trackNF = discord.Embed(
+                    title=f"Error",
+                    description=f"""The Spotify link is invalid!""",
+                    timestamp=discord.utils.utcnow(),
+                    color=c_get_color("red")
+                )
+                await ctx.send(embed=trackNF)
+
+            title = track.name
+            artist = track.artists[0].name
+            query = f"{title} {artist}"
+
+            results = await player.node.get_tracks(query)
+
+            if not results or not results["tracks"]:
+                nothing_found = discord.Embed(
+                    title=f"Error",
+                    description=f"""Sorry, but nothing was found for the search `{query}`""",
+                    timestamp=discord.utils.utcnow(),
+                    color=c_get_color("red"),
+                )
+                return await ctx.send(embed=nothing_found, delete_after=10)
+
+            results["tracks"] = results["tracks"][:-(len(results["tracks"])-3)]
+
+            track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
+            player.add(requester=ctx.author.id, track=track)
+            
 
         elif from_url[0] == "playlist":
-            pass
+            playlistId = tekore.from_url(args)
+            try:
+                playlist = await self.bot.spotify.playlist(playlistId[1])
+            except:
+                await ctx.send(f"{self.bot.emojiList.false} {ctx.author.mention} The Spotify playlist is invalid!")
+                return None
+            trackLinks = []
+
+            if self.playlistLimit != 0 and playlist.tracks.total > self.playlistLimit:
+                playlistTL = discord.Embed(
+                    title=f"Error",
+                    description=f"""The playlist is too large!""",
+                    timestamp=discord.utils.utcnow(),
+                    color=c_get_color("red")
+                )
+                return await ctx.send(embed=playlistTL, delete_after=10)
+                
+            await ctx.send(f"{self.bot.emojiList.spotifyLogo} Loading... (This process can take several seconds)", delete_after=60)
+            for i in playlist.tracks.items:
+                title = i.track.name
+                artist = i.track.artists[0].name
+                # Search on youtube
+                track = await self.bot.wavelink.get_tracks(f'ytsearch:{title} {artist}')
+                if track is None:
+                    await ctx.send(f"{self.bot.emojiList.false} {ctx.author.mention} No song found to : `{title} - {artist}` !")
+                else:
+                    trackLinks.append(track[0])
+            if not trackLinks: # if len(trackLinks) == 0:
+                return None
+            return trackLinks
+
 
         else:
             not_supported = discord.Embed(
@@ -116,18 +185,6 @@ class SpotifyClient:
             )
             await ctx.send(embed=not_supported)
 
-        try:
-            track = await self.client.spotify.track(from_url[1])
-        except:
-            await ctx.send(
-                f"{self.client.emojiList.false} {ctx.author.mention} The Spotify link is invalid!"
-            )
-            return None
-        title = track.name
-        artist = track.artists[0].name
-        query = f"{title} {artist}"
-
-        return query
 
 
 class Music(commands.Cog):
@@ -135,7 +192,7 @@ class Music(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-
+        self.search_prefix = client.config.get("Lavalink").get("Search")
         if not hasattr(
             client, "lavalink"
         ):  # This ensures the client isn't overwritten during cog reloads.
@@ -224,8 +281,12 @@ class Music(commands.Cog):
 
             await guild.voice_client.disconnect(force=True)
 
-    @commands.command(aliases=["p"])
-    async def play(self, ctx, *, query: str):
+    @commands.command(
+        name="play",
+        aliases=["p"]
+    )
+    @commands.cooldown(1.0, 1.5, commands.BucketType.user)
+    async def play_cmd(self, ctx, *, query: str):
         """Searches and plays a song from a given query."""
         # Get the player for this guild from cache.
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
@@ -233,13 +294,13 @@ class Music(commands.Cog):
         # Check if the user input might be a URL. If it isn't, we can Lavalink do a YouTube search for it instead.
         # SoundCloud searching is possible by prefixing "scsearch:" instead.
         if not url_rx.match(query):
-            query = f"ytsearch:{query}"
+            query = f"{self.search_prefix}:{query}"
 
         # Get the results for the query from Lavalink.
         results = await player.node.get_tracks(query)
 
         # Results could be None if Lavalink returns an invalid response (non-JSON/non-200 (OK)).
-        # ALternatively, resullts['tracks'] could be an empty array if the query yielded no tracks.
+        # ALternatively, results['tracks'] could be an empty array if the query yielded no tracks.
         if not results or not results["tracks"]:
             nothing_found = discord.Embed(
                 title=f"Error",
@@ -247,7 +308,7 @@ class Music(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color("red"),
             )
-            return await ctx.send(embed=nothing_found)
+            return await ctx.send(embed=nothing_found, delete_after=10)
 
         embed = discord.Embed(color=c_get_color())
 
@@ -287,7 +348,7 @@ class Music(commands.Cog):
 
     @commands.command(
         name="remove",
-        description="""Description of Command""",
+        description="""Remove a song from the queue""",
         help="""Long Help text for this command""",
         brief="""Short help text""",
         usage="Usage",
@@ -296,7 +357,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx, index: int):
+    async def remove_cmd(self, ctx, index: int):
         """Remove command"""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         if not player.queue:
@@ -304,7 +365,7 @@ class Music(commands.Cog):
 
         track = player.queue[index - 1]
 
-        del player.queue[index - 1]  # Account for 0-index.
+        del player.queue[index - 1]
 
         await ctx.send(
             f"Removed {index}. {track.title} [{track.author}] ({lavalink.format_time(track.duration)}) from the queue."
