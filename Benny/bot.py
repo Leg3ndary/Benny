@@ -63,7 +63,7 @@ bot.mongo = AsyncIOMotorClient(mongo_uri)
 print("Initiated Bot DB (Not Loaded)")
 
 
-load_cogs(bot, os.listdir("src/cogs"))
+load_cogs(bot, os.listdir("Benny/cogs"))
 
 
 @bot.event
