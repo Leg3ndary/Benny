@@ -11,7 +11,7 @@ class DeleteView(discord.ui.View):
         self.slash = slash
         super().__init__()
 
-    @discord.ui.button(emoji="🗑️", label="A button", style=discord.ButtonStyle.danger)
+    @discord.ui.button(emoji="🗑️", label="Delete", style=discord.ButtonStyle.danger)
     async def button_callback(self, button, interaction):
         if not self.slash:
             await self.bctx.delete()
@@ -119,4 +119,9 @@ class PlayerManagerView(discord.ui.View):
     async def search_callback(self, button, interaction):
         await interaction.response.send_message('pretend you can now search for something', ephemeral=True)
     
+class QueueSelector(discord.ui.View):
+    """Select a song based on what we show"""
+    def __init__(self):
+        super().__init__()
+
     
