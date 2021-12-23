@@ -9,3 +9,5 @@ youtube_dl==2021.6.6
 pymongo[srv]==3.11
 pynacl==1.4.0
 numpy==1.21.5
+lavalink==3.1.4
+tekore==4.1.0
