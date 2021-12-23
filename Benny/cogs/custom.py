@@ -31,6 +31,7 @@ class CustomCommands(commands.Cog):
         hidden=True,
     )
     @commands.guild_only()
+    @is_tong_guild()
     async def bangurmomthing(self, ctx):
         """Friend said he'd pay me shit to add this"""
         deleteview = DeleteView()
@@ -46,6 +47,7 @@ class CustomCommands(commands.Cog):
         hidden=True,
         aliases=["angurmommy"]
     )
+    @is_tong_guild()
     async def anotherweirdcommand(self, ctx):
         """Send a picture because... idk"""
         deleteview = DeleteView()
