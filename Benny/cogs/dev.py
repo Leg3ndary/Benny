@@ -7,6 +7,7 @@ import traceback
 import unicodedata
 from contextlib import redirect_stdout
 from discord.ext import commands
+from Benny.gears.style import c_get_emoji
 from gears.style import c_get_color
 import os
 
@@ -495,19 +496,30 @@ class Dev(commands.Cog):
                 )
                 return await ctx.send(embed=embed_e3)
 
-    @commands.command()
-    async def botinfo(self, ctx):
-        """Will expand as I go but showing some basic bot info"""
+    @dev.command(
+        name="close",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=["end", "stop"],
+        enabled=True,
+        hidden=True
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def end_bot(self, ctx):
+        """Stopping the bot"""
+        await ctx.message.add_reaction(c_get_emoji("regular", "check"))
         embed = discord.Embed(
-            title=f"Bot Info",
-            description=f"""```json
-{json.dumps(self.bot.file_len_dict, indent=4)}
+            title=f"Shutting Down Bot",
+            description=f"""```diff
+Add stuff here later..
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=c_get_color("red")
         )
         await ctx.send(embed=embed)
-
+        await self.bot.close()
 
 def setup(bot):
     bot.add_cog(Dev(bot))
