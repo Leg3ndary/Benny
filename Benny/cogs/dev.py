@@ -1,14 +1,12 @@
 import discord
 import discord.utils
 import io
-import json
 import textwrap
 import traceback
 import unicodedata
 from contextlib import redirect_stdout
 from discord.ext import commands
-from Benny.gears.style import c_get_emoji
-from gears.style import c_get_color
+from gears.style import c_get_color, c_get_emoji
 import os
 
 
