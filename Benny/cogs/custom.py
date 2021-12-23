@@ -26,7 +26,7 @@ class CustomCommands(commands.Cog):
         help="""abcdefg""",
         brief="""ok""",
         usage="[Ping]",
-        aliases=[],
+        aliases=["angurmom"],
         enabled=True,
         hidden=True,
     )
@@ -35,20 +35,21 @@ class CustomCommands(commands.Cog):
         """Friend said he'd pay me shit to add this"""
         deleteview = DeleteView()
         if not ctx.message.mentions:
-            await ctx.send(f"id bang ur mom {ctx.author.mention}", view=deleteview)
+            deleteview.bctx = await ctx.send(f"id bang ur mom {ctx.author.mention}", view=deleteview)
         else:
             member = ctx.message.mentions[0]
-            await ctx.send(f"id bang ur mom {member.mention}", view=deleteview)
+            deleteview.bctx = await ctx.send(f"id bang ur mom {member.mention}", view=deleteview)
     
     @commands.command(
         name="bangurmommy",
         enabled=True,
-        hidden=True
+        hidden=True,
+        aliases=["angurmommy"]
     )
     async def anotherweirdcommand(self, ctx):
         """Send a picture because... idk"""
         deleteview = DeleteView()
-        await ctx.send("https://media.discordapp.net/attachments/839606979457450024/923705170553077840/9400DB00-2E69-49FC-B1BB-985496EA56C5.png?width=198&height=429", view=deleteview)
+        deleteview.bctx = await ctx.send("https://media.discordapp.net/attachments/839606979457450024/923705170553077840/9400DB00-2E69-49FC-B1BB-985496EA56C5.png?width=198&height=429", view=deleteview)
 
 
 def setup(bot):
