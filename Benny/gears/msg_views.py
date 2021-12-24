@@ -160,7 +160,7 @@ class PlayerDropdown(discord.ui.Select):
         )
 
         self.disabled = True
-        await self.ctx.message.edit(embed=embed, view=self)
+        await interaction.response.edit(embed=embed)
 
         track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)
         self.player.add(requester=self.ctx.author.id, track=track)
@@ -173,3 +173,8 @@ class PlayerSelector(discord.ui.View):
         super().__init__()
 
         self.add_item(PlayerDropdown(ctx, player, songs))
+
+    async def interaction_check(self, interaction):
+        if interaction.user != self.ctx.author:
+            return False
+        return True
