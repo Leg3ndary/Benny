@@ -332,7 +332,7 @@ class Music(commands.Cog):
             )
         else:
             track = results["tracks"][0]
-            print(track)
+            print(results)
             embed.title = "Track Enqueued"
             embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]})'
 
