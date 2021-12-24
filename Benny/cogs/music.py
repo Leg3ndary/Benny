@@ -349,9 +349,13 @@ class Music(commands.Cog):
 
         else:
             ps_view = PlayerSelector(ctx, player, results["tracks"][:5])
-            await ctx.send("THingy", view=ps_view)
-
-
+            embed = discord.Embed(
+                title=f"Thingy",
+                description=f"""Work please idiot""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color()
+            )
+            await ctx.send(embed=embed, view=ps_view)
 
 
         # We don't want to call .play() if the player is playing as that will effectively skip the current track.
