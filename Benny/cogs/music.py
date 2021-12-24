@@ -31,7 +31,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
         else:
             self.client.lavalink = lavalink.Client(889672871620780082)
             self.client.lavalink.add_node(
-                "localhost", 2333, os.getenv("Lavalink_Password"), "na", "default-node"
+                "localhost", 2333, "BennyBotRoot", "na", "default-node"
             )
             self.lavalink = self.client.lavalink
 
