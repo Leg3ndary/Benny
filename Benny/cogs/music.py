@@ -348,8 +348,10 @@ class Music(commands.Cog):
 
 
         else:
-            ps_view = PlayerSelector(ctx, player, results["tracks"][:5])
-            await ctx.send("THingy", view=ps_view)
+            track = results["tracks"][0]
+            print(results)
+            embed.title = "Track Enqueued"
+            embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]})'
 
 
 
