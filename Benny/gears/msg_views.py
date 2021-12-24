@@ -69,10 +69,10 @@ class PlayerManagerView(discord.ui.View):
         max_values=1,
         options=[
             discord.SelectOption(
-                label="Song", description="Selected song 1", emoji="🟥"
+                label="Song Name", description="Artist and duration", emoji="🟥"
             ),
             discord.SelectOption(
-                label="Song2", description="selected song 2", emoji="🟩"
+                label="Song Name 2", description="selected song 2", emoji="🟩"
             ),
             discord.SelectOption(
                 label="Song3", description="seleceted song 3", emoji="🟦"
@@ -85,7 +85,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "loop"), style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "loop"), style=discord.ButtonStyle.green
     )
     async def loop_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -93,7 +93,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "left"), style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "left"), style=discord.ButtonStyle.grey
     )
     async def left_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -101,7 +101,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "stop"), style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "stop"), style=discord.ButtonStyle.red
     )
     async def stop_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -109,7 +109,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "right"), style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "right"), style=discord.ButtonStyle.grey
     )
     async def right_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -117,7 +117,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "search"), style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "search"), style=discord.ButtonStyle.blurple
     )
     async def search_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -126,7 +126,7 @@ class PlayerManagerView(discord.ui.View):
 
 
 class QueueSelector(discord.ui.View):
-    """Select a song based on what we show"""
+    """Select a song based on what we show from track results."""
 
     def __init__(self):
         super().__init__()
