@@ -4,11 +4,16 @@ import os
 import re
 import tekore
 from discord.ext import commands
-from gears.msg_views import LoopButton
+from gears.msg_views import LoopButton, PlayerSelector
 from gears.style import c_get_color, c_get_emoji
 
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
+
+
+async def send_play_command(ctx, player):
+    """Send the play command with relevant information"""
+
 
 
 class LavalinkVoiceClient(discord.VoiceClient):
@@ -26,7 +31,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
         else:
             self.client.lavalink = lavalink.Client(889672871620780082)
             self.client.lavalink.add_node(
-                "localhost", 2333, "TestingPass", "na", "default-node"
+                "localhost", 2333, os.getenv("Lavalink_Password"), "na", "default-node"
             )
             self.lavalink = self.client.lavalink
 
@@ -137,7 +142,6 @@ class SpotifyClient:
                 )
                 return await ctx.send(embed=nothing_found, delete_after=10)
 
-            results["tracks"] = results["tracks"][: -(len(results["tracks"]) - 3)]
 
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
             player.add(requester=ctx.author.id, track=track)
@@ -197,22 +201,24 @@ class Music(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.search_prefix = client.config.get("Lavalink").get("Search")
+        # This ensures the client isn't overwritten during cog reloads
         if not hasattr(
             client, "lavalink"
-        ):  # This ensures the client isn't overwritten during cog reloads.
+        ):
             client.lavalink = lavalink.Client(889672871620780082)
+            # Host, Port, Password, Region, Name
             client.lavalink.add_node(
-                "localhost", 2333, "TestingPass", "na", "default-node"
-            )  # Host, Port, Password, Region, Name
+                "localhost", 2333, os.getenv("Lavalink_Password"), "na", "default-node"
+            )
 
         lavalink.add_event_hook(self.track_hook)
 
     def cog_unload(self):
-        """Cog unload handler. This removes any event hooks that were registered."""
+        """Cog unload handler. This removes any event hooks that were registered"""
         self.client.lavalink._event_hooks.clear()
 
     async def cog_before_invoke(self, ctx):
-        """A guild only"""
+        """A guild only check"""
         guild_check = ctx.guild is not None
 
         if guild_check:
@@ -285,23 +291,28 @@ class Music(commands.Cog):
 
             await guild.voice_client.disconnect(force=True)
 
-    @commands.command(name="play", aliases=["p"])
+    @commands.command(
+        name="play", 
+        aliases=["p"]
+    )
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, query: str):
         """Searches and plays a song from a given query."""
-        # Get the player for this guild from cache.
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         query = query.strip("<>")
-        # Check if the user input might be a URL. If it isn't, we can Lavalink do a YouTube search for it instead.
-        # SoundCloud searching is possible by prefixing "scsearch:" instead.
+        # ytsearch or scsearch
         if not url_rx.match(query):
+            # Treat as a regular search
             query = f"{self.search_prefix}:{query}"
+        
+        else:
+            # Is a link...
+            query = ""
 
         # Get the results for the query from Lavalink.
         results = await player.node.get_tracks(query)
 
-        # Results could be None if Lavalink returns an invalid response (non-JSON/non-200 (OK)).
-        # ALternatively, results['tracks'] could be an empty array if the query yielded no tracks.
+        # Results could be None if Lavalink returns an invalid response results['tracks'] could be an empty array if the query yielded no tracks
         if not results or not results["tracks"]:
             nothing_found = discord.Embed(
                 title=f"Error",
@@ -326,26 +337,39 @@ class Music(commands.Cog):
                 # Add all of the tracks from the playlist to the queue.
                 player.add(requester=ctx.author.id, track=track)
 
-            embed.title = "Playlist Enqueued!"
+            embed.title = "Playlist Queued!"
             embed.description = (
                 f'{results["playlistInfo"]["name"]} - {len(tracks)} tracks'
             )
+
+            await ctx.send(embed=embed)
+
+
+
+
         else:
-            track = results["tracks"][0]
-            embed.title = "Track Enqueued"
-            embed.description = f'[{track["info"]["title"]}]({track["info"]["uri"]})'
+            ps_view = PlayerSelector(ctx, player, results["tracks"][:5])
+            await ctx.send("THingy", view=ps_view)
 
-            # You can attach additional information to audiotracks through kwargs, however this involves
-            # constructing the AudioTrack class yourself.
-            track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
-            player.add(requester=ctx.author.id, track=track)
 
-        await ctx.send(embed=embed)
 
-        # We don't want to call .play() if the player is playing as that will effectively skip
-        # the current track.
+
+        # We don't want to call .play() if the player is playing as that will effectively skip the current track.
         if not player.is_playing:
             await player.play()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     @commands.command(
         name="remove",

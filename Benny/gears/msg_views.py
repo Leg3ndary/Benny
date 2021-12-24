@@ -1,4 +1,5 @@
 import discord
+import lavalink
 from gears.style import c_get_emoji, c_get_color
 
 
@@ -124,9 +125,51 @@ class PlayerManagerView(discord.ui.View):
             "pretend you can now search for something", ephemeral=True
         )
 
+class PlayerDropdown(discord.ui.Select):
+    def __init__(self, ctx, player, songs: list):
+        self.ctx = ctx
+        self.player = player
+        self.songs = songs
+        options = []
+        counter = 0
+        for song in songs:
+            options.append(
+                discord.SelectOption(
+                    label=song["info"]["title"],
+                    description=f"""{song["info"]["author"]} - Duration: {lavalink.format_time(song["info"]["length"])}""",
+                    value=str(counter)
+                )
+            )
+            counter += 1
 
-class QueueSelector(discord.ui.View):
+        super().__init__(
+            placeholder="Select a Song", 
+            min_values=1, 
+            max_values=1, 
+            options=options
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        track = self.songs[int(self.values[0])]
+        
+        embed = discord.Embed(
+            title=f"Track Queued",
+            description=f"""[{track["info"]["title"]}]({track["info"]["uri"]})""",
+            timestamp=discord.utils.utcnow(),
+            color=c_get_color()
+        )
+        #await self.ctx.message.edit(embed=embed, view=)
+        self.disabled = True
+        await interaction.response.edit_message(embed=embed, view=self)
+
+        track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)
+        self.player.add(requester=self.ctx.author.id, track=track)
+
+
+class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
-    def __init__(self):
+    def __init__(self, songs: list):
         super().__init__()
+
+        self.add_item(PlayerDropdown(songs))
