@@ -160,7 +160,7 @@ class PlayerDropdown(discord.ui.Select):
         )
 
         self.disabled = True
-        await interaction.response.edit_message(embed=embed, view=self)
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
         track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)
         self.player.add(requester=self.ctx.author.id, track=track)
