@@ -208,7 +208,7 @@ class Music(commands.Cog):
             client.lavalink = lavalink.Client(889672871620780082)
             # Host, Port, Password, Region, Name
             client.lavalink.add_node(
-                "localhost", 2333, os.getenv("Lavalink_Password"), "na", "default-node"
+                "localhost", 2333, "BennyBotRoot", "na", "default-node"
             )
 
         lavalink.add_event_hook(self.track_hook)
