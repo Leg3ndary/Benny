@@ -296,10 +296,10 @@ class Music(commands.Cog):
         aliases=["p"]
     )
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
-    async def play_cmd(self, ctx, *, query: str):
+    async def play_cmd(self, ctx, *, args: str):
         """Searches and plays a song from a given query."""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        query = query.strip("<>")
+        query = args.strip("<>")
         # ytsearch or scsearch
         if not url_rx.match(query):
             # Treat as a regular search
@@ -348,10 +348,13 @@ class Music(commands.Cog):
 
 
         else:
-            ps_view = PlayerSelector(ctx, player, results["tracks"][:5])
+            ps_view = PlayerSelector(ctx, player, results["tracks"][:10])
             embed = discord.Embed(
-                title=f"Thingy",
-                description=f"""Work please idiot""",
+                title=f"Select a Song to Play",
+                description=f"""```asciidoc
+= Showing Song Results =
+[ {args} ]
+```""",
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color()
             )
