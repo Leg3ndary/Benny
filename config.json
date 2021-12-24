@@ -7,6 +7,6 @@
         "URL": "mongodb+srv://<Username>:<Password>@shrimpe.7z62m.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
     },
     "Lavalink": {
-        "Search": "ytsearch"
+        "Search": "scsearch"
     }
 }
