@@ -170,6 +170,7 @@ class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
     def __init__(self, ctx, player, songs: list):
+        self.ctx = ctx
         super().__init__()
 
         self.add_item(PlayerDropdown(ctx, player, songs))
