@@ -502,7 +502,7 @@ class Dev(commands.Cog):
         usage="Usage",
         aliases=["end", "stop"],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def end_bot(self, ctx):
@@ -514,10 +514,11 @@ class Dev(commands.Cog):
 Add stuff here later..
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("red")
+            color=c_get_color("red"),
         )
         await ctx.send(embed=embed)
         await self.bot.close()
+
 
 def setup(bot):
     bot.add_cog(Dev(bot))

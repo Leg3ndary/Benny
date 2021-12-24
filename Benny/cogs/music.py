@@ -74,6 +74,7 @@ class LavalinkVoiceClient(discord.VoiceClient):
 
 class SpotifyClient:
     """Convert music into song titles so we can search them accurately"""
+
     def __init__(self, client):
         """Init with a url that we can use"""
         self.client = client
@@ -108,8 +109,6 @@ class SpotifyClient:
             )
             return await ctx.send(embed=embed, delete_after=10)
 
-
-
         if from_url[0] == "track":
             try:
                 track = await self.bot.spotify.track(from_url[1])
@@ -118,7 +117,7 @@ class SpotifyClient:
                     title=f"Error",
                     description=f"""The Spotify link is invalid!""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("red")
+                    color=c_get_color("red"),
                 )
                 await ctx.send(embed=trackNF)
 
@@ -137,18 +136,19 @@ class SpotifyClient:
                 )
                 return await ctx.send(embed=nothing_found, delete_after=10)
 
-            results["tracks"] = results["tracks"][:-(len(results["tracks"])-3)]
+            results["tracks"] = results["tracks"][: -(len(results["tracks"]) - 3)]
 
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
             player.add(requester=ctx.author.id, track=track)
-            
 
         elif from_url[0] == "playlist":
             playlistId = tekore.from_url(args)
             try:
                 playlist = await self.bot.spotify.playlist(playlistId[1])
             except:
-                await ctx.send(f"{self.bot.emojiList.false} {ctx.author.mention} The Spotify playlist is invalid!")
+                await ctx.send(
+                    f"{self.bot.emojiList.false} {ctx.author.mention} The Spotify playlist is invalid!"
+                )
                 return None
             trackLinks = []
 
@@ -157,24 +157,28 @@ class SpotifyClient:
                     title=f"Error",
                     description=f"""The playlist is too large!""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("red")
+                    color=c_get_color("red"),
                 )
                 return await ctx.send(embed=playlistTL, delete_after=10)
-                
-            await ctx.send(f"{self.bot.emojiList.spotifyLogo} Loading... (This process can take several seconds)", delete_after=60)
+
+            await ctx.send(
+                f"{self.bot.emojiList.spotifyLogo} Loading... (This process can take several seconds)",
+                delete_after=60,
+            )
             for i in playlist.tracks.items:
                 title = i.track.name
                 artist = i.track.artists[0].name
                 # Search on youtube
-                track = await self.bot.wavelink.get_tracks(f'ytsearch:{title} {artist}')
+                track = await self.bot.wavelink.get_tracks(f"ytsearch:{title} {artist}")
                 if track is None:
-                    await ctx.send(f"{self.bot.emojiList.false} {ctx.author.mention} No song found to : `{title} - {artist}` !")
+                    await ctx.send(
+                        f"{self.bot.emojiList.false} {ctx.author.mention} No song found to : `{title} - {artist}` !"
+                    )
                 else:
                     trackLinks.append(track[0])
-            if not trackLinks: # if len(trackLinks) == 0:
+            if not trackLinks:  # if len(trackLinks) == 0:
                 return None
             return trackLinks
-
 
         else:
             not_supported = discord.Embed(
@@ -184,7 +188,6 @@ class SpotifyClient:
                 color=c_get_color("red"),
             )
             await ctx.send(embed=not_supported)
-
 
 
 class Music(commands.Cog):
@@ -281,10 +284,7 @@ class Music(commands.Cog):
 
             await guild.voice_client.disconnect(force=True)
 
-    @commands.command(
-        name="play",
-        aliases=["p"]
-    )
+    @commands.command(name="play", aliases=["p"])
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, query: str):
         """Searches and plays a song from a given query."""
@@ -530,7 +530,7 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""Not connected, join a voice channel and use the `play` command to get started!""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color()
+                color=c_get_color(),
             )
             return await ctx.send(embed=nc)
 
@@ -544,7 +544,7 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f""""You're not in my voicechannel!""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red")
+                color=c_get_color("red"),
             )
             return await ctx.send(embed=embed, delete_after=10)
 
@@ -560,7 +560,7 @@ class Music(commands.Cog):
             title=f"Disconnected",
             description=f"""Disconnected successfully.""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("green")
+            color=c_get_color("green"),
         )
         await ctx.send(embed=dc)
 

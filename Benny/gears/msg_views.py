@@ -85,43 +85,48 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "loop"),
-        style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "loop"), style=discord.ButtonStyle.primary
     )
     async def loop_callback(self, button, interaction):
-        await interaction.response.send_message('pretend this was looped', ephemeral=True)
-    
+        await interaction.response.send_message(
+            "pretend this was looped", ephemeral=True
+        )
+
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "left"),
-        style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "left"), style=discord.ButtonStyle.primary
     )
     async def left_callback(self, button, interaction):
-        await interaction.response.send_message('pretend this was rewinded to the start', ephemeral=True)
-    
+        await interaction.response.send_message(
+            "pretend this was rewinded to the start", ephemeral=True
+        )
+
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "stop"),
-        style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "stop"), style=discord.ButtonStyle.primary
     )
     async def stop_callback(self, button, interaction):
-        await interaction.response.send_message('pretend this was stopped', ephemeral=True)
-    
+        await interaction.response.send_message(
+            "pretend this was stopped", ephemeral=True
+        )
+
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "right"),
-        style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "right"), style=discord.ButtonStyle.primary
     )
     async def right_callback(self, button, interaction):
-        await interaction.response.send_message('pretend this was skipped and moved to the right', ephemeral=True)
+        await interaction.response.send_message(
+            "pretend this was skipped and moved to the right", ephemeral=True
+        )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "search"),
-        style=discord.ButtonStyle.primary
+        emoji=c_get_emoji("regular", "search"), style=discord.ButtonStyle.primary
     )
     async def search_callback(self, button, interaction):
-        await interaction.response.send_message('pretend you can now search for something', ephemeral=True)
-    
+        await interaction.response.send_message(
+            "pretend you can now search for something", ephemeral=True
+        )
+
+
 class QueueSelector(discord.ui.View):
     """Select a song based on what we show"""
+
     def __init__(self):
         super().__init__()
-
-    
