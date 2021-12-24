@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from gears.useful import load_cogs
 from motor.motor_asyncio import AsyncIOMotorClient
 
+
 load_dotenv()
 
 config = json.load(open("config.json"))

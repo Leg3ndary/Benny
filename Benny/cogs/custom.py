@@ -1,11 +1,10 @@
 import asyncio
 import discord
-from discord import guild
 import discord.utils
+from discord import guild
 from discord.ext import commands
 from gears.msg_views import DeleteView
 from gears.style import c_get_color, c_get_emoji
-from gears.msg_views import DeleteView
 
 
 def is_tong_guild():

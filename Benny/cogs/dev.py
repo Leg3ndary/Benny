@@ -1,13 +1,13 @@
 import discord
 import discord.utils
 import io
+import os
 import textwrap
 import traceback
 import unicodedata
 from contextlib import redirect_stdout
 from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
-import os
 
 
 def cleanup_code(content):

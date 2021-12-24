@@ -1,11 +1,12 @@
-import re
-import os
 import discord
 import lavalink
-from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+import os
+import re
 import tekore
+from discord.ext import commands
 from gears.msg_views import LoopButton
+from gears.style import c_get_color, c_get_emoji
+
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
