@@ -493,13 +493,14 @@ class Music(commands.Cog):
         queue_visual = ""
 
         total_duration = 0
+        total_duration += player.current.duration
 
         for count, track in enumerate(queue, 1):
             queue_visual = f"{queue_visual}\n{count}. {track.title} [{track.author}] ({lavalink.format_time(track.duration)})"
             total_duration += track.duration
 
         embed = discord.Embed(
-            title=f"Queue - {len(queue)}",
+            title=f"Queue - {len(queue)} Tracks",
             description=f"""```md
 {queue_visual}
 ```""",
@@ -520,7 +521,7 @@ class Music(commands.Cog):
             Shuffle {semoji}""",
             inline=False
         )
-        embed.set_footer(text=f"""Total Duration: {lavalink.format_time(track.duration)}""")
+        embed.set_footer(text=f"""Total Duration: {lavalink.format_time(total_duration)}""")
         await ctx.send(embed=embed)
 
     @commands.command(
