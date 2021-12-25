@@ -75,6 +75,37 @@ class PlaylistManager:
             await db.execute("""INSERT INTO playlists VALUES(?, ?, 0, "");""", (user_id, playlist_name))
             await db.commit()
             return("SUCCESS")
+
+    async def delete_playlist(self, user_id: int, playlist_name: str) -> str:
+        """
+        Delete a playlist in our database
+
+        Parameters
+        ----------
+        user_id: int
+            The users ID
+        playlist_name: str
+            The name of the playlist to delete
+        
+        Returns
+        -------
+        str
+
+        SUCCESS:
+            Succeeded
+        ERROR:
+            Errored, .split(":")[1] will get you the reason
+        """
+        async with aiosqlite.connect("music.db") as db:
+            async with db.execute("""SELECT id, name FROM playlists WHERE id = ?;""", (int(user_id), )) as cursor:
+                rows = await cursor.fetchall()
+                if len(rows) == 0:
+                    return(f"ERROR:You don't have any playlists to delete!")
+                print(rows)
+
+            await db.execute("""DELETE FROM playlists VALUES(?, ?, 0, "");""", (user_id, playlist_name))
+            await db.commit()
+            return("SUCCESS")
             
     
     async def add_song(self, user_id: int, playlist_name: str, song: str) -> str:
