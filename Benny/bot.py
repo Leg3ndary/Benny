@@ -72,9 +72,9 @@ async def on_ready():
     """On ready tell us"""
     print(bot)
     print(type(bot))
-    await bot.dispatch("load_musicdb")
+    bot.dispatch("load_musicdb")
     print(bot.musicdb)
-    await bot.dispatch("load_playlists")
+    bot.dispatch("load_playlists")
     print(f"Bot {bot.user} logged in.")
     
 

@@ -301,8 +301,8 @@ class Music(commands.Cog):
     async def on_load_musicdb(self):
         """Load the music db and create a connection"""
         self.client.musicdb = await aiosqlite.connect("music.db")
-        
-        print("Loaded musicdb and added to Bot")
+
+        print("Connected to musicdb")
 
     @commands.command(
         name="play", 
