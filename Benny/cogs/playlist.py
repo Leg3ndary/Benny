@@ -119,7 +119,7 @@ class PlaylistManager:
         list
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("SELECT * FROM playlists WHERE id = ?;", (int(user_id), )) as cursor:
+            async with db.execute("SELECT * FROM playlists WHERE id = ?;", (int(user_id),)) as cursor:
                 playlists = await cursor.fetchall()
                 return playlists
                 
@@ -136,8 +136,8 @@ class Playlist(commands.Cog):
     @commands.Cog.listener()
     async def on_load_playlists(self):
         """Load up playlist related stuff"""
-        cursor = await self.bot.musicdb.cursor()
-        await cursor.execute("""CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);""")
+        async with aiosqlite.connect("music.db") as db:
+            await db.execute("""CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);""")
         print("Playlists Table Loaded")
 
 

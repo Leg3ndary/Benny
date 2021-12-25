@@ -302,6 +302,7 @@ class Music(commands.Cog):
         """Load the music db and create a connection"""
         self.client.musicdb = await aiosqlite.connect("music.db")
 
+
         print("Connected to musicdb")
 
     @commands.command(
