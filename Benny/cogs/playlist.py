@@ -73,6 +73,7 @@ class PlaylistManager:
                     return(f"ERROR:You can only create {self.PLAYLIST_LIMIT} playlists!")
 
             await db.execute("""INSERT INTO playlists VALUES(?, ?, 0, "");""", (user_id, playlist_name))
+            await db.commit()
             return("SUCCESS")
             
     
