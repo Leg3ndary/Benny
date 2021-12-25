@@ -71,9 +71,7 @@ load_cogs(bot, os.listdir("Benny/cogs"))
 async def on_ready():
     """On ready tell us"""
     print(f"Bot {bot.user} logged in.")
-
-
-bot.dispatch("load_musicdb")
-bot.dispatch("check_playlists")
+    await bot.dispatch("load_musicdb")
+    await bot.dispatch("check_playlists")
 
 bot.run(os.getenv("Bot_Token"))
