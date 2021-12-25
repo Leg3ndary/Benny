@@ -348,7 +348,7 @@ class Music(commands.Cog):
 
 
         else:
-            ps_view = PlayerSelector(ctx, player, results["tracks"][:10])
+            ps_view = PlayerSelector(ctx, player, results["tracks"][:25])
             embed = discord.Embed(
                 title=f"Select a Song to Play",
                 description=f"""```asciidoc
@@ -359,11 +359,6 @@ class Music(commands.Cog):
                 color=c_get_color()
             )
             ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
-
-
-
-
-
 
     @commands.command(
         name="remove",

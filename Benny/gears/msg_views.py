@@ -58,7 +58,7 @@ class LoopButton(discord.ui.View):
 
 
 class PlayerManagerView(discord.ui.View):
-    """View to manage a thing (not done)"""
+    """View to manage player from a specific guild (not done)"""
 
     def __init__(self, player):
         self.player = player
@@ -126,6 +126,8 @@ class PlayerManagerView(discord.ui.View):
         )
 
 class PlayerDropdown(discord.ui.Select):
+    """Shows up to 25 songs in a select"""
+
     def __init__(self, ctx, player, songs: list):
         self.ctx = ctx
         self.player = player
