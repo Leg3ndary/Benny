@@ -67,12 +67,12 @@ class PlaylistManager:
             Errored, .split(":")[1] will get you the reason
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("SELECT id FROM playlists WHERE id = ?;", (int(user_id), )) as cursor:
+            async with db.execute("""SELECT id FROM playlists WHERE id = ?;""", (int(user_id), )) as cursor:
                 length = len(await cursor.fetchall())
                 if length > self.PLAYLIST_LIMIT:
                     return(f"ERROR:You can only create {self.PLAYLIST_LIMIT} playlists!")
 
-            await db.execute("INSERT INTO playlists VALUES(?, ?, 0, "");", (user_id, playlist_name))
+            await db.execute("""INSERT INTO playlists VALUES(?, ?, 0, "");""", (user_id, playlist_name))
             return("SUCCESS")
             
     
@@ -101,7 +101,7 @@ class PlaylistManager:
         # Cleaning out commas in which we use as delimiters.
         song = song.replace(",", "")
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("SELECT id") as cursor:
+            async with db.execute("""SELECT id""") as cursor:
                 cursor
 
 
@@ -119,7 +119,7 @@ class PlaylistManager:
         list
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("SELECT * FROM playlists WHERE id = ?;", (int(user_id),)) as cursor:
+            async with db.execute("""SELECT * FROM playlists WHERE id = ?;""", (int(user_id),)) as cursor:
                 playlists = await cursor.fetchall()
                 return playlists
                 
