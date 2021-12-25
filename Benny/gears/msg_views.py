@@ -168,7 +168,7 @@ class PlayerDropdown(discord.ui.Select):
             name=track["info"]["author"]
         )
         embed.set_footer(
-            text=self.ctx.author.display_name, icon_url=self.ctx.display_avatar.url
+            text=self.ctx.author.display_name, icon_url=self.ctx.author.display_avatar.url
         )
 
         track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)
