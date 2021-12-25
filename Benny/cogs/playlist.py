@@ -42,7 +42,7 @@ class PlaylistManager:
     """
     def __init__(self) -> None:
         """Constructs all the necessary attributes for the PlaylistManager"""
-        self.PLAYLIST_SONG_LIMIT = 300
+        self.PLAYLIST_SONG_LIMIT = 100
         self.PLAYLIST_LIMIT = 5
         self.SONG_NAME_LIMIT = 50
 
@@ -97,13 +97,10 @@ class PlaylistManager:
             Errored, .split(":")[1] will get you the reason
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT id, name FROM playlists WHERE id = ?;""", (int(user_id), )) as cursor:
-                rows = await cursor.fetchall()
-                if len(rows) == 0:
-                    return(f"ERROR:You don't have any playlists to delete!")
-                print(rows)
-
-            await db.execute("""DELETE FROM playlists WHERE name=?""", (playlist_name, ))
+            async with db.execute("""SELECT id, name FROM playlists WHERE id = ? and name = ?;""", (int(user_id), playlist_name)) as cursor:
+                if not cursor.fetchall():
+                    return(f"ERROR:No playlist by the name of {playlist_name} was found!")
+            await db.execute("""DELETE FROM playlists WHERE name = ?;""", (playlist_name, ))
             await db.commit()
             return("SUCCESS")
             
@@ -164,7 +161,6 @@ class Playlist(commands.Cog):
         self.bot = bot
         self.playlistmanager = PlaylistManager()
 
-
     @commands.Cog.listener()
     async def on_load_playlists(self):
         """Load up playlist related stuff"""
@@ -186,8 +182,13 @@ class Playlist(commands.Cog):
     async def playlist_manage(self, ctx):
         """Command description"""
         if not ctx.invoked_subcommand:
-            async with aiosqlite.connect("playlists.db") as db:
-                await db.execute()
+            embed = discord.Embed(
+                title=f"Playlists",
+                description=f"""add stuff here later idiot""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color()
+            )
+            await ctx.send(embed=embed)
 
     @playlist_manage.command(
         name="create",
@@ -277,13 +278,19 @@ class Playlist(commands.Cog):
         await ctx.send(playlists)
         print(playlists)
 
+        visual = ""
+        async for line in self.bot.musicdb.iterdump():
+            visual += f"\n{line}"
+
         embed = discord.Embed(
-            title=f"",
-            description=f"""""",
+            title=f"Testing",
+            description=f"""```
+{visual}
+```""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color()
         )
-        #await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
         
     
 
