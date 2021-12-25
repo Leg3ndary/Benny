@@ -1,3 +1,4 @@
+from discord.activity import Streaming
 from gears.style import c_get_color, c_get_emoji
 import discord.utils
 import discord
@@ -122,3 +123,15 @@ def match_calc(string1, string2):
         len(string1) + len(string2)
     )
     return int(ratio * 100)
+
+def remove_zcs(string: str):
+    """Remove leading zeros and colons"""
+
+    split = ""
+
+    for i in string:
+        if i in ["0", ":"]:
+            split += i
+        else:
+            break
+    return string.split(split)[1]

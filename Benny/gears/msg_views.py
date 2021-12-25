@@ -1,6 +1,7 @@
 import discord
 import lavalink
 from gears.style import c_get_emoji, c_get_color
+from gears.useful import remove_zcs
 
 
 class DeleteView(discord.ui.View):
@@ -138,7 +139,7 @@ class PlayerDropdown(discord.ui.Select):
             options.append(
                 discord.SelectOption(
                     label=song["info"]["title"],
-                    description=f"""{song["info"]["author"]} - Duration: {lavalink.format_time(song["info"]["length"])}""",
+                    description=f"""{song["info"]["author"]} - Duration: {remove_zcs(lavalink.format_time(song["info"]["length"]))}""",
                     value=str(counter)
                 )
             )
@@ -159,7 +160,7 @@ class PlayerDropdown(discord.ui.Select):
             url=track["info"]["uri"],
             description=f"""```asciidoc
 [ {track["info"]["title"]} ]
-= Duration: {lavalink.format_time(track["info"]["length"])} =
+= Duration: {remove_zcs(lavalink.format_time(track["info"]["length"]))} =
 ```""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color("green")
