@@ -509,7 +509,7 @@ class Music(commands.Cog):
             current = player.current
 
             embed = discord.Embed(
-                title=f"Track Queued",
+                title=f"Now Playing",
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
