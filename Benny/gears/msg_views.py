@@ -159,11 +159,9 @@ class PlayerDropdown(discord.ui.Select):
             color=c_get_color()
         )
 
-        self.disabled = True
-
         track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)
         self.player.add(requester=self.ctx.author.id, track=track)
-        await interaction.response.edit_message(embed=embed, view=self.view)
+        await interaction.response.edit_message(embed=embed, view=None)
 
         # We don't want to call .play() if the player is playing as that will effectively skip the current track.
         if not self.player.is_playing:
@@ -181,11 +179,13 @@ class PlayerSelector(discord.ui.View):
         self.add_item(PlayerDropdown(ctx, player, songs))
 
     async def interaction_check(self, interaction):
+        """If the interaction isn't by the user, return a fail."""
         if interaction.user != self.ctx.author:
             return False
         return True
 
-    @discord.ui.button(emoji=c_get_emoji("regular", "cancel"), label="Cancel", style=discord.ButtonStyle.danger)
+    @discord.ui.button(emoji=c_get_emoji("regular", "cancel"), label="Cancel", style=discord.ButtonStyle.danger, row=2)
     async def button_callback(self, button, interaction):
-        await interaction.response.delete_original_message()
+        """Delete the message if clicked"""
+        await interaction.delete_original_message()
     
