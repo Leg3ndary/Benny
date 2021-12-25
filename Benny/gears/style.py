@@ -32,6 +32,7 @@ colors = {
     "purple": 0xB10DC9,
     "black": 0x111111,
     "gray": 0xAAAAAA,
+    "grey": 0xAAAAAA,
     "silver": 0xDDDDDD,
     "white": 0xFFFFFF,
 }
