@@ -375,15 +375,41 @@ class Music(commands.Cog):
         """Remove command"""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         if not player.queue:
-            return await ctx.send("Nothing queued.")
+            nothing_playing = discord.Embed(
+                title=f"Nothing is queued!",
+                description=f"""Use `play` to queue a song!""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color("aqua"),
+            )
+            return await ctx.send(embed=nothing_playing)
 
         track = player.queue[index - 1]
 
         del player.queue[index - 1]
 
-        await ctx.send(
-            f"Removed {index}. {track.title} [{track.author}] ({lavalink.format_time(track.duration)}) from the queue."
+        embed = discord.Embed(
+            title=f"Removed {index}.",
+            url=track.uri,
+            description=f"""```asciidoc
+[ {track.title} ]
+= Duration: {lavalink.format_time(track.duration)} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=c_get_color("red")
         )
+        embed.set_author(
+            name=track.author
+        )
+
+        requester = self.client.get_user(track.requester)
+
+        if not requester:
+            requester = await self.client.fetch_user(track.requester)
+
+        embed.set_footer(
+            text=requester.display_name, icon_url=requester.display_avatar.url
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(
         name="skip",
@@ -466,18 +492,35 @@ class Music(commands.Cog):
 
         queue_visual = ""
 
+        total_duration = 0
+
         for count, track in enumerate(queue, 1):
             queue_visual = f"{queue_visual}\n{count}. {track.title} [{track.author}] ({lavalink.format_time(track.duration)})"
+            total_duration += track.duration
 
         embed = discord.Embed(
-            title=f"Queue",
+            title=f"Queue - {len(queue)}",
             description=f"""```md
 {queue_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color("green"),
         )
-        embed.set_footer(text=f"""Add the total time and loop info here dumbass""")
+        if player.repeat:
+            lemoji = c_get_color("regular", "check")
+        else:
+            lemoji = c_get_color("regular", "cancel")
+        if player.shuffle:
+            semoji = c_get_color("regular", "check")
+        else:
+            semoji = c_get_color("regular", "cancel")
+        embed.add_field(
+            name="Other Info",
+            value=f"""Loop {lemoji}
+            Shuffle {semoji}""",
+            inline=False
+        )
+        embed.set_footer(text=f"""Total Duration: {lavalink.format_time(track.duration)}""")
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -497,11 +540,10 @@ class Music(commands.Cog):
 
         if not player.is_playing:
             nothing_playing = discord.Embed(
-                title=f"",
-                description=f"""Nothing is playing!
-                Use `play` to queue a song!""",
+                title=f"Nothing is playing!",
+                description=f"""Use `play` to queue a song!""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("aqua"),
+                color=c_get_color("aqua")
             )
             return await ctx.send(embed=nothing_playing)
 
@@ -549,9 +591,9 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""Not connected, join a voice channel and use the `play` command to get started!""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=c_get_color("red"),
             )
-            return await ctx.send(embed=nc)
+            return await ctx.send(embed=nc, delete_after=10)
 
         if not ctx.author.voice or (
             player.is_connected

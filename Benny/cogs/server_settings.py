@@ -24,7 +24,7 @@ DELETE FROM playlists WHERE plays <= 1;
 """
 
 """
-    CREATE TABLE prefixes(server_id integer NOT NULL, prefix1 text DEFAULT , )
+CREATE TABLE prefixes(server_id integer NOT NULL, prefix1 text DEFAULT , )
 
 """
 
@@ -41,12 +41,27 @@ class ServerSettings(commands.Cog):
         help="""NMot done""",
         brief="""also not done :eyes:""",
         usage="Usage",
-        aliases=["None"],
+        aliases=[],
         enabled=True,
         hidden=False,
     )
     async def prefix_manage(self, ctx):
         """Command description"""
+
+    @prefix_manage.command(
+        name="CommandName",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=["None"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def my_command(self, ctx):
+        """Command description"""
+
 
 
 def setup(bot):
