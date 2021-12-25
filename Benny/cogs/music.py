@@ -11,9 +11,13 @@ from gears.style import c_get_color, c_get_emoji
 url_rx = re.compile(r"https?://(?:www\.)?.+")
 
 
-async def send_play_command(ctx, player):
-    """Send the play command with relevant information"""
-
+def get_size(bytes, suffix="B"):
+    """Return the correct data from bytes"""
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if bytes < factor:
+            return f"{bytes:.2f}{unit}{suffix}"
+        bytes /= factor
 
 
 class LavalinkVoiceClient(discord.VoiceClient):
@@ -625,6 +629,47 @@ class Music(commands.Cog):
             color=c_get_color("green"),
         )
         await ctx.send(embed=dc)
+
+    @commands.command(
+        name="musicstats",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def musicstats_cmd(self, ctx):
+        """Show music stats"""
+        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+
+        stats = player.node.stats
+        embed = discord.Embed(
+            title=f"Lavalink Statistics",
+            description=f"""```yaml
+Uptime: {lavalink.format_time(stats.uptime)}
+Players: {stats.players}
+
+Memory Free: {get_size(stats.memory_free)}
+Memory Used: {get_size(stats.memory_used)}
+Memory Allocated: {get_size(stats.memory_allocated)}
+Memory Reservable: {get_size(stats.memory_reservable)}
+
+CPU Cores: {stats.cpu_cores}
+Total System Load: {stats.system_load}
+Lavalink System Load: {stats.lavalink_load}
+
+Frames Sent to Discord: {stats.frames_sent}
+Empty Frames: {stats.frames_nulled}
+Missing Frames: {stats.frames_deficit}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=c_get_color()
+        )
+        await ctx.send(embed=embed)
+
 
 
 def setup(client):
