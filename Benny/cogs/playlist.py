@@ -150,8 +150,9 @@ class Playlist(commands.Cog):
     )
     async def playlist_manage(self, ctx):
         """Command description"""
-        async with aiosqlite.connect("playlists.db") as db:
-            await db.execute()
+        if not ctx.invoked_subcommand:
+            async with aiosqlite.connect("playlists.db") as db:
+                await db.execute()
 
     @playlist_manage.command(
         name="create",
@@ -164,7 +165,7 @@ class Playlist(commands.Cog):
         hidden=False
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def create_playlist(self, ctx, playlist_name: str):
+    async def create_playlist(self, ctx, *, playlist_name: str):
         """Create a playlist"""
         c_status = await self.playlistmanager.create_playlist(ctx.author.id, playlist_name)
         if c_status == "SUCCESS":
