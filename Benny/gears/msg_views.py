@@ -187,5 +187,5 @@ class PlayerSelector(discord.ui.View):
     @discord.ui.button(emoji=c_get_emoji("regular", "cancel"), label="Cancel", style=discord.ButtonStyle.danger, row=2)
     async def button_callback(self, button, interaction):
         """Delete the message if clicked"""
-        await interaction.delete_original_message()
+        await self.ctx.message.delete()
     
