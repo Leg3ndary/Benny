@@ -132,11 +132,6 @@ class Playlist(commands.Cog):
         self.bot = bot
         self.playlistmanager = PlaylistManager()
 
-    @commands.Cog.listener()
-    async def on_check_playlists(self):
-        """Make sure table exists"""
-        await self.bot.musicdb.execute("""CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);""")
-        print("Playlists Table Loaded")
 
     @commands.group(
         name="playlist",

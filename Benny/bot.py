@@ -72,6 +72,5 @@ async def on_ready():
     """On ready tell us"""
     print(f"Bot {bot.user} logged in.")
     await bot.dispatch("load_musicdb")
-    await bot.dispatch("check_playlists")
 
 bot.run(os.getenv("Bot_Token"))
