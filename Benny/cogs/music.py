@@ -1,3 +1,4 @@
+import aiosqlite
 import discord
 import lavalink
 import os
@@ -295,6 +296,12 @@ class Music(commands.Cog):
             guild = self.client.get_guild(guild_id)
 
             await guild.voice_client.disconnect(force=True)
+
+    @commands.Cog.listener()
+    async def on_load_musicdb(self):
+        """Load the music db and create a connection"""
+        self.bot.musicdb = await aiosqlite.connect("music.db")
+        print("Loaded musicdb and added to Bot")
 
     @commands.command(
         name="play", 

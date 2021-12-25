@@ -73,12 +73,7 @@ async def on_ready():
     print(f"Bot {bot.user} logged in.")
 
 
-@bot.event
-async def on_cache_prefixes():
-    """Cache Prefixes"""
-    prefix_db = bot.mongo["Prefixes"]
-
-
-# bot.dispatch("cache_prefixes")
+bot.dispatch("load_musicdb")
+bot.dispatch("check_playlists")
 
 bot.run(os.getenv("Bot_Token"))

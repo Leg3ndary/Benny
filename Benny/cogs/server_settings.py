@@ -24,7 +24,7 @@ DELETE FROM playlists WHERE plays <= 1;
 """
 
 """
-CREATE TABLE prefixes(server_id integer NOT NULL, prefix1 text DEFAULT , )
+CREATE TABLE prefixes(server_id integer NOT NULL PRIMARY KEY, prefix1 text DEFAULT , )
 
 """
 
