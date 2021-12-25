@@ -70,9 +70,12 @@ load_cogs(bot, os.listdir("Benny/cogs"))
 @bot.event
 async def on_ready():
     """On ready tell us"""
-    print(f"Bot {bot.user} logged in.")
+    print(bot)
+    print(type(bot))
     await bot.dispatch("load_musicdb")
     await bot.dispatch("load_playlists")
+    print(f"Bot {bot.user} logged in.")
+    
 
 
 
