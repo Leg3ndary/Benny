@@ -516,7 +516,7 @@ class Music(commands.Cog):
 = Duration: {lavalink.format_time(current.duration)} =
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green")
+                color=c_get_color()
             )
             embed.set_author(
                 name=current.author
@@ -530,8 +530,6 @@ class Music(commands.Cog):
             embed.set_footer(
                 text=requester.display_name, icon_url=requester.display_avatar.url
             )
-
-            embed.add_field(name="Other tings", value="Other tings", inline=False)
             await ctx.send(embed=embed)
 
     @commands.command(name="disconnect", aliases=["dc"])
