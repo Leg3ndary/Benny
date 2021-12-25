@@ -165,7 +165,7 @@ class PlayerDropdown(discord.ui.Select):
             color=c_get_color("green")
         )
         embed.set_author(
-            text=track["info"]["author"]
+            name=track["info"]["author"]
         )
         embed.set_footer(
             text=self.ctx.author.display_name, icon_url=self.ctx.display_avatar.url

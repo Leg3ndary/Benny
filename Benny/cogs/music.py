@@ -519,7 +519,7 @@ class Music(commands.Cog):
                 color=c_get_color("green")
             )
             embed.set_author(
-                text=current.author
+                name=current.author
             )
 
             requester = self.client.get_user(current.requester)
