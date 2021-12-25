@@ -73,7 +73,6 @@ async def on_ready():
     print(bot)
     print(type(bot))
     bot.dispatch("load_musicdb")
-    print(bot.musicdb)
     bot.dispatch("load_playlists")
     print(f"Bot {bot.user} logged in.")
     
