@@ -339,7 +339,7 @@ class Music(commands.Cog):
 
             embed.title = "Playlist Queued!"
             embed.description = (
-                f'{results["playlistInfo"]["name"]} - {len(tracks)} tracks'
+                f"""{results["playlistInfo"]["name"]} - {len(tracks)} tracks"""
             )
 
             await ctx.send(embed=embed)
@@ -359,19 +359,6 @@ class Music(commands.Cog):
                 color=c_get_color()
             )
             await ctx.send(embed=embed, view=ps_view)
-
-
-        # We don't want to call .play() if the player is playing as that will effectively skip the current track.
-        if not player.is_playing:
-            await player.play()
-
-
-
-
-
-
-
-
 
 
 

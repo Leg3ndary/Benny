@@ -165,12 +165,17 @@ class PlayerDropdown(discord.ui.Select):
         self.player.add(requester=self.ctx.author.id, track=track)
         await interaction.response.edit_message(embed=embed, view=self.view)
 
+        # We don't want to call .play() if the player is playing as that will effectively skip the current track.
+        if not self.player.is_playing:
+            await self.player.play()
+
 
 class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
     def __init__(self, ctx, player, songs: list):
         self.ctx = ctx
+        self.timeout = 60
         super().__init__()
 
         self.add_item(PlayerDropdown(ctx, player, songs))
@@ -179,3 +184,8 @@ class PlayerSelector(discord.ui.View):
         if interaction.user != self.ctx.author:
             return False
         return True
+
+    @discord.ui.button(emoji=c_get_emoji("regular", "cancel"), label="Cancel", style=discord.ButtonStyle.danger)
+    async def button_callback(self, button, interaction):
+        await interaction.response.delete_original_message()
+    
