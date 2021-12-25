@@ -507,13 +507,13 @@ class Music(commands.Cog):
             color=c_get_color("green"),
         )
         if player.repeat:
-            lemoji = c_get_color("regular", "check")
+            lemoji = c_get_emoji("regular", "check")
         else:
-            lemoji = c_get_color("regular", "cancel")
+            lemoji = c_get_emoji("regular", "cancel")
         if player.shuffle:
-            semoji = c_get_color("regular", "check")
+            semoji = c_get_emoji("regular", "check")
         else:
-            semoji = c_get_color("regular", "cancel")
+            semoji = c_get_emoji("regular", "cancel")
         embed.add_field(
             name="Other Info",
             value=f"""Loop {lemoji}
