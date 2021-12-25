@@ -103,7 +103,7 @@ class PlaylistManager:
                     return(f"ERROR:You don't have any playlists to delete!")
                 print(rows)
 
-            await db.execute("""DELETE FROM playlists VALUES(?, ?, 0, "");""", (user_id, playlist_name))
+            await db.execute("""DELETE FROM playlists WHERE name=?""", (playlist_name, ))
             await db.commit()
             return("SUCCESS")
             
@@ -222,7 +222,42 @@ class Playlist(commands.Cog):
                 color=c_get_color("red")
             )
             await ctx.send(embed=embed)
+    
+    @playlist_manage.command(
+        name="delete",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=["d"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def delete_playist(self, ctx, *, playlist_name: str):
+        """Create a playlist"""
+        c_status = await self.playlistmanager.delete_playlist(ctx.author.id, playlist_name)
+        if c_status == "SUCCESS":
+            embed = discord.Embed(
+                title=f"Delete Playlist",
+                description=f"""Deleted playlist `{playlist_name}`""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color("green")
+            )
+            await ctx.send(embed=embed)
+
+        else:
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""```diff
+- {c_status.split(":")[1]} -
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color("red")
+            )
+            await ctx.send(embed=embed)
             
+
     @playlist_manage.command(
         name="list",
         description="""Shows a list of all the playlists a user has.""",
