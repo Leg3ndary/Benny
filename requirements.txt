@@ -11,3 +11,4 @@ pynacl==1.4.0
 numpy==1.21.5
 lavalink==3.1.4
 tekore==4.1.0
+aiosqlite==0.17.0
