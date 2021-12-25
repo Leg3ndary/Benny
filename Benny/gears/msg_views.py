@@ -156,9 +156,19 @@ class PlayerDropdown(discord.ui.Select):
         
         embed = discord.Embed(
             title=f"Track Queued",
-            description=f"""[{track["info"]["title"]}]({track["info"]["uri"]})""",
+            url=track["info"]["uri"],
+            description=f"""```asciidoc
+[ {track["info"]["title"]} ]
+= Duration: {lavalink.format_time(track["info"]["duration"])} =
+```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color()
+            color=c_get_color("green")
+        )
+        embed.set_author(
+            text=track["info"]["author"]
+        )
+        embed.set_footer(
+            text=self.ctx.author.display_name, icon_url=self.ctx.display_avatar.url
         )
 
         track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)

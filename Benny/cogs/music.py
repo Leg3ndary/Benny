@@ -352,11 +352,11 @@ class Music(commands.Cog):
             embed = discord.Embed(
                 title=f"Select a Song to Play",
                 description=f"""```asciidoc
-= Showing Song Results =
+= Showing Song Results for: =
 [ {args} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color()
+                color=c_get_color("grey")
             )
             ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
 
@@ -503,29 +503,36 @@ class Music(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color("aqua"),
             )
-            await ctx.send(embed=nothing_playing)
+            return await ctx.send(embed=nothing_playing)
 
-        current = player.current
+        else:
+            current = player.current
 
-        embed = discord.Embed(
-            title=f"{current.title} - {current.author}",
-            url=current.uri,
-            description=f"""Duration: {lavalink.format_time(current.duration)}""",
-            timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
-        )
+            embed = discord.Embed(
+                title=f"Track Queued",
+                url=current.uri,
+                description=f"""```asciidoc
+[ {current.title} ]
+= Duration: {lavalink.format_time(current.duration)} =
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=c_get_color("green")
+            )
+            embed.set_author(
+                text=current.author
+            )
 
-        requester = self.client.get_user(current.requester)
+            requester = self.client.get_user(current.requester)
 
-        if not requester:
-            requester = await self.client.fetch_user(current.requester)
+            if not requester:
+                requester = await self.client.fetch_user(current.requester)
 
-        embed.set_footer(
-            text=requester.display_name, icon_url=requester.display_avatar.url
-        )
+            embed.set_footer(
+                text=requester.display_name, icon_url=requester.display_avatar.url
+            )
 
-        embed.add_field(name="Other tings", value="Other tings", inline=False)
-        await ctx.send(embed=embed)
+            embed.add_field(name="Other tings", value="Other tings", inline=False)
+            await ctx.send(embed=embed)
 
     @commands.command(name="disconnect", aliases=["dc"])
     async def disconnect_cmd(self, ctx):
