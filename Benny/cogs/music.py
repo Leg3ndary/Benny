@@ -302,9 +302,6 @@ class Music(commands.Cog):
         """Load the music db and create a connection"""
         self.client.musicdb = await aiosqlite.connect("music.db")
         
-        await self.client.musicdb.execute("""CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);""")
-        print("Playlists Table Loaded")
-        
         print("Loaded musicdb and added to Bot")
 
     @commands.command(

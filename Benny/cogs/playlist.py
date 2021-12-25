@@ -133,6 +133,14 @@ class Playlist(commands.Cog):
         self.playlistmanager = PlaylistManager()
 
 
+    @commands.Cog.listener()
+    async def on_load_playlists(self):
+        """Load up playlist related stuff"""
+        cursor = await self.bot.musicdb.cursor()
+        await cursor.execute("""CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);""")
+        print("Playlists Table Loaded")
+
+
     @commands.group(
         name="playlist",
         description="""Manage playlists""",
