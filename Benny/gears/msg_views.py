@@ -159,7 +159,7 @@ class PlayerDropdown(discord.ui.Select):
             url=track["info"]["uri"],
             description=f"""```asciidoc
 [ {track["info"]["title"]} ]
-= Duration: {lavalink.format_time(track["info"]["duration"])} =
+= Duration: {lavalink.format_time(track["info"]["length"])} =
 ```""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color("green")
