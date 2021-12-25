@@ -174,6 +174,7 @@ class PlayerSelector(discord.ui.View):
     def __init__(self, ctx, player, songs: list):
         self.ctx = ctx
         self.timeout = 60
+        self.play_embed = None
         super().__init__()
 
         self.add_item(PlayerDropdown(ctx, player, songs))
@@ -187,5 +188,5 @@ class PlayerSelector(discord.ui.View):
     @discord.ui.button(emoji=c_get_emoji("regular", "cancel"), label="Cancel", style=discord.ButtonStyle.danger, row=2)
     async def button_callback(self, button, interaction):
         """Delete the message if clicked"""
-        await self.ctx.message.delete()
+        await self.play_embed.delete()
     

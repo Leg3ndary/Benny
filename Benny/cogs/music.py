@@ -358,7 +358,7 @@ class Music(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color()
             )
-            await ctx.send(embed=embed, view=ps_view)
+            ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
 
 
 
