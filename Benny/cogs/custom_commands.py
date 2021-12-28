@@ -13,6 +13,12 @@ def is_tong_guild():
 
     return commands.check(guild_check)
 
+def is_development():
+    def guild_check(ctx):
+        return ctx.guild.id == 839605885700669441
+
+    return commands.check(guild_check)
+
 
 class CustomCommands(commands.Cog):
     """Custom commands that could be removed"""
@@ -54,6 +60,25 @@ class CustomCommands(commands.Cog):
         deleteview = DeleteView()
         deleteview.bctx = await ctx.send(
             "https://media.discordapp.net/attachments/839606979457450024/923705170553077840/9400DB00-2E69-49FC-B1BB-985496EA56C5.png?width=198&height=429",
+            view=deleteview,
+        )
+
+    @commands.command(
+        name="angurmother",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def my_command(self, ctx):
+        """Command description"""
+        deleteview = DeleteView()
+        deleteview.bctx = await ctx.send(
+            "https://media.discordapp.net/attachments/839605885700669444/925219138572550144/IMG_2617.png?width=372&height=661",
             view=deleteview,
         )
 
