@@ -401,12 +401,12 @@ Add stuff here later..
         """Restart Bot"""
         embed = discord.Embed(
             title=f"Restarting...",
-            description=f"""Restarting the bot. Running `restart.sh`""",
+            description=f"""Restarting the bot. Running `Benny/restart.sh`""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color("green")
         )
         await ctx.send(embed=embed)
-        os.system("bash restart.sh")
+        os.system("bash Benny/restart.sh")
 
 
 def setup(bot):
