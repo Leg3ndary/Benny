@@ -387,7 +387,7 @@ Add stuff here later..
         await ctx.send(embed=embed)
         await self.bot.close()
 
-    @commands.command(
+    @dev.command(
         name="restart",
         description="""restart the bot by running an sh script""",
         help="""Long Help text for this command""",
