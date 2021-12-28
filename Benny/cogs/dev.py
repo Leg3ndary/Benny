@@ -10,14 +10,28 @@ from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
 
 
-def cleanup_code(content):
-    """Automatically removes code blocks from the code"""
+def cleanup_code(content: str) -> str:
+    """
+    Automatically removes code blocks from the code
+    
+    Parameters
+    ----------
+    content: str
+        The message/content that we need to remove the code block from
+
+    Returns
+    -------
+    str
+        The cleaned content
+    """
     if content.startswith("```") and content.endswith("```"):
         return "\n".join(content.split("\n")[1:-1])
 
 
 class Dev(commands.Cog):
-    """Commands that are for bot development"""
+    """
+    Commands that are for bot development
+    """
 
     def __init__(self, bot):
         self.bot = bot
@@ -216,151 +230,6 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @dev.group()
-    async def status(self, ctx):
-        """Set a status for the bot"""
-        if not ctx.invoked_subcommand:
-            await ctx.send_help("dev status")
-
-    @status.command()
-    async def playing(self, ctx, *, status: str):
-        """Set a playing status"""
-        try:
-            await self.bot.change_presence(activity=discord.Game(name=status))
-            embed = discord.Embed(
-                title="Status Changed",
-                description=f"""Changed successfully.""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
-            )
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            embed_error = discord.Embed(
-                title="Status Change Fail",
-                description=f"""Failed
-```diff
-- {e}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
-            )
-            await ctx.send(embed=embed_error)
-
-    @status.command()
-    async def streaming(self, ctx, url: str, *, status: str):
-        """Set a streaming status"""
-        try:
-            await self.bot.change_presence(
-                activity=discord.Streaming(name=status, url=url)
-            )
-            embed = discord.Embed(
-                title="Status Changed",
-                description=f"""Changed successfully.""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
-            )
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            embed_error = discord.Embed(
-                title="Status Change Fail",
-                description=f"""Failed
-```diff
-- {e}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
-            )
-            await ctx.send(embed=embed_error)
-
-    @status.command()
-    async def listening(self, ctx, *, status: str):
-        """Set a listening status"""
-        try:
-            await self.bot.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.listening, name=status
-                )
-            )
-            embed = discord.Embed(
-                title="Status Changed",
-                description=f"""Changed successfully.""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
-            )
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            embed_error = discord.Embed(
-                title="Status Change Fail",
-                description=f"""Failed
-```diff
-- {e}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
-            )
-            await ctx.send(embed=embed_error)
-
-    @status.command()
-    async def competing(self, ctx, *, status: str):
-        """Set a competing status"""
-        try:
-            await self.bot.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.competing, name=status
-                )
-            )
-            embed = discord.Embed(
-                title="Status Changed",
-                description=f"""Changed successfully.""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
-            )
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            embed_error = discord.Embed(
-                title="Status Change Fail",
-                description=f"""Failed
-```diff
-- {e}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
-            )
-            await ctx.send(embed=embed_error)
-
-    @status.command()
-    async def watching(self, ctx, *, status: str):
-        """Set a watching status"""
-        try:
-            await self.bot.change_presence(
-                activity=discord.Activity(
-                    type=discord.ActivityType.watching, name=status
-                )
-            )
-            embed = discord.Embed(
-                title="Status Changed",
-                description=f"""Changed successfully.""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
-            )
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            embed_error = discord.Embed(
-                title="Status Change Fail",
-                description=f"""Failed
-```diff
-- {e}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
-            )
-            await ctx.send(embed=embed_error)
-
     @dev.command()
     async def leave(self, ctx, *, guild: discord.Guild):
         """Leave a guild."""
@@ -411,7 +280,7 @@ class Dev(commands.Cog):
 
     @commands.command(name="eval", aliases=["exec"])
     @commands.is_owner()
-    async def _eval(self, ctx, *, code: str):
+    async def eval_cmd(self, ctx, *, code: str):
         """Evaluates code given"""
 
         if "```py" not in code:
@@ -504,7 +373,6 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def end_bot(self, ctx):
         """Stopping the bot"""
         await ctx.message.add_reaction(c_get_emoji("regular", "check"))
@@ -518,6 +386,27 @@ Add stuff here later..
         )
         await ctx.send(embed=embed)
         await self.bot.close()
+
+    @commands.command(
+        name="restart",
+        description="""restart the bot by running an sh script""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
+    async def dev_restart(self, ctx):
+        """Restart Bot"""
+        embed = discord.Embed(
+            title=f"Restarting...",
+            description=f"""Restarting the bot. Running `restart.sh`""",
+            timestamp=discord.utils.utcnow(),
+            color=c_get_color("green")
+        )
+        await ctx.send(embed=embed)
+        os.system("bash restart.sh")
 
 
 def setup(bot):
