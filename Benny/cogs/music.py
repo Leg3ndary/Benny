@@ -1,3 +1,4 @@
+import asyncio
 import aiosqlite
 import discord
 import lavalink
@@ -206,6 +207,7 @@ class Music(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.client.expiring_players = []
         self.search_prefix = client.config.get("Lavalink").get("Search")
         # This ensures the client isn't overwritten during cog reloads
         if not hasattr(
@@ -289,21 +291,46 @@ class Music(commands.Cog):
 
     async def track_hook(self, event):
         if isinstance(event, lavalink.events.QueueEndEvent):
-            # When this track_hook receives a "QueueEndEvent" from lavalink.py
-            # it indicates that there are no tracks left in the player's queue.
-            # To save on resources, we can tell the client to disconnect from the voicechannel.
+            # We check if its already in our expired things, then if not then we add it and start the dispatch
             guild_id = int(event.player.guild_id)
-            guild = self.client.get_guild(guild_id)
+            
+            if guild_id in self.client.expired_players:
+                pass
+            else:
+                self.client.expired_players.append(guild_id)
+                self.client.dispatch("expire_player", guild_id)
+                
 
-            await guild.voice_client.disconnect(force=True)
 
     @commands.Cog.listener()
     async def on_load_musicdb(self):
         """Load the music db and create a connection"""
         self.client.musicdb = await aiosqlite.connect("music.db")
-
-
         print("Connected to musicdb")
+
+    @commands.Cog.listener()
+    async def on_expire_player(self, guild_id: int):
+        """Expire players when we dispatch it, we check after 180 seconds"""
+        print("Recieved expire_player dispatch")
+        await asyncio.sleep(5.0)
+        if guild_id in self.client.expired_players:
+            print("worked")
+            guild = self.client.get_guild(guild_id)
+            await guild.voice_client.disconnect(force=True)
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        """When everyones left a voice channel, also leave in 3 minutes, also remove from expired_players if someone rejoins"""
+        player = self.client.lavalink.player_manager.get(member.guild.id)
+    
+        if before.channel.id == player.channel_id and not after.channel:
+            if member.guild.id in self.client.expired_players:
+                pass
+            else:
+                self.client.expired_players.append(member.guild.id)
+                self.client.dispatch("expire_player", member.guild.id)
+        if after.channel.id == player.channel_id:
+            pass
 
     @commands.command(
         name="play", 
@@ -312,6 +339,10 @@ class Music(commands.Cog):
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, args: str):
         """Searches and plays a song from a given query."""
+
+        if ctx.guild.id in self.client.expired_players:
+            self.client.expired_players.remove(ctx.guild.id)
+
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         query = args.strip("<>")
         # ytsearch or scsearch
