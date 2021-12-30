@@ -325,14 +325,16 @@ class Music(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
         player = self.client.lavalink.player_manager.get(member.guild.id)
-    
-        if before.channel.id == player.channel_id and not after.channel:
-            if member.guild.id in self.client.expiring_players:
+        try:
+            if before.channel.id == player.channel_id and not after.channel:
+                if member.guild.id in self.client.expiring_players:
+                    pass
+                else:
+                    self.client.expiring_players.append(member.guild.id)
+                    self.client.dispatch("expire_player", member.guild.id)
+            if after.channel.id == player.channel_id:
                 pass
-            else:
-                self.client.expiring_players.append(member.guild.id)
-                self.client.dispatch("expire_player", member.guild.id)
-        if after.channel.id == player.channel_id:
+        except AttributeError:
             pass
 
     @commands.command(
