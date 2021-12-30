@@ -42,8 +42,6 @@ class LavalinkVoiceClient(discord.VoiceClient):
             )
             self.lavalink = self.client.lavalink
 
-        self.client
-
     async def on_voice_server_update(self, data):
         """The data needs to be transformed before being handed down to voice_update_handler"""
         lavalink_data = {"t": "VOICE_SERVER_UPDATE", "d": data}
@@ -317,7 +315,7 @@ class Music(commands.Cog):
         print("Recieved expire_player dispatch")
         await asyncio.sleep(5.0)
         if guild_id in self.client.expiring_players:
-            print("worked")
+            print("disconnected :)")
             guild = self.client.get_guild(guild_id)
             await guild.voice_client.disconnect(force=True)
 
@@ -326,13 +324,15 @@ class Music(commands.Cog):
         """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
         player = self.client.lavalink.player_manager.get(member.guild.id)
         try:
-            if before.channel.id == player.channel_id and not after.channel:
+            print(before.channel.id)
+            print(after.channel.id)
+            if before.channel.id == int(player.channel_id) and not after.channel:
                 if member.guild.id in self.client.expiring_players:
                     pass
                 else:
                     self.client.expiring_players.append(member.guild.id)
                     self.client.dispatch("expire_player", member.guild.id)
-            if after.channel.id == player.channel_id:
+            if after.channel.id == int(player.channel_id):
                 pass
         except AttributeError:
             pass
