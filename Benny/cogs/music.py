@@ -294,10 +294,10 @@ class Music(commands.Cog):
             # We check if its already in our expired things, then if not then we add it and start the dispatch
             guild_id = int(event.player.guild_id)
             
-            if guild_id in self.client.expired_players:
+            if guild_id in self.client.expiring_players:
                 pass
             else:
-                self.client.expired_players.append(guild_id)
+                self.client.expiring_players.append(guild_id)
                 self.client.dispatch("expire_player", guild_id)
                 
 
@@ -313,21 +313,21 @@ class Music(commands.Cog):
         """Expire players when we dispatch it, we check after 180 seconds"""
         print("Recieved expire_player dispatch")
         await asyncio.sleep(5.0)
-        if guild_id in self.client.expired_players:
+        if guild_id in self.client.expiring_players:
             print("worked")
             guild = self.client.get_guild(guild_id)
             await guild.voice_client.disconnect(force=True)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        """When everyones left a voice channel, also leave in 3 minutes, also remove from expired_players if someone rejoins"""
+        """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
         player = self.client.lavalink.player_manager.get(member.guild.id)
     
         if before.channel.id == player.channel_id and not after.channel:
-            if member.guild.id in self.client.expired_players:
+            if member.guild.id in self.client.expiring_players:
                 pass
             else:
-                self.client.expired_players.append(member.guild.id)
+                self.client.expiring_players.append(member.guild.id)
                 self.client.dispatch("expire_player", member.guild.id)
         if after.channel.id == player.channel_id:
             pass
@@ -340,8 +340,8 @@ class Music(commands.Cog):
     async def play_cmd(self, ctx, *, args: str):
         """Searches and plays a song from a given query."""
 
-        if ctx.guild.id in self.client.expired_players:
-            self.client.expired_players.remove(ctx.guild.id)
+        if ctx.guild.id in self.client.expiring_players:
+            self.client.expiring_players.remove(ctx.guild.id)
 
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         query = args.strip("<>")
