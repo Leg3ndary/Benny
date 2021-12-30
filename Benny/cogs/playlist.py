@@ -6,9 +6,13 @@ from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
 
 
-
 """
-CREATE TABLE playlists(id integer NOT NULL, playlist_name text NOT NULL, songs text NOT NULL);
+
+CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);
+INSERT INTO playlists VALUES(1, "playlistttt", 0, "");
+INSERT INTO playlists VALUES(3, "another playlist", 0, "song, song2, song33333333");
+INSERT INTO playlists VALUES(1235551, "somethingelse", 5, "i like it like that, sdasdasd");
+CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);
 
 INSERT INTO tablename VALUES(values go here);
 INSERT INTO playlists VALUES(id, playlist_name, songs);
@@ -42,7 +46,7 @@ class PlaylistManager:
     """
     def __init__(self) -> None:
         """Constructs all the necessary attributes for the PlaylistManager"""
-        self.PLAYLIST_SONG_LIMIT = 100
+        self.PLAYLIST_SONG_LIMIT = 150
         self.PLAYLIST_LIMIT = 5
         self.SONG_NAME_LIMIT = 50
 
@@ -129,9 +133,78 @@ class PlaylistManager:
         """
         # Cleaning out commas in which we use as delimiters.
         song = song.replace(",", "")
+
+        if len(song) > self.SONG_NAME_LIMIT:
+            return(f"ERROR:Please limit the song name to 50 characters ({self.SONG_NAME_LIMIT} currently)")
+
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT id""") as cursor:
-                cursor
+            async with db.execute("""SELECT * FROM playlists WHERE id = ? AND name = ?""", (int(user_id), playlist_name)) as cursor:
+                if not await cursor.fetch():
+                    return(f"ERROR:You have no playlists named {playlist_name}!")
+                else:
+                    # Songs index is no 3
+                    data = await cursor.fetch()
+                    songs_length = data[3].count(", ")
+                    if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
+                        return(f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})")
+                    elif songs_length == 0:
+                        prefix = ""
+                    else:
+                        prefix = ", "
+            await db.execute(f"""INSERT INTO playlists VALUES(?, ?, ?, ?);""", (data[0], data[1], data[2], data[4].append(prefix + song)))
+            await db.commit()
+            return(f"SUCCESS")
+    
+    async def delete_song(self, user_id: int, playlist_name: str, song_index ) -> str:
+        """
+        Add a song to a playlist by ID
+
+        Parameters
+        ----------
+        user_id: int
+            The users ID
+        playlist_name: str
+            The name of the playlist
+        song_index: str
+            The song/index that will be removed from the playlist
+            If a str, then will search for it in the playlist and remove.
+            If an index, will only remove that index
+        NOT DONE
+        Returns
+        -------
+        str
+
+        SUCCESS:
+            Succeeded
+        ERROR:
+            Errored, .split(":")[1] will get you the reason
+        """
+        # Cleaning out commas in which we use as delimiters.
+        song_index = song_index.replace(",", "")
+
+        if song_index.is_numeric() and song_index > self.PLAYLIST_SONG_LIMIT:
+            return(f"ERROR:Max")
+
+        async with aiosqlite.connect("music.db") as db:
+            async with db.execute("""SELECT * FROM playlists WHERE id = ? AND name = ?""", (int(user_id), playlist_name)) as cursor:
+                if not await cursor.fetch():
+                    return(f"ERROR:You have no playlists named {playlist_name}!")
+                else:
+                    # Songs index is no 3
+                    data = await cursor.fetch()
+                    songs_length = data[3].count(", ")
+                    if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
+                        return(f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})")
+                    elif songs_length == 0:
+                        prefix = ""
+                    else:
+                        prefix = ", "
+            await db.execute(f"""DELETE FROM playlists WHERE id = ?, ?, ?, ?);""", (data[0], data[1], data[2], data[4].append(prefix)))
+            await db.commit()
+            return(f"SUCCESS")
+                    
+
+
 
 
     async def get_playlists(self, user_id: int) -> list:
@@ -275,17 +348,14 @@ class Playlist(commands.Cog):
 
         playlists = await self.playlistmanager.get_playlists(ctx.author.id)
 
-        await ctx.send(playlists)
-        print(playlists)
-
-        visual = ""
-        async for line in self.bot.musicdb.iterdump():
-            visual += f"\n{line}"
+        list_visual = ""
+        for count, song in enumerate(list_visual, 1):
+            list_visual += f"\n{count}. {song}"
 
         embed = discord.Embed(
-            title=f"Testing",
-            description=f"""```
-{visual}
+            title=f"Showing {len(playlists)}",
+            description=f"""```md
+{list_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color()
