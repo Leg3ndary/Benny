@@ -312,10 +312,8 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_expire_player(self, guild_id: int):
         """Expire players when we dispatch it, we check after 180 seconds"""
-        print("Recieved expire_player dispatch")
-        await asyncio.sleep(5.0)
+        await asyncio.sleep(180.0)
         if guild_id in self.client.expiring_players:
-            print("disconnected :)")
             guild = self.client.get_guild(guild_id)
             await guild.voice_client.disconnect(force=True)
 
@@ -324,11 +322,6 @@ class Music(commands.Cog):
         """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
         player = self.client.lavalink.player_manager.get(member.guild.id)
         try:
-            print(before.channel.id)
-            print(f"shit = {player.channel_id}")
-            print("----------")
-            print(not after.channel)
-            
             if before.channel.id == int(player.channel_id) and not after.channel:
                 if member.guild.id in self.client.expiring_players:
                     pass
@@ -338,6 +331,8 @@ class Music(commands.Cog):
             if after.channel.id == int(player.channel_id):
                 pass
         except AttributeError:
+            pass
+        except TypeError:
             pass
 
     @commands.command(
@@ -349,7 +344,6 @@ class Music(commands.Cog):
         """Searches and plays a song from a given query."""
 
         if ctx.guild.id in self.client.expiring_players:
-            print("removed player from expiring")
             self.client.expiring_players.remove(ctx.guild.id)
 
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
