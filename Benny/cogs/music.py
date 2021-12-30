@@ -81,6 +81,9 @@ class LavalinkVoiceClient(discord.VoiceClient):
         # this must be done because the on_voice_state_update that
         # would set channel_id to None doesn't get dispatched after the
         # disconnect
+        player.queue.clear()
+        # Stop the current track so Lavalink consumes less resources.
+        await player.stop()
         player.channel_id = None
         self.cleanup()
 
