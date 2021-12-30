@@ -325,7 +325,9 @@ class Music(commands.Cog):
         player = self.client.lavalink.player_manager.get(member.guild.id)
         try:
             print(before.channel.id)
+            print("----------")
             print(after.channel.id)
+            print(f"shit = {player.channel_id}")
             if before.channel.id == int(player.channel_id) and not after.channel:
                 if member.guild.id in self.client.expiring_players:
                     pass
@@ -346,6 +348,7 @@ class Music(commands.Cog):
         """Searches and plays a song from a given query."""
 
         if ctx.guild.id in self.client.expiring_players:
+            print("removed player from expiring")
             self.client.expiring_players.remove(ctx.guild.id)
 
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
