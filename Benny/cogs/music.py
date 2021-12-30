@@ -327,7 +327,7 @@ class Music(commands.Cog):
             print(before.channel.id)
             print(f"shit = {player.channel_id}")
             print("----------")
-            print(after.channel.id)
+            print(not after.channel.id)
             
             if before.channel.id == int(player.channel_id) and not after.channel:
                 if member.guild.id in self.client.expiring_players:
