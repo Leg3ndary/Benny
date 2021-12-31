@@ -57,7 +57,6 @@ class LavalinkVoiceClient(discord.VoiceClient):
         Connect the client to the voice channel and create a player_manager
         if it doesn't exist yet.
         """
-        # Make sure there's a player_manager when creating a new voice_client
         self.lavalink.player_manager.create(guild_id=self.channel.guild.id)
         await self.channel.guild.change_voice_state(channel=self.channel)
 
@@ -68,21 +67,18 @@ class LavalinkVoiceClient(discord.VoiceClient):
         """
         player = self.lavalink.player_manager.get(self.channel.guild.id)
 
-        # no need to disconnect if we are not connected
+        # Don't disconnect if we aren't even connected
         if not force and not player.is_connected:
             return
 
         # None means disconnect
         await self.channel.guild.change_voice_state(channel=None)
 
-        # update the channel_id of the player to None
-        # this must be done because the on_voice_state_update that
-        # would set channel_id to None doesn't get dispatched after the
-        # disconnect
+        player.set_repeat(False)
+        player.set_shuffle(False)
         player.queue.clear()
-        # Stop the current track so Lavalink consumes less resources.
-        await player.stop()
         player.channel_id = None
+        await player.stop()
         self.cleanup()
 
 
@@ -210,7 +206,7 @@ class Music(commands.Cog):
         self.client = client
         self.client.expiring_players = []
         self.search_prefix = client.config.get("Lavalink").get("Search")
-        # This ensures the client isn't overwritten during cog reloads
+        # When reloaded, doesn't terminate connection with client
         if not hasattr(
             client, "lavalink"
         ):
@@ -229,11 +225,8 @@ class Music(commands.Cog):
     async def cog_before_invoke(self, ctx):
         """A guild only check"""
         guild_check = ctx.guild is not None
-
         if guild_check:
             await self.ensure_voice(ctx)
-            #  Ensure that the client and command author share a mutual voicechannel.
-
         return guild_check
 
     async def cog_command_error(self, ctx, error):
@@ -250,24 +243,20 @@ class Music(commands.Cog):
             print(error)
 
     async def ensure_voice(self, ctx):
-        """This check ensures that the client and command author are in the same voicechannel."""
+        """
+        Either creates or returns a player if one exists, to ensure we can actually have
+        a player at the ready.
+
+        This check ensures that the client and command author are in the same voicechannel.
+        """
         player = self.client.lavalink.player_manager.create(
             ctx.guild.id, endpoint=str(ctx.guild.region)
         )
-        # Create returns a player if one exists, otherwise creates.
-        # This line is important because it ensures that a player always exists for a guild.
 
-        # Most people might consider this a waste of resources for guilds that aren't playing, but this is
-        # the easiest and simplest way of ensuring players are created.
-
-        # These are commands that require the client to join a voicechannel (i.e. initiating playback).
-        # Commands such as volume/skip etc don't require the client to be in a voicechannel so don't need listing here.
+        # Commands that require the client to join a voicechannel (i.e. initiating playback).
         should_connect = ctx.command.name in ("play", "loop", "remove")
 
         if not ctx.author.voice or not ctx.author.voice.channel:
-            # Our cog_command_error handler catches this and sends it to the voicechannel.
-            # Exceptions allow us to "short-circuit" command invocation via checks so the
-            # execution state of the command goes no further.
             raise commands.CommandInvokeError("Join a voicechannel first.")
 
         if not player.is_connected:
@@ -300,7 +289,6 @@ class Music(commands.Cog):
             else:
                 self.client.expiring_players.append(guild_id)
                 self.client.dispatch("expire_player", guild_id)
-                
 
 
     @commands.Cog.listener()
@@ -348,7 +336,6 @@ class Music(commands.Cog):
 
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         query = args.strip("<>")
-        # ytsearch or scsearch
         if not url_rx.match(query):
             # Treat as a regular search
             query = f"{self.search_prefix}:{query}"
@@ -360,7 +347,7 @@ class Music(commands.Cog):
         # Get the results for the query from Lavalink.
         results = await player.node.get_tracks(query)
 
-        # Results could be None if Lavalink returns an invalid response results['tracks'] could be an empty array if the query yielded no tracks
+        # Results could be None if Lavalink returns an invalid response results["tracks"] could be an empty array if the query yielded no tracks
         if not results or not results["tracks"]:
             nothing_found = discord.Embed(
                 title=f"Error",
@@ -379,6 +366,7 @@ class Music(commands.Cog):
         #   NO_MATCHES      - query yielded no results
         #   LOAD_FAILED     - most likely, the video encountered an exception during loading.
         if results["loadType"] == "PLAYLIST_LOADED":
+            return await ctx.send("Sorry, currently regular playlists aren't supported.")
             tracks = results["tracks"]
 
             for track in tracks:
@@ -391,9 +379,6 @@ class Music(commands.Cog):
             )
 
             await ctx.send(embed=embed)
-
-
-
 
         else:
             ps_view = PlayerSelector(ctx, player, results["tracks"][:25])
@@ -623,19 +608,25 @@ class Music(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.command(name="disconnect", aliases=["dc"])
+    @commands.command(
+        name="disconnect",
+        description="""Description of Command""",
+        help="""Long Help text for this command""",
+        brief="""Short help text""",
+        usage="Usage",
+        aliases=["dc"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def disconnect_cmd(self, ctx):
         """Disconnects the player from the voice channel and clears its queue."""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
 
-        # Setting looping to false
         player.set_repeat(False)
-
-        # Setting shuffling to false
         player.set_shuffle(False)
 
         if not player.is_connected:
-            # We can't disconnect, if we're not connected.
             nc = discord.Embed(
                 title=f"Error",
                 description=f"""Not connected, join a voice channel and use the `play` command to get started!""",
@@ -648,8 +639,6 @@ class Music(commands.Cog):
             player.is_connected
             and ctx.author.voice.channel.id != int(player.channel_id)
         ):
-            # Abuse prevention. Users not in voice channels, or not in the same voice channel as the client
-            # may not disconnect the client.
             embed = discord.Embed(
                 title=f"Error",
                 description=f""""You're not in my voicechannel!""",
@@ -658,13 +647,10 @@ class Music(commands.Cog):
             )
             return await ctx.send(embed=embed, delete_after=10)
 
-        # Clear the queue to ensure old tracks don't start playing
-        # when someone else queues something.
         player.queue.clear()
-        # Stop the current track so Lavalink consumes less resources.
+        player.channel_id = None
         await player.stop()
-        # Disconnect from the voice channel.
-        # await ctx.voice_client.cleanup()
+
         await ctx.voice_client.disconnect(force=True)
         dc = discord.Embed(
             title=f"Disconnected",
@@ -713,7 +699,6 @@ Missing Frames: {stats.frames_deficit}
             color=c_get_color()
         )
         await ctx.send(embed=embed)
-
 
 
 def setup(client):

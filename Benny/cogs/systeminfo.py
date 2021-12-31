@@ -4,7 +4,7 @@ import discord.utils
 import platform
 import psutil
 import random
-from discord.ext import commands
+from discord.ext import commands, tasks
 from gears.style import c_get_color
 
 
@@ -41,7 +41,7 @@ class SystemInfo(commands.Cog):
 ```
                 Example:
 ```fix
-t>system {random.choice(options)}
+system {random.choice(options)}
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color(),
@@ -200,6 +200,13 @@ t>system {random.choice(options)}
             )
         return await ctx.send(embed=embed)
 
+
+    """
+    @tasks.loop()
+    async def thingy(self):
+        cmd = self. bot.get_command("command name")
+        await cmd(ctx, "positional argument", kwarg='etc')
+        """
 
 def setup(bot):
     bot.add_cog(SystemInfo(bot))
