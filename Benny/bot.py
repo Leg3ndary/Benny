@@ -1,10 +1,11 @@
+import aiohttp
+import asyncio
 import discord
 import json
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears.useful import load_cogs
-from motor.motor_asyncio import AsyncIOMotorClient
 
 
 load_dotenv()
@@ -32,13 +33,6 @@ intents = discord.Intents(
     webhooks=True,
 )
 
-mongo_uri = (
-    config.get("Mongo")
-    .get("URL")
-    .replace("<Username>", config.get("Mongo").get("User"))
-    .replace("<Password>", os.getenv("Mongo_Pass"))
-)
-
 prefix = config.get("Bot").get("Prefix")
 
 '''async def get_prefix(bot, message):
@@ -49,33 +43,33 @@ prefix = config.get("Bot").get("Prefix")
         return bot.prefix_cache[str(message.guild.id)]
 '''
 
+async def start_bot():
+    """Start the bot with a session"""
+    bot = commands.Bot(
+        command_prefix=prefix, intents=intents, description="The coolest bot ever"
+    )
 
-bot = commands.Bot(
-    command_prefix=prefix, intents=intents, description="The coolest bot ever"
-)
+    bot.config = config
+    print("Loaded Bot Config")
 
-bot.config = config
-print("Loaded Bot Config")
-
-bot.prefix = prefix
-print("Loaded default prefix")
-
-bot.mongo = AsyncIOMotorClient(mongo_uri)
-print("Initiated Bot DB (Not Loaded)")
+    bot.prefix = prefix
+    print("Loaded default prefix")
 
 
-load_cogs(bot, os.listdir("Benny/cogs"))
+    load_cogs(bot, os.listdir("Benny/cogs"))
+
+    @bot.event
+    async def on_ready():
+        """On ready tell us"""
+        bot.dispatch("load_musicdb")
+        bot.dispatch("load_playlists")
+        bot.dispatch("load_mongodb")
+        print(f"Bot {bot.user} logged in.")
 
 
-@bot.event
-async def on_ready():
-    """On ready tell us"""
-    bot.dispatch("load_musicdb")
+    async with aiohttp.ClientSession() as session:
+        bot.session = session
 
-    bot.dispatch("load_playlists")
-    print(f"Bot {bot.user} logged in.")
-    
+        await bot.start(os.getenv("Bot_Token"))
 
-
-
-bot.run(os.getenv("Bot_Token"))
+asyncio.run(start_bot())
