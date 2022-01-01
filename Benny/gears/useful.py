@@ -33,7 +33,6 @@ def load_cogs(bot, cogs):
                 and not file.endswith("cog_template.py")
                 and not file.endswith("redis.py")
                 and not file.endswith("pastebin.py")
-                and not file.endswith("help.py")
             ):
                 bot.load_extension(f"cogs.{file[:-3]}")
                 cog_list.append(f"cogs.{file[:-3]}")
