@@ -1,97 +1,137 @@
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
+from gears.style import c_get_color
 
 
-class MyMenuPages(ui.View, menus.MenuPages):
-    def __init__(self, source, *, delete_message_after=False):
-        super().__init__(timeout=60)
-        self._source = source
-        self.current_page = 0
-        self.ctx = None
-        self.message = None
-        self.delete_message_after = delete_message_after
-
-    async def start(self, ctx, *, channel=None, wait=False):
-        # We wont be using wait/channel, you can implement them yourself. This is to match the MenuPages signature.
-        await self._source._prepare_once()
-        self.ctx = ctx
-        self.message = await self.send_initial_message(ctx, ctx.channel)
-
-    async def _get_kwargs_from_page(self, page):
-        """This method calls ListPageSource.format_page class"""
-        value = await super()._get_kwargs_from_page(page)
-        if "view" not in value:
-            value.update({"view": self})
-        return value
-
-    async def interaction_check(self, interaction):
-        """Only allow the author that invoke the command to be able to use the interaction"""
-        return interaction.user == self.ctx.author
-
-    @ui.button(
-        emoji="<:before_fast_check:754948796139569224>",
-        style=discord.ButtonStyle.blurple,
-    )
-    async def first_page(self, button, interaction):
-        await self.show_page(0)
-
-    @discord.ui.button(
-        emoji="<:before_check:754948796487565332>", style=discord.ButtonStyle.blurple
-    )
-    async def before_page(self, button, interaction):
-        await self.show_checked_page(self.current_page - 1)
-
-    @discord.ui.button(
-        emoji="<:stop_check:754948796365930517>", style=discord.ButtonStyle.blurple
-    )
-    async def stop_page(self, button, interaction):
-        self.stop()
-        if self.delete_message_after:
-            await self.message.delete(delay=0)
-
-    @discord.ui.button(
-        emoji="<:next_check:754948796361736213>", style=discord.ButtonStyle.blurple
-    )
-    async def next_page(self, button, interaction):
-        await self.show_checked_page(self.current_page + 1)
-
-    @discord.ui.button(
-        emoji="<:next_fast_check:754948796391227442>", style=discord.ButtonStyle.blurple
-    )
-    async def last_page(self, button, interaction):
-        await self.show_page(self._source.get_max_pages() - 1)
-
-
-class MyHelp(commands.HelpCommand):
-    def get_command_signature(self, command):
-        return "%s%s %s" % (
-            self.clean_prefix,
-            command.qualified_name,
-            command.signature,
-        )
-
+class HelpCommand(commands.HelpCommand):
     async def send_bot_help(self, mapping):
-        embed = discord.Embed(title="Help")
+        """When help is ran on its own no args"""
+        embed = discord.Embed(
+            title="Tenshi Help",
+            color=c_get_color()
+        )
         for cog, commands in mapping.items():
-            filtered = await self.filter_commands(commands, sort=True)
-            command_signatures = [self.get_command_signature(c) for c in filtered]
+            command_signatures = [self.get_command_signature(c) for c in commands]
             if command_signatures:
-                cog_name = getattr(cog, "qualified_name", "No Category")
-                embed.add_field(
-                    name=cog_name, value="\n".join(command_signatures), inline=False
-                )
+                cog_name = getattr(cog, "qualified_name", "ERROR")
+                if cog_name in ["DevOnly", "ERROR", "Redis"]:
+                    # Hiding certain names :L
+                    pass
+                else:
+                    signatures = "\n".join(command_signatures)
+                    embed.add_field(
+                        name=cog_name, 
+                        value=f"""```
+{signatures}
+```""", 
+                        inline=True
+                    )
 
         channel = self.get_destination()
         await channel.send(embed=embed)
 
+    async def send_cog_help(self, cog):
+        """Sending help for cogs"""
+        embed = discord.Embed(
+            title=cog.qualified_name,
+            description=cog.description,
+            color=c_get_color()
+        )
+        commands_view = ""
+        for command in cog.get_commands():
+            commands_view = f"{commands_view}\n{command}"
 
-class YourCog(commands.Cog):
+        embed.add_field(
+            name="Commands",
+            value=commands_view,
+            inline=False
+        )
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+    
+    async def send_group_help(self, group):
+        """Sending help for groups"""
+        embed = discord.Embed(
+            title=group.name,
+            description=f"""{group.short_doc}""",
+            color=c_get_color()
+        )
+        commands = ""
+        for cc, command in enumerate(group.walk_commands(), start=1):
+            commands = f"""{commands}\n{cc}. {str(command).replace(f"{group.name} ", "")}"""
+
+        if commands == "":
+            commands = "None"
+
+        embed.add_field(
+            name="Commands",
+            value=f"""```md
+{commands}
+```""",
+            inline=False
+        )
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+    
+    async def send_command_help(self, command):
+        """Sending help for actual commands"""
+        embed = discord.Embed(
+            title=command.brief,
+            description="",
+            color=c_get_color()
+        )
+        #self.get_command_signature(command)
+        embed.add_field(
+            name="Help",
+            value=command.help
+        )
+        alias = command.aliases
+        if alias:
+            alias_text = ", ".join(alias)
+        else:
+            alias_text = "None"
+        
+        alias_text = f"[Aliases]({alias_text})"
+
+        embed.add_field(
+            name="Usage",
+            value=f"""```md
+{self.get_command_signature(command)}
+{alias_text}
+```""",
+            inline=False
+        )
+
+        embed.add_field(
+            name="Extra Info",
+            value=command.description,
+            inline=False
+        )
+    
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def send_error_message(self, error):
+        """Error Messages that may appear"""
+        embed = discord.Embed(
+            title="Error", 
+            description=error,
+            color=c_get_color("red")
+        )
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+
+class Help(commands.Cog):
+    """The help cog"""
     def __init__(self, bot):
-        self.bot = bot
-        help_command = MyHelp()
-        help_command.cog = self
-        bot.help_command = help_command
+       self.bot = bot
+
+       help_command = HelpCommand()
+       help_command.cog = self
+       bot.help_command = help_command
 
 
 def setup(bot):
-    bot.add_cog(YourCog(bot))
+    bot.add_cog(Help(bot))
