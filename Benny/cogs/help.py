@@ -3,11 +3,11 @@ from discord.ext import commands
 from gears.style import c_get_color
 
 
-class HelpCommand(commands.HelpCommand):
+class BennyHelp(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
         embed = discord.Embed(
-            title="Tenshi Help",
+            title="Help",
             color=c_get_color()
         )
         for cog, commands in mapping.items():
@@ -128,7 +128,7 @@ class Help(commands.Cog):
     def __init__(self, bot):
        self.bot = bot
 
-       help_command = HelpCommand()
+       help_command = BennyHelp()
        help_command.cog = self
        bot.help_command = help_command
 

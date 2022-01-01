@@ -9,8 +9,6 @@ class Moderation(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.db = bot.mongo["Moderation"]
-        self.db_modlogs = self.db["Modlogs"]
 
     @commands.command(name="ban")
     @commands.has_permissions(ban_members=True)
