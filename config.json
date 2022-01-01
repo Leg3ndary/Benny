@@ -4,7 +4,7 @@
     },
     "Mongo": {
         "User": "BennyBot",
-        "URL": "mongodb+srv://<Username>:<Password>@shrimpe.7z62m.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
+        "URL": "mongodb+srv://<Username>:<Password>@benny.evq7x.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
     },
     "Lavalink": {
         "Options": "scsearch or ytsearch",
