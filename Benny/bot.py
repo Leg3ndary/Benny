@@ -68,8 +68,7 @@ async def start_bot():
 
 
     async with aiohttp.ClientSession() as session:
-        bot.session = session
-
+        bot.aiosession = session
         await bot.start(os.getenv("Bot_Token"))
 
 asyncio.run(start_bot())

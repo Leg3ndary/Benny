@@ -1,7 +1,16 @@
 import discord
+import json
 import lavalink
 from gears.style import c_get_emoji, c_get_color
 from gears.useful import remove_zcs
+
+
+config = json.load(open("config.json"))
+
+if config.get("Lavalink").get("Search") == "youtube":
+    PlayerDropdownEmoji = c_get_emoji("youtube", "regular")
+else:
+    PlayerDropdownEmoji = c_get_color("soundcloud", "regular")
 
 
 class DeleteView(discord.ui.View):
@@ -138,6 +147,7 @@ class PlayerDropdown(discord.ui.Select):
         for song in songs:
             options.append(
                 discord.SelectOption(
+                    emoji=PlayerDropdownEmoji,
                     label=song["info"]["title"],
                     description=f"""{song["info"]["author"]} - Duration: {remove_zcs(lavalink.format_time(song["info"]["length"]))}""",
                     value=str(counter)
