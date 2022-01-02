@@ -7,6 +7,10 @@ from gears.useful import remove_zcs
 
 config = json.load(open("config.json"))
 
+print(config)
+print(config["Lavalink"])
+print(config["Lavalink"]["Search"])
+
 if config["Lavalink"]["Search"] == "ytsearch":
     PlayerDropdownEmoji = c_get_emoji("youtube", "regular")
 else:
