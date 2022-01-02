@@ -3,6 +3,32 @@ from discord.ext import commands
 from gears.style import c_get_color
 
 
+
+'''
+Example for command help formats
+    @commands.command(
+        name="Command Name", <== Optional 
+        help="We treat this as a small description",
+        brief="Title of Help Embed", 
+        usage="MD formatting for usage",
+        description="Extra Info About the command"
+    )
+
+@commands.command(
+    name="CommandName",
+    description="""Description of Command""",
+    help="""Long Help text for this command""",
+    brief="""Short help text""",
+    usage="Usage",
+    aliases=["None"],
+    enabled=True,
+    hidden=False
+)
+@commands.cooldown(1.0, 5.0, commands.BucketType.user)
+async def my_command(self, ctx):
+    """Command description"""
+'''
+
 class BennyHelp(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
