@@ -3,7 +3,6 @@ import discord.utils
 from discord.commands import Option, slash_command
 from discord.ext import commands
 from gears.msg_views import DeleteView
-from gears.style import c_get_color
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
