@@ -10,7 +10,7 @@ config = json.load(open("config.json"))
 if config.get("Lavalink").get("Search") == "youtube":
     PlayerDropdownEmoji = c_get_emoji("youtube", "regular")
 else:
-    PlayerDropdownEmoji = c_get_color("soundcloud", "regular")
+    PlayerDropdownEmoji = c_get_emoji("soundcloud", "regular")
 
 
 class DeleteView(discord.ui.View):
