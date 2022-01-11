@@ -1,9 +1,9 @@
-from discord.activity import Streaming
-from gears.style import c_get_color, c_get_emoji
-import discord.utils
 import discord
-from discord.ext import commands
+import discord.utils
 import numpy
+from discord.activity import Streaming
+from discord.ext import commands
+from gears.style import c_get_color, c_get_emoji
 
 
 def len_file(file: str) -> int:
