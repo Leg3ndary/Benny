@@ -34,7 +34,7 @@ cursor.execute("SELECT * FROM table_name WHERE value = ?", ('peepeepoopoo',))
 class PlaylistManager:
     """
     Bunch of methods to interact with and update/delete playlists
-    
+
     Attributes
     ----------
     PLAYLIST_SONG_LIMIT: int
@@ -44,6 +44,7 @@ class PlaylistManager:
     SONG_NAME_LIMIT:
         The max length of a song name in chars
     """
+
     def __init__(self) -> None:
         """Constructs all the necessary attributes for the PlaylistManager"""
         self.PLAYLIST_SONG_LIMIT = 150
@@ -60,7 +61,7 @@ class PlaylistManager:
             The users ID
         playlist_name: str
             The name to call the playlist
-        
+
         Returns
         -------
         str
@@ -71,14 +72,19 @@ class PlaylistManager:
             Errored, .split(":")[1] will get you the reason
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT id FROM playlists WHERE id = ?;""", (int(user_id), )) as cursor:
+            async with db.execute(
+                """SELECT id FROM playlists WHERE id = ?;""", (int(user_id),)
+            ) as cursor:
                 length = len(await cursor.fetchall())
                 if length > self.PLAYLIST_LIMIT:
-                    return(f"ERROR:You can only create {self.PLAYLIST_LIMIT} playlists!")
+                    return f"ERROR:You can only create {self.PLAYLIST_LIMIT} playlists!"
 
-            await db.execute("""INSERT INTO playlists VALUES(?, ?, 0, "");""", (user_id, playlist_name))
+            await db.execute(
+                """INSERT INTO playlists VALUES(?, ?, 0, "");""",
+                (user_id, playlist_name),
+            )
             await db.commit()
-            return("SUCCESS")
+            return "SUCCESS"
 
     async def delete_playlist(self, user_id: int, playlist_name: str) -> str:
         """
@@ -90,7 +96,7 @@ class PlaylistManager:
             The users ID
         playlist_name: str
             The name of the playlist to delete
-        
+
         Returns
         -------
         str
@@ -101,14 +107,20 @@ class PlaylistManager:
             Errored, .split(":")[1] will get you the reason
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT id, name FROM playlists WHERE id = ? and name = ?;""", (int(user_id), playlist_name)) as cursor:
+            async with db.execute(
+                """SELECT id, name FROM playlists WHERE id = ? and name = ?;""",
+                (int(user_id), playlist_name),
+            ) as cursor:
                 if not cursor.fetchall():
-                    return(f"ERROR:No playlist by the name of {playlist_name} was found!")
-            await db.execute("""DELETE FROM playlists WHERE name = ?;""", (playlist_name, ))
+                    return (
+                        f"ERROR:No playlist by the name of {playlist_name} was found!"
+                    )
+            await db.execute(
+                """DELETE FROM playlists WHERE name = ?;""", (playlist_name,)
+            )
             await db.commit()
-            return("SUCCESS")
-            
-    
+            return "SUCCESS"
+
     async def add_song(self, user_id: int, playlist_name: str, song: str) -> str:
         """
         Add a song to a playlist by ID
@@ -121,7 +133,7 @@ class PlaylistManager:
             The name of the playlist
         song: str
             The song/query that will be added to the playlist
-        
+
         Returns
         -------
         str
@@ -135,27 +147,33 @@ class PlaylistManager:
         song = song.replace(",", "")
 
         if len(song) > self.SONG_NAME_LIMIT:
-            return(f"ERROR:Please limit the song name to 50 characters ({self.SONG_NAME_LIMIT} currently)")
+            return f"ERROR:Please limit the song name to 50 characters ({self.SONG_NAME_LIMIT} currently)"
 
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT * FROM playlists WHERE id = ? AND name = ?""", (int(user_id), playlist_name)) as cursor:
+            async with db.execute(
+                """SELECT * FROM playlists WHERE id = ? AND name = ?""",
+                (int(user_id), playlist_name),
+            ) as cursor:
                 if not await cursor.fetch():
-                    return(f"ERROR:You have no playlists named {playlist_name}!")
+                    return f"ERROR:You have no playlists named {playlist_name}!"
                 else:
                     # Songs index is no 3
                     data = await cursor.fetch()
                     songs_length = data[3].count(", ")
                     if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
-                        return(f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})")
+                        return f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})"
                     elif songs_length == 0:
                         prefix = ""
                     else:
                         prefix = ", "
-            await db.execute(f"""INSERT INTO playlists VALUES(?, ?, ?, ?);""", (data[0], data[1], data[2], data[4].append(prefix + song)))
+            await db.execute(
+                f"""INSERT INTO playlists VALUES(?, ?, ?, ?);""",
+                (data[0], data[1], data[2], data[4].append(prefix + song)),
+            )
             await db.commit()
-            return(f"SUCCESS")
-    
-    async def delete_song(self, user_id: int, playlist_name: str, song_index ) -> str:
+            return f"SUCCESS"
+
+    async def delete_song(self, user_id: int, playlist_name: str, song_index) -> str:
         """
         Add a song to a playlist by ID
 
@@ -183,48 +201,51 @@ class PlaylistManager:
         song_index = song_index.replace(",", "")
 
         if song_index.is_numeric() and song_index > self.PLAYLIST_SONG_LIMIT:
-            return(f"ERROR:Max")
+            return f"ERROR:Max"
 
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT * FROM playlists WHERE id = ? AND name = ?""", (int(user_id), playlist_name)) as cursor:
+            async with db.execute(
+                """SELECT * FROM playlists WHERE id = ? AND name = ?""",
+                (int(user_id), playlist_name),
+            ) as cursor:
                 if not await cursor.fetch():
-                    return(f"ERROR:You have no playlists named {playlist_name}!")
+                    return f"ERROR:You have no playlists named {playlist_name}!"
                 else:
                     # Songs index is no 3
                     data = await cursor.fetch()
                     songs_length = data[3].count(", ")
                     if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
-                        return(f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})")
+                        return f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})"
                     elif songs_length == 0:
                         prefix = ""
                     else:
                         prefix = ", "
-            await db.execute(f"""DELETE FROM playlists WHERE id = ?, ?, ?, ?);""", (data[0], data[1], data[2], data[4].append(prefix)))
+            await db.execute(
+                f"""DELETE FROM playlists WHERE id = ?, ?, ?, ?);""",
+                (data[0], data[1], data[2], data[4].append(prefix)),
+            )
             await db.commit()
-            return(f"SUCCESS")
-                    
-
-
-
+            return f"SUCCESS"
 
     async def get_playlists(self, user_id: int) -> list:
         """
         Get a list of all of a user's playlists and info about them...
-        
+
         Parameters
         ----------
-        user_id: 
+        user_id:
             The users ID
-            
+
         Returns
         -------
         list
         """
         async with aiosqlite.connect("music.db") as db:
-            async with db.execute("""SELECT * FROM playlists WHERE id = ?;""", (int(user_id),)) as cursor:
+            async with db.execute(
+                """SELECT * FROM playlists WHERE id = ?;""", (int(user_id),)
+            ) as cursor:
                 playlists = await cursor.fetchall()
                 return playlists
-                
 
 
 class Playlist(commands.Cog):
@@ -238,9 +259,10 @@ class Playlist(commands.Cog):
     async def on_load_playlists(self):
         """Load up playlist related stuff"""
         async with aiosqlite.connect("music.db") as db:
-            await db.execute("""CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);""")
+            await db.execute(
+                """CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);"""
+            )
         print("Playlists Table Loaded")
-
 
     @commands.group(
         name="playlist",
@@ -259,7 +281,7 @@ class Playlist(commands.Cog):
                 title=f"Playlists",
                 description=f"""add stuff here later idiot""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color()
+                color=c_get_color(),
             )
             await ctx.send(embed=embed)
 
@@ -271,18 +293,20 @@ class Playlist(commands.Cog):
         usage="Usage",
         aliases=["c"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def create_playlist(self, ctx, *, playlist_name: str):
         """Create a playlist"""
-        c_status = await self.playlistmanager.create_playlist(ctx.author.id, playlist_name)
+        c_status = await self.playlistmanager.create_playlist(
+            ctx.author.id, playlist_name
+        )
         if c_status == "SUCCESS":
             embed = discord.Embed(
                 title=f"Created Playlist",
                 description=f"""Created a playlist with the name `{playlist_name}`""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green")
+                color=c_get_color("green"),
             )
             await ctx.send(embed=embed)
 
@@ -293,10 +317,10 @@ class Playlist(commands.Cog):
 - {c_status.split(":")[1]} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red")
+                color=c_get_color("red"),
             )
             await ctx.send(embed=embed)
-    
+
     @playlist_manage.command(
         name="delete",
         description="""Description of Command""",
@@ -305,18 +329,20 @@ class Playlist(commands.Cog):
         usage="Usage",
         aliases=["d"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def delete_playist(self, ctx, *, playlist_name: str):
         """Create a playlist"""
-        c_status = await self.playlistmanager.delete_playlist(ctx.author.id, playlist_name)
+        c_status = await self.playlistmanager.delete_playlist(
+            ctx.author.id, playlist_name
+        )
         if c_status == "SUCCESS":
             embed = discord.Embed(
                 title=f"Delete Playlist",
                 description=f"""Deleted playlist `{playlist_name}`""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green")
+                color=c_get_color("green"),
             )
             await ctx.send(embed=embed)
 
@@ -327,10 +353,9 @@ class Playlist(commands.Cog):
 - {c_status.split(":")[1]} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red")
+                color=c_get_color("red"),
             )
             await ctx.send(embed=embed)
-            
 
     @playlist_manage.command(
         name="list",
@@ -340,7 +365,7 @@ class Playlist(commands.Cog):
         usage="Usage",
         aliases=["l"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def playlist_list_cmd(self, ctx):
@@ -358,11 +383,9 @@ class Playlist(commands.Cog):
 {list_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color()
+            color=c_get_color(),
         )
         await ctx.send(embed=embed)
-        
-    
 
 
 def setup(bot):

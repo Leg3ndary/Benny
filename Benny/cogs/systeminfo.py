@@ -200,13 +200,13 @@ system {random.choice(options)}
             )
         return await ctx.send(embed=embed)
 
-
     """
     @tasks.loop()
     async def thingy(self):
         cmd = self. bot.get_command("command name")
         await cmd(ctx, "positional argument", kwarg='etc')
         """
+
 
 def setup(bot):
     bot.add_cog(SystemInfo(bot))

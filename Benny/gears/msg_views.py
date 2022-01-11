@@ -135,6 +135,7 @@ class PlayerManagerView(discord.ui.View):
             "pretend you can now search for something", ephemeral=True
         )
 
+
 class PlayerDropdown(discord.ui.Select):
     """Shows up to 25 songs in a select"""
 
@@ -150,21 +151,18 @@ class PlayerDropdown(discord.ui.Select):
                     emoji=PlayerDropdownEmoji,
                     label=song["info"]["title"],
                     description=f"""{song["info"]["author"]} - Duration: {remove_zcs(lavalink.format_time(song["info"]["length"]))}""",
-                    value=str(counter)
+                    value=str(counter),
                 )
             )
             counter += 1
 
         super().__init__(
-            placeholder="Select a Song", 
-            min_values=1, 
-            max_values=1, 
-            options=options
+            placeholder="Select a Song", min_values=1, max_values=1, options=options
         )
 
     async def callback(self, interaction: discord.Interaction):
         track = self.songs[int(self.values[0])]
-        
+
         embed = discord.Embed(
             title=f"Track Queued",
             url=track["info"]["uri"],
@@ -173,13 +171,12 @@ class PlayerDropdown(discord.ui.Select):
 = Duration: {remove_zcs(lavalink.format_time(track["info"]["length"]))} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("green")
+            color=c_get_color("green"),
         )
-        embed.set_author(
-            name=track["info"]["author"]
-        )
+        embed.set_author(name=track["info"]["author"])
         embed.set_footer(
-            text=self.ctx.author.display_name, icon_url=self.ctx.author.display_avatar.url
+            text=self.ctx.author.display_name,
+            icon_url=self.ctx.author.display_avatar.url,
         )
 
         track = lavalink.models.AudioTrack(track, self.ctx.author.id, recommended=True)
@@ -208,8 +205,12 @@ class PlayerSelector(discord.ui.View):
             return False
         return True
 
-    @discord.ui.button(emoji=c_get_emoji("regular", "cancel"), label="Cancel", style=discord.ButtonStyle.danger, row=2)
+    @discord.ui.button(
+        emoji=c_get_emoji("regular", "cancel"),
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+        row=2,
+    )
     async def button_callback(self, button, interaction):
         """Delete the message if clicked"""
         await self.play_embed.delete()
-    

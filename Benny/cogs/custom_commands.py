@@ -13,6 +13,7 @@ def is_tong_guild():
 
     return commands.check(guild_check)
 
+
 def is_development():
     def guild_check(ctx):
         return ctx.guild.id == 839605885700669441
@@ -71,7 +72,7 @@ class CustomCommands(commands.Cog):
         usage="Usage",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx):

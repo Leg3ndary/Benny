@@ -123,6 +123,7 @@ def match_calc(string1, string2):
     )
     return int(ratio * 100)
 
+
 def remove_zcs(string: str):
     """Remove leading zeros and colons"""
 

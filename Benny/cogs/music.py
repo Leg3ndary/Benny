@@ -146,7 +146,6 @@ class SpotifyClient:
                 )
                 return await ctx.send(embed=nothing_found, delete_after=10)
 
-
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
             player.add(requester=ctx.author.id, track=track)
 
@@ -207,9 +206,7 @@ class Music(commands.Cog):
         self.client.expiring_players = []
         self.search_prefix = client.config.get("Lavalink").get("Search")
         # When reloaded, doesn't terminate connection with client
-        if not hasattr(
-            client, "lavalink"
-        ):
+        if not hasattr(client, "lavalink"):
             client.lavalink = lavalink.Client(889672871620780082)
             # Host, Port, Password, Region, Name
             client.lavalink.add_node(
@@ -283,13 +280,12 @@ class Music(commands.Cog):
         if isinstance(event, lavalink.events.QueueEndEvent):
             # We check if its already in our expired things, then if not then we add it and start the dispatch
             guild_id = int(event.player.guild_id)
-            
+
             if guild_id in self.client.expiring_players:
                 pass
             else:
                 self.client.expiring_players.append(guild_id)
                 self.client.dispatch("expire_player", guild_id)
-
 
     @commands.Cog.listener()
     async def on_load_musicdb(self):
@@ -323,10 +319,7 @@ class Music(commands.Cog):
         except TypeError:
             pass
 
-    @commands.command(
-        name="play", 
-        aliases=["p"]
-    )
+    @commands.command(name="play", aliases=["p"])
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, args: str):
         """Searches and plays a song from a given query."""
@@ -339,7 +332,7 @@ class Music(commands.Cog):
         if not url_rx.match(query):
             # Treat as a regular search
             query = f"{self.search_prefix}:{query}"
-        
+
         else:
             # Is a link...
             query = ""
@@ -366,7 +359,9 @@ class Music(commands.Cog):
         #   NO_MATCHES      - query yielded no results
         #   LOAD_FAILED     - most likely, the video encountered an exception during loading.
         if results["loadType"] == "PLAYLIST_LOADED":
-            return await ctx.send("Sorry, currently regular playlists aren't supported.")
+            return await ctx.send(
+                "Sorry, currently regular playlists aren't supported."
+            )
             tracks = results["tracks"]
 
             for track in tracks:
@@ -389,7 +384,7 @@ class Music(commands.Cog):
 [ {args} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("grey")
+                color=c_get_color("grey"),
             )
             ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
 
@@ -428,11 +423,9 @@ class Music(commands.Cog):
 = Duration: {remove_zcs(lavalink.format_time(track.duration))} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("red")
+            color=c_get_color("red"),
         )
-        embed.set_author(
-            name=track.author
-        )
+        embed.set_author(name=track.author)
 
         requester = self.client.get_user(track.requester)
 
@@ -552,9 +545,11 @@ class Music(commands.Cog):
             name="Other Info",
             value=f"""Loop {lemoji}
             Shuffle {semoji}""",
-            inline=False
+            inline=False,
         )
-        embed.set_footer(text=f"""Total Duration: {remove_zcs(lavalink.format_time(total_duration))}""")
+        embed.set_footer(
+            text=f"""Total Duration: {remove_zcs(lavalink.format_time(total_duration))}"""
+        )
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -577,7 +572,7 @@ class Music(commands.Cog):
                 title=f"Nothing is playing!",
                 description=f"""Use `play` to queue a song!""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("aqua")
+                color=c_get_color("aqua"),
             )
             return await ctx.send(embed=nothing_playing)
 
@@ -592,11 +587,9 @@ class Music(commands.Cog):
 = Duration: {remove_zcs(lavalink.format_time(current.duration))} =
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color()
+                color=c_get_color(),
             )
-            embed.set_author(
-                name=current.author
-            )
+            embed.set_author(name=current.author)
 
             requester = self.client.get_user(current.requester)
 
@@ -616,7 +609,7 @@ class Music(commands.Cog):
         usage="Usage",
         aliases=["dc"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def disconnect_cmd(self, ctx):
@@ -668,7 +661,7 @@ class Music(commands.Cog):
         usage="Usage",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def musicstats_cmd(self, ctx):
@@ -696,7 +689,7 @@ Empty Frames: {stats.frames_nulled}
 Missing Frames: {stats.frames_deficit}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color()
+            color=c_get_color(),
         )
         await ctx.send(embed=embed)
 

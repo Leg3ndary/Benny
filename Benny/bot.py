@@ -43,6 +43,7 @@ prefix = config.get("Bot").get("Prefix")
         return bot.prefix_cache[str(message.guild.id)]
 '''
 
+
 async def start_bot():
     """Start the bot with a session"""
     bot = commands.Bot(
@@ -55,7 +56,6 @@ async def start_bot():
     bot.prefix = prefix
     print("Loaded default prefix")
 
-
     load_cogs(bot, os.listdir("Benny/cogs"))
 
     @bot.event
@@ -66,9 +66,10 @@ async def start_bot():
         bot.dispatch("load_mongodb")
         print(f"Bot {bot.user} logged in.")
 
-
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
+        print("Loaded aiohttp session")
         await bot.start(os.getenv("Bot_Token"))
+
 
 asyncio.run(start_bot())

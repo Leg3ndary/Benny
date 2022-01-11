@@ -13,7 +13,7 @@ from gears.style import c_get_color, c_get_emoji
 def cleanup_code(content: str) -> str:
     """
     Automatically removes code blocks from the code
-    
+
     Parameters
     ----------
     content: str
@@ -395,7 +395,7 @@ Add stuff here later..
         usage="Usage",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def dev_restart(self, ctx):
         """Restart Bot"""
@@ -403,7 +403,7 @@ Add stuff here later..
             title=f"Restarting...",
             description=f"""Restarting the bot. Running `Benny/restart.sh`""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("green")
+            color=c_get_color("green"),
         )
         await ctx.send(embed=embed)
         os.system("bash Benny/restart.sh")
