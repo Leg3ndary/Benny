@@ -2,7 +2,12 @@
 
 The bot that does basically you could ever need (WIP).
 
-This is a bot I've made as an example of my learning of python version 3.8.4
+This is a bot I've made also as an alternative to the popular Carl-bot.
+
+I honestly feel like I can make a better bot then Carl-bot and ever after the change in management I've decided it can easily be done.
+
+This is my attempt at that with all the features I feel a bot should and can have.
+
 
 Please note if somehow your seeing this, the bot is still in a "pre beta" stage, and is nowhere close to where it should be.
 
