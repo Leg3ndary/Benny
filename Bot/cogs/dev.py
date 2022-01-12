@@ -406,6 +406,7 @@ Add stuff here later..
             color=style.get_color("green"),
         )
         await ctx.send(embed=embed)
+        await self.bot.close()
         os.system("bash Bot/start_bot.sh")
 
 
