@@ -3,6 +3,7 @@ import asyncio
 import discord
 import json
 import os
+import time
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears import util
@@ -45,6 +46,8 @@ async def get_prefix(bot, msg):
 
 async def start_bot():
     """Start the bot with a session"""
+    start = time.monotonic()
+
     bot = commands.Bot(
         command_prefix=get_prefix, intents=intents, description="The coolest bot ever"
     )
@@ -70,6 +73,9 @@ async def start_bot():
         bot.aiosession = session
         print("Loaded aiohttp session")
         await bot.start(os.getenv("Bot_Token"))
+
+        end = time.monotonic()
+        print(f"Bot loaded in {(round((end - start) * 1000, 2))/1000} seconds.")
 
 
 asyncio.run(start_bot())
