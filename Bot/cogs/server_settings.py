@@ -94,7 +94,7 @@ class Prefixes:
                         # We don't worry about injection because it's literally not possible for pnum
                         await db.execute(f"""UPDATE prefixes SET {pnum} = ? WHERE guild_id = ?;""", (prefix, str(guild_id)))
                         await db.commit()
-                        self.bot_prefixes[str(guild_id)] = await self.generate_prefix_list(prefixes)
+                        self.bot_prefixes[str(guild_id)] = await self.generate_prefix_list(await self.get_prefixes(guild_id))
                         return(f"SUCCESS:Added prefix `{prefix}` to your server!")
                 else:
                     clear += 1
@@ -114,7 +114,7 @@ class Prefixes:
             async with aiosqlite.connect("server.db") as db:
                 await db.execute("""UPDATE prefixes SET ? = "" WHERE guild_id = ?;""", (pnum, str(guild_id)))
                 await db.commit()
-                self.bot_prefixes[str(guild_id)] = await self.generate_prefix_list(prefixes)
+                self.bot_prefixes[str(guild_id)] = await self.generate_prefix_list(await self.get_prefixes(guild_id))
                 return(f"SUCCESS:Deleted prefix `{prefix}` from your server!")
 
     async def add_guild(self, guild_id: str) -> None:
