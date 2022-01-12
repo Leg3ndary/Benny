@@ -203,7 +203,7 @@ class Dev(commands.Cog):
         cog_visual = f"\n".join(cog_statuslist)
 
         embed = discord.Embed(
-            title="Tenshi Sync ============================",
+            title=f"{self.bot.user.name} Sync ============================",
             description=f"""```diff
 {cog_visual}```
             `{success}` cogs have been reloaded.

@@ -123,11 +123,10 @@ class BennyHelp(commands.HelpCommand):
 
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
-            url=self.context.author.avatar.url
+            url=self.context.author.avatar
         )
 
         channel = self.get_destination()
-        await channel.send(self.get_command_signature(command))
         await channel.send(embed=embed)
 
     async def send_error_message(self, error):
