@@ -63,6 +63,7 @@ async def start_bot():
         bot.dispatch("load_musicdb")
         bot.dispatch("load_playlists")
         bot.dispatch("load_mongodb")
+        bot.dispatch("load_prefixes")
         print(f"Bot {bot.user} logged in.")
 
     async with aiohttp.ClientSession() as session:
