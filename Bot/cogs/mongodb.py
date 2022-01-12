@@ -25,8 +25,7 @@ class MongoDB(commands.Cog):
 
         self.bot.mongo = AsyncIOMotorClient(mongo_uri)
         await self.bot.printer.print_connect("MONGODB")
-
-        self.CommandStats = self.bot.mongo.CommandStats
+        self.bot.mongo.CommandStats
 
     """
     Command Stats Document Schema
@@ -40,13 +39,14 @@ class MongoDB(commands.Cog):
     
     """
 
+    '''
     @commands.Cog.listener()
     async def on_command(self, ctx):
         """How we track all commands usage"""
         command = ctx.command.qualified_name
         collection = self.CommandStats["Uses"]
         document = await collection.find_one({"Command": command})
-
+    '''
 
 def setup(bot):
     bot.add_cog(MongoDB(bot))
