@@ -53,8 +53,11 @@ class Prefixes:
         """Generate a prefix list from a tuple"""
         prefix_list = []
         
-        for prefix in prefixes.pop(0):
-            if prefix == "":
+        count = True
+        for prefix in prefixes:
+            if count:
+                count = False
+            elif prefix == "":
                 pass
             elif prefix in prefix_list:
                 # Shouldn't ever happen, but just in case
