@@ -35,3 +35,7 @@ class InfoPrinter:
     async def print_bot_update(self, status: str) -> None:
         """Print when the bots logged in with relevant info"""
         print(f"{await self.generate_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}")
+    
+    async def print_connect(self, info: str) -> None:
+        """Print that we have connected to something"""
+        print(f"{await self.generate_category(f'{Fore.YELLOW}CONNECTED')} {info}")

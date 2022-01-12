@@ -24,7 +24,7 @@ class MongoDB(commands.Cog):
         )
 
         self.bot.mongo = AsyncIOMotorClient(mongo_uri)
-        print("Loaded MongoDB")
+        await self.bot.printer.print_connect("MONGODB")
 
         self.CommandStats = self.bot.mongo.CommandStats
 

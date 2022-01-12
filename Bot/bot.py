@@ -73,7 +73,7 @@ async def start_bot():
 
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
-        await bot.printer.print_load("AIOHTTP Session")
+        await bot.printer.print_connect("AIOHTTP Session")
 
         await bot.start(os.getenv("Bot_Token"))
 

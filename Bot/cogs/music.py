@@ -291,7 +291,7 @@ class Music(commands.Cog):
     async def on_load_musicdb(self):
         """Load the music db and create a connection"""
         self.client.musicdb = await aiosqlite.connect("music.db")
-        print("Connected to musicdb")
+        await self.bot.printer.print_connect("Music Database")
 
     @commands.Cog.listener()
     async def on_expire_player(self, guild_id: int):

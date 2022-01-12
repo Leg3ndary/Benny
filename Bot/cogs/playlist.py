@@ -1,5 +1,4 @@
 import aiosqlite
-import asyncio
 import discord
 import discord.utils
 from discord.ext import commands
@@ -262,7 +261,7 @@ class Playlist(commands.Cog):
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);"""
             )
-        print("Playlists Table Loaded")
+        await self.bot.printer.print_load("Playlist")
 
     @commands.group(
         name="playlist",
