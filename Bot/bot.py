@@ -61,7 +61,7 @@ async def start_bot():
 
     bot.prefix = prefix
 
-    util.load_cogs(bot, os.listdir("Bot/cogs"))
+    await util.load_cogs(bot, os.listdir("Bot/cogs"))
 
     @bot.event
     async def on_ready():

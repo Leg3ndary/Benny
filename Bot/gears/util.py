@@ -18,7 +18,7 @@ def len_file(file: str) -> int:
         return 0
 
 
-def load_cogs(bot, cogs):
+async def load_cogs(bot, cogs):
     """
     Print and load a live feed,
         Parameters:
@@ -35,6 +35,7 @@ def load_cogs(bot, cogs):
                 and not file.endswith("pastebin.py")
             ):
                 bot.load_extension(f"cogs.{file[:-3]}")
+                await bot.printer.print_cog_update(file[:-3], "LOAD")
                 cog_list.append(f"cogs.{file[:-3]}")
                 print(f"Loaded {file[:-3]}")
 
