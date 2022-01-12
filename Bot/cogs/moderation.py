@@ -1,7 +1,7 @@
 import discord
 import discord.utils
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 
 
 class Moderation(commands.Cog):
@@ -20,7 +20,7 @@ class Moderation(commands.Cog):
                 title=f"Error",
                 description=f"""You cannot ban yourself!""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=same_user_embed)
         elif not user:
@@ -28,7 +28,7 @@ class Moderation(commands.Cog):
                 title=f"Error",
                 description=f"""The user {user} was not found""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=none_mentioned)
         elif user.id == 889672871620780082:
@@ -36,7 +36,7 @@ class Moderation(commands.Cog):
                 title=f"Rude",
                 description=f"""After all I've done for you, you try to ban me?""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("yellow"),
+                color=style.get_color("yellow"),
             )
             return await ctx.send(embed=ban_bot)
         else:
@@ -53,7 +53,7 @@ class Moderation(commands.Cog):
 - {reason} -
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("green"),
+                    color=style.get_color("green"),
                 )
                 return await ctx.send(embed=banned_embed)
 
@@ -64,7 +64,7 @@ class Moderation(commands.Cog):
 - {e}
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("red"),
+                    color=style.get_color("red"),
                 )
                 await ctx.send(embed=error)
 
@@ -91,9 +91,9 @@ class Moderation(commands.Cog):
                 title=f"Success",
                 description=f"""Modlogs channel set to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
+                color=style.get_color("green"),
             )
-            modlogs_set.set_thumbnail(url=c_get_emoji("image", "check"))
+            modlogs_set.set_thumbnail(url=style.get_emoji("image", "check"))
             await ctx.send(embed=modlogs_set)
 
         if data.get("channel") == channel.id:
@@ -101,7 +101,7 @@ class Moderation(commands.Cog):
                 title=f"Error",
                 description=f"""Modlogs channel is already set to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("yellow"),
+                color=style.get_color("yellow"),
             )
             await ctx.send(embed=same_thing)
 
@@ -114,9 +114,9 @@ class Moderation(commands.Cog):
                 title=f"Success",
                 description=f"""Modlogs channel changed to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
+                color=style.get_color("green"),
             )
-            modlogs_changed.set_thumbnail(url=c_get_emoji("image", "check"))
+            modlogs_changed.set_thumbnail(url=style.get_emoji("image", "check"))
             await ctx.send(embed=modlogs_changed)
 
     @commands.Cog.listener()

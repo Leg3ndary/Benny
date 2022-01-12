@@ -6,7 +6,7 @@ import discord
 import discord.utils
 import os
 from discord.ext import commands
-from gears.style import c_get_color
+from gears import style
 
 
 """
@@ -64,7 +64,7 @@ class Redis(commands.Cog):
 {data}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -88,7 +88,7 @@ class Redis(commands.Cog):
 - {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
 
     @redis.command()
@@ -107,7 +107,7 @@ class Redis(commands.Cog):
 {keys}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -149,7 +149,7 @@ class Redis(commands.Cog):
 {visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -160,7 +160,7 @@ class Redis(commands.Cog):
             title="Attempting to fetch all data",
             description=f"""ETA {await self.bot.redis.dbsize() * 0.1} seconds""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("red"),
+            color=style.get_color("red"),
         )
         msg = await ctx.send(embed=embed)
 
@@ -179,7 +179,7 @@ class Redis(commands.Cog):
 {visualiser}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("green"),
+            color=style.get_color("green"),
         )
         await msg.edit(embed=embed_done)
 

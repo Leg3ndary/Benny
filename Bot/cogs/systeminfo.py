@@ -5,7 +5,7 @@ import platform
 import psutil
 import random
 from discord.ext import commands, tasks
-from gears.style import c_get_color
+from gears import style
 
 
 def get_size(bytes, suffix="B"):
@@ -44,7 +44,7 @@ class SystemInfo(commands.Cog):
 system {random.choice(options)}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             return await ctx.send(embed=embed)
 
@@ -74,7 +74,7 @@ system {random.choice(options)}
 = {uname.processor} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -92,7 +92,7 @@ system {random.choice(options)}
 = {bt.year}/{bt.month}/{bt.day} {bt.hour}:{bt.minute}:{bt.second} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -126,7 +126,7 @@ system {random.choice(options)}
 = {psutil.cpu_percent()}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -152,7 +152,7 @@ system {random.choice(options)}
 = {svmem.percent}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         return await ctx.send(embed=embed)
 
@@ -172,7 +172,7 @@ system {random.choice(options)}
 = {get_size(disk_io.write_bytes)} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         for partition in partitions:
             try:

@@ -2,7 +2,7 @@ import discord
 import discord.utils
 import os
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 

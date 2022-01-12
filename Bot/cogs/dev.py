@@ -7,7 +7,7 @@ import traceback
 import unicodedata
 from contextlib import redirect_stdout
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 
 
 def cleanup_code(content: str) -> str:
@@ -45,7 +45,7 @@ class Dev(commands.Cog):
                 title=f"{ctx.author.display_name} is the Dev",
                 description=f"This message is only displayable by him.",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("black"),
+                color=style.get_color("black"),
             )
             await ctx.send(embed=embed)
 
@@ -67,7 +67,7 @@ class Dev(commands.Cog):
 - Reason: {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             return await ctx.send(embed=embed_fail)
 
@@ -78,7 +78,7 @@ class Dev(commands.Cog):
 + {cog} loaded successfuly
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             await ctx.send(embed=embed)
 
@@ -100,7 +100,7 @@ class Dev(commands.Cog):
 - Reason: {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             return await ctx.send(embed=embed_fail)
 
@@ -111,7 +111,7 @@ class Dev(commands.Cog):
 + {cog} unloaded successfully
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             await ctx.send(embed=embed)
 
@@ -134,7 +134,7 @@ class Dev(commands.Cog):
 - Reason: {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             return await ctx.send(embed=embed_fail)
 
@@ -145,7 +145,7 @@ class Dev(commands.Cog):
 + {cog} reloaded successfully
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             return await ctx.send(embed=embed)
 
@@ -167,7 +167,7 @@ class Dev(commands.Cog):
 {servers_var}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -226,7 +226,7 @@ class Dev(commands.Cog):
         embed = discord.Embed(
             title="Terminal Cleared",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("black"),
+            color=style.get_color("black"),
         )
         await ctx.send(embed=embed)
 
@@ -241,7 +241,7 @@ class Dev(commands.Cog):
 - Owned by {guild.owner} - {guild.owner_id}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             await ctx.send(embed=embed)
 
@@ -252,7 +252,7 @@ class Dev(commands.Cog):
 - {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             await ctx.send(embed=embed_error)
 
@@ -274,7 +274,7 @@ class Dev(commands.Cog):
             title="Charinfo",
             description=msg,
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -289,7 +289,7 @@ class Dev(commands.Cog):
                 title="Error",
                 description="Include a code block dumb fuck",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             return await ctx.send(embed=no_cb)
 
@@ -311,7 +311,7 @@ class Dev(commands.Cog):
 {e.__class__.__name__}: {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=embed_e1)
 
@@ -329,7 +329,7 @@ class Dev(commands.Cog):
 {value}{traceback.format_exc()}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=embed_e2)
 
@@ -348,7 +348,7 @@ class Dev(commands.Cog):
 {value}
 ```""",
                         timestamp=discord.utils.utcnow(),
-                        color=c_get_color("green"),
+                        color=style.get_color("green"),
                     )
                     return await ctx.send(embed=evaluated)
 
@@ -359,7 +359,7 @@ class Dev(commands.Cog):
 {value}{out}
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("red"),
+                    color=style.get_color("red"),
                 )
                 return await ctx.send(embed=embed_e3)
 
@@ -375,14 +375,14 @@ class Dev(commands.Cog):
     )
     async def end_bot(self, ctx):
         """Stopping the bot"""
-        await ctx.message.add_reaction(c_get_emoji("regular", "check"))
+        await ctx.message.add_reaction(style.get_emoji("regular", "check"))
         embed = discord.Embed(
             title=f"Shutting Down Bot",
             description=f"""```diff
 Add stuff here later..
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("red"),
+            color=style.get_color("red"),
         )
         await ctx.send(embed=embed)
         await self.bot.close()
@@ -403,7 +403,7 @@ Add stuff here later..
             title=f"Restarting...",
             description=f"""Restarting the bot. Running `Benny/restart.sh`""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("green"),
+            color=style.get_color("green"),
         )
         await ctx.send(embed=embed)
         os.system("bash Benny/restart.sh")

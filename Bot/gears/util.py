@@ -3,7 +3,7 @@ import discord.utils
 import numpy
 from discord.activity import Streaming
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 
 
 def len_file(file: str) -> int:
@@ -64,9 +64,9 @@ async def report_error(bot, error_descrip):
         title=f"Error Report",
         description=f"""""",
         timestamp=discord.utils.utcnow(),
-        color=c_get_color("red"),
+        color=style.get_color("red"),
     )
-    embed.set_thumbnail(url=c_get_emoji("image", "cancel"))
+    embed.set_thumbnail(url=style.get_emoji("image", "cancel"))
     await ben.send(embed=embed)
 
 

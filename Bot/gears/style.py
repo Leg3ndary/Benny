@@ -1,7 +1,7 @@
 import random
 
 
-def c_get_color(color=None):
+def get_color(color=None):
     """Return a color, return a random hex if none provided"""
     if not color:
         return colors[random.choice(color_list)]
@@ -9,7 +9,7 @@ def c_get_color(color=None):
         return colors.get(color, f"ERROR [{color}]")
 
 
-def c_get_emoji(kind: str, emoji: str):
+def get_emoji(kind: str, emoji: str):
     """Get an emoji from tenshis emoji dict..."""
     return emojis.get(kind, f"ERROR [Styles - TYPE: {kind}]").get(
         emoji, f"ERROR [Styles - Emoji {emoji}]"

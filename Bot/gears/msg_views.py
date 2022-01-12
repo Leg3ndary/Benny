@@ -1,16 +1,16 @@
 import discord
 import json
 import lavalink
-from gears.style import c_get_emoji, c_get_color
+from gears import style, c_get_color
 from gears import util
 
 
 config = json.load(open("config.json"))
 
 if config["Lavalink"]["Search"] == "ytsearch":
-    PlayerDropdownEmoji = c_get_emoji("regular", "youtube")
+    PlayerDropdownEmoji = style.get_emoji("regular", "youtube")
 else:
-    PlayerDropdownEmoji = c_get_emoji("regular", "soundcloud")
+    PlayerDropdownEmoji = style.get_emoji("regular", "soundcloud")
 
 
 class DeleteView(discord.ui.View):
@@ -43,7 +43,7 @@ class LoopButton(discord.ui.View):
         super().__init__()
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "loop"),
+        emoji=style.get_emoji("regular", "loop"),
         label="",
         style=discord.ButtonStyle.primary,
     )
@@ -56,10 +56,10 @@ class LoopButton(discord.ui.View):
         button.label = repeat
         await interaction.response.edit_message(view=self)
         embed = discord.Embed(
-            title=f"""{c_get_emoji("regular", "loop")} {repeat}ing""",
+            title=f"""{style.get_emoji("regular", "loop")} {repeat}ing""",
             description=f"""{repeat}ing the current queue""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("aqua"),
+            color=style.get_color("aqua"),
         )
         if not self.slash:
             await self.bctx.edit(embed=embed)
@@ -96,7 +96,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "loop"), style=discord.ButtonStyle.green
+        emoji=style.get_emoji("regular", "loop"), style=discord.ButtonStyle.green
     )
     async def loop_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -104,7 +104,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "left"), style=discord.ButtonStyle.grey
+        emoji=style.get_emoji("regular", "left"), style=discord.ButtonStyle.grey
     )
     async def left_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -112,7 +112,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "stop"), style=discord.ButtonStyle.red
+        emoji=style.get_emoji("regular", "stop"), style=discord.ButtonStyle.red
     )
     async def stop_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -120,7 +120,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "right"), style=discord.ButtonStyle.grey
+        emoji=style.get_emoji("regular", "right"), style=discord.ButtonStyle.grey
     )
     async def right_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -128,7 +128,7 @@ class PlayerManagerView(discord.ui.View):
         )
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "search"), style=discord.ButtonStyle.blurple
+        emoji=style.get_emoji("regular", "search"), style=discord.ButtonStyle.blurple
     )
     async def search_callback(self, button, interaction):
         await interaction.response.send_message(
@@ -171,7 +171,7 @@ class PlayerDropdown(discord.ui.Select):
 = Duration: {util.remove_zcs(lavalink.format_time(track["info"]["length"]))} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color("green"),
+            color=style.get_color("green"),
         )
         embed.set_author(name=track["info"]["author"])
         embed.set_footer(
@@ -206,7 +206,7 @@ class PlayerSelector(discord.ui.View):
         return True
 
     @discord.ui.button(
-        emoji=c_get_emoji("regular", "cancel"),
+        emoji=style.get_emoji("regular", "cancel"),
         label="Cancel",
         style=discord.ButtonStyle.danger,
         row=2,

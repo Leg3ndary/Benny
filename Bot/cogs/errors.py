@@ -4,7 +4,7 @@ import discord
 import discord.utils
 import traceback
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 from gears import util
 
 
@@ -42,7 +42,7 @@ class Errors(commands.Cog):
                 title=f"Member Not Found",
                 description=f"""The member {error.argument} was not found""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=embed)
 
@@ -60,9 +60,9 @@ Error ID: {ctx.message.id}
 Type: {error.converter}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
-            conversion_error.set_thumbnail(url=c_get_emoji("image", "cancel"))
+            conversion_error.set_thumbnail(url=style.get_emoji("image", "cancel"))
             await util.report_error(
                 self.bot,
                 f"""
@@ -83,9 +83,9 @@ Type: {error.converter}
 [{ctx.command}]({str(error.param).split(":")[0]})
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
-            missing_argument.set_thumbnail(url=c_get_emoji("image", "cancel"))
+            missing_argument.set_thumbnail(url=style.get_emoji("image", "cancel"))
             await ctx.send(embed=missing_argument)
 
         elif isinstance(error, commands.DisabledCommand):
@@ -105,9 +105,9 @@ Type: {error.converter}
                     title=f"Error",
                     description=f"""Channel `{error.argument}` was not found""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("red"),
+                    color=style.get_color("red"),
                 )
-                no_channel.set_thumbnail(url=c_get_emoji("image", "cancel"))
+                no_channel.set_thumbnail(url=style.get_emoji("image", "cancel"))
                 return await ctx.send(embed=no_channel)
 
         elif isinstance(error, commands.CommandOnCooldown):
@@ -115,7 +115,7 @@ Type: {error.converter}
                 title=f"{ctx.command} is on Cooldown",
                 description=f"""Please retry this command after {error.retry_after}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=embed)
 
@@ -125,7 +125,7 @@ Type: {error.converter}
                     title=f"",
                     description=f"""""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color(),
+                    color=style.get_color(),
                 )
                 return await ctx.send(embed=embed)
 
@@ -134,7 +134,7 @@ Type: {error.converter}
                     title=f"Not found",
                     description=f"""Conversion Error""",
                     timestamp=discord.utils.utcnow(),
-                    color=c_get_color("red"),
+                    color=style.get_color("red"),
                 )
                 return await ctx.send(embed=embed)
 

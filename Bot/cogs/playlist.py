@@ -3,7 +3,7 @@ import asyncio
 import discord
 import discord.utils
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 
 
 """
@@ -281,7 +281,7 @@ class Playlist(commands.Cog):
                 title=f"Playlists",
                 description=f"""add stuff here later idiot""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color(),
+                color=style.get_color(),
             )
             await ctx.send(embed=embed)
 
@@ -306,7 +306,7 @@ class Playlist(commands.Cog):
                 title=f"Created Playlist",
                 description=f"""Created a playlist with the name `{playlist_name}`""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
+                color=style.get_color("green"),
             )
             await ctx.send(embed=embed)
 
@@ -317,7 +317,7 @@ class Playlist(commands.Cog):
 - {c_status.split(":")[1]} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             await ctx.send(embed=embed)
 
@@ -342,7 +342,7 @@ class Playlist(commands.Cog):
                 title=f"Delete Playlist",
                 description=f"""Deleted playlist `{playlist_name}`""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green"),
+                color=style.get_color("green"),
             )
             await ctx.send(embed=embed)
 
@@ -353,7 +353,7 @@ class Playlist(commands.Cog):
 - {c_status.split(":")[1]} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red"),
+                color=style.get_color("red"),
             )
             await ctx.send(embed=embed)
 
@@ -383,7 +383,7 @@ class Playlist(commands.Cog):
 {list_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=c_get_color(),
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 

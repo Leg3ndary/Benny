@@ -1,7 +1,7 @@
 import discord
 from discord.commands import SlashCommand
 from discord.ext import commands
-from gears.style import c_get_color
+from gears import style
 
 
 '''
@@ -27,7 +27,7 @@ class BennyHelp(commands.HelpCommand):
     """Custom Help Command Class"""
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
-        embed = discord.Embed(title="Help", color=c_get_color())
+        embed = discord.Embed(title="Help", color=style.get_color())
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -57,7 +57,7 @@ class BennyHelp(commands.HelpCommand):
     async def send_cog_help(self, cog):
         """Sending help for cogs"""
         embed = discord.Embed(
-            title=cog.qualified_name, description=cog.description, color=c_get_color()
+            title=cog.qualified_name, description=cog.description, color=style.get_color()
         )
         commands_view = ""
         for command in cog.get_commands():
@@ -70,7 +70,7 @@ class BennyHelp(commands.HelpCommand):
     async def send_group_help(self, group):
         """Sending help for groups"""
         embed = discord.Embed(
-            title=group.name, description=f"""{group.short_doc}""", color=c_get_color()
+            title=group.name, description=f"""{group.short_doc}""", color=style.get_color()
         )
         commands = ""
         for cc, command in enumerate(group.walk_commands(), start=1):
@@ -94,7 +94,7 @@ class BennyHelp(commands.HelpCommand):
 
     async def send_command_help(self, command):
         """Sending help for actual commands"""
-        embed = discord.Embed(title=command.brief, description="", color=c_get_color())
+        embed = discord.Embed(title=command.brief, description="", color=style.get_color())
         # self.get_command_signature(command)
         embed.add_field(name="Help", value=command.help)
         alias = command.aliases
@@ -122,7 +122,7 @@ class BennyHelp(commands.HelpCommand):
     async def send_error_message(self, error):
         """Error Messages that may appear"""
         embed = discord.Embed(
-            title="Error", description=error, color=c_get_color("red")
+            title="Error", description=error, color=style.get_color("red")
         )
         channel = self.get_destination()
         await channel.send(embed=embed)

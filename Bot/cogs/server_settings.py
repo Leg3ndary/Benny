@@ -3,7 +3,7 @@ import asyncio
 import discord
 import discord.utils
 from discord.ext import commands
-from gears.style import c_get_color, c_get_emoji
+from gears import style
 
 
 """
@@ -186,7 +186,7 @@ class ServerSettings(commands.Cog):
                 description=f"""Viewing prefixes for {ctx.guild.name}
                 {prefix_visual}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color()
+                color=style.get_color()
             )
             await ctx.send(embed=embed)
 
@@ -210,7 +210,7 @@ class ServerSettings(commands.Cog):
                 title=f"Success",
                 description=f"""{add_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green")
+                color=style.get_color("green")
             )
             await ctx.send(embed=embed)
 
@@ -219,7 +219,7 @@ class ServerSettings(commands.Cog):
                 title=f"Error",
                 description=f"""{add_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red")
+                color=style.get_color("red")
             )
             await ctx.send(embed=embed)
 
@@ -243,7 +243,7 @@ class ServerSettings(commands.Cog):
                 title=f"Success",
                 description=f"""{del_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("green")
+                color=style.get_color("green")
             )
             await ctx.send(embed=embed)
 
@@ -252,7 +252,7 @@ class ServerSettings(commands.Cog):
                 title=f"Error",
                 description=f"""{del_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=c_get_color("red")
+                color=style.get_color("red")
             )
             await ctx.send(embed=embed)
 
