@@ -122,8 +122,8 @@ class BennyHelp(commands.HelpCommand):
         embed.add_field(name="Extra Info", value=command.description, inline=False)
 
         embed.set_author(
-            name=f"{self.ctx.author.name}#{self.ctx.author.discriminator}",
-            url=self.ctx.author.avatar.url
+            name=f"{self.context.author.name}#{self.context.author.discriminator}",
+            url=self.context.author.avatar.url
         )
 
         channel = self.get_destination()
