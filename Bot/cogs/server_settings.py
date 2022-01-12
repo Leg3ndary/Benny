@@ -32,7 +32,7 @@ CREATE TABLE prefixes(server_id integer NOT NULL PRIMARY KEY, prefix1 text DEFAU
 Prefix Table Schema
 CREATE TABLE IF NOT EXISTS prefixes(guild_id text, p1 text, p2 text, p3 text, p4 text, p5 text, p6 text, p7 text, p8 text, p9 text, p10 text, p11 text, p12 text, p13 text, p14 text, p15 text);
 
-INSERT INTO prefixes VALUES(guild_id, "?", , , , , , , , , , , , , , );
+INSERT INTO prefixes VALUES(guild_id, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
 
 UPDATE prefixes SET pnumhere WHERE guild_id = 'guildidhere';
 """
@@ -115,7 +115,7 @@ class Prefixes:
     async def add_guild(self, guild_id: str) -> None:
         """Add a guild to our db with default prefixes"""
         async with aiosqlite.connect("server.db") as db:
-            await db.execute("""INSERT INTO prefixes VALUES(?, "?", , , , , , , , , , , , , , );""", (str(guild_id),))
+            await db.execute("""INSERT INTO prefixes VALUES(?, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");""", (str(guild_id),))
             await db.commit()
             # Since we already know that they should only one value, nice
             self.bot_prefixes[str(guild_id)] = ["?"]
