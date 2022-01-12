@@ -35,18 +35,18 @@ intents = discord.Intents(
 
 prefix = config.get("Bot").get("Prefix")
 
-async def get_prefix(bot, message):
+async def get_prefix(bot, msg):
     """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
-    if message.guild is None:
+    if msg.guild is None:
         return bot.prefix
     else:
-        return bot.prefix_cache[str(message.guild.id)]
+        return bot.prefixes[str(msg.guild.id)]
 
 
 async def start_bot():
     """Start the bot with a session"""
     bot = commands.Bot(
-        command_prefix=prefix, intents=intents, description="The coolest bot ever"
+        command_prefix=get_prefix, intents=intents, description="The coolest bot ever"
     )
 
     bot.config = config

@@ -1,6 +1,6 @@
 {
     "Bot": {
-        "Prefix": "b"
+        "Prefix": "?"
     },
     "Mongo": {
         "User": "BennyBot",
