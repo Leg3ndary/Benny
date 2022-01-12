@@ -1,7 +1,7 @@
 import discord
 import json
 import lavalink
-from gears import style, c_get_color
+from gears import style
 from gears import util
 
 
