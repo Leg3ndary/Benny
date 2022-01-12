@@ -7,28 +7,6 @@ from gears import style
 
 
 """
-CREATE TABLE playlists(id integer NOT NULL, playlist_name text NOT NULL, songs text NOT NULL);
-
-INSERT INTO tablename VALUES(values go here);
-INSERT INTO playlists VALUES(id, playlist_name, songs);
-
-SELECT * FROM playlists;
-
-SELECT * FROM playlists WHERE id IS 1289739812739821;
-
-ALTER TABLE playlists ADD COLUMN plays integer;
-
-UPDATE playlists SET plays = 0 WHERE id=11111;
-
-DELETE FROM playlists WHERE plays <= 1;
-"""
-
-"""
-CREATE TABLE prefixes(server_id integer NOT NULL PRIMARY KEY, prefix1 text DEFAULT , )
-
-"""
-
-"""
 Prefix Table Schema
 CREATE TABLE IF NOT EXISTS prefixes(guild_id text, p1 text, p2 text, p3 text, p4 text, p5 text, p6 text, p7 text, p8 text, p9 text, p10 text, p11 text, p12 text, p13 text, p14 text, p15 text);
 
@@ -46,11 +24,33 @@ class Prefixes:
         self.bot_prefixes = bot_prefixes
 
     def sanitize_prefix(self, prefix: str) -> str:
-        """Sanitize a prefix and return it back clean"""
+        """
+        Sanitize a prefix and return it back clean
+        
+        Parameters
+        ----------
+        prefix: str
+            The prefix to sanitize
+            
+        Returns
+        -------
+        str
+        """
         return prefix.strip()[:25]
     
     async def generate_prefix_list(self, prefixes: tuple) -> list:
-        """Generate a prefix list from a tuple"""
+        """
+        Generate a prefix list from a tuple, skipping duplicates and emptys.
+
+        Parameters
+        ----------
+        prefixes: tuple
+            A tuple of prefixes, ignore the first as that will be the guild id
+        
+        Returns
+        -------
+        list
+        """
         prefix_list = []
         
         count = True
@@ -68,7 +68,16 @@ class Prefixes:
 
     async def get_prefixes(self, guild_id: str) -> tuple:
         """
-        Return a tuple of prefixes a guild has
+        Return a tuple of prefixes a guild has, first item is the guild_id
+
+        Parameters
+        ----------
+        guild_id: str
+            The guild id
+
+        Returns
+        -------
+        tuple
         """
         async with aiosqlite.connect("server.db") as db:
             async with db.execute(
@@ -78,7 +87,18 @@ class Prefixes:
 
     async def add_prefix(self, guild_id: str, prefix: str) -> str:
         """
-        Add a prefix to a guild
+        Add a prefix to a guild, adds to both our database and cache
+
+        Parameters
+        ----------
+        guild_id: str
+            The guild id
+        prefix: str
+            The prefix which we will sanitize
+
+        Returns
+        -------
+        str
         """
         prefixes = await self.get_prefixes(guild_id)
         prefix = self.sanitize_prefix(prefix)
@@ -99,16 +119,29 @@ class Prefixes:
                 else:
                     clear += 1
         else:
-            return("ERROR:You've already hit the max of 25 prefixes!\nRemove some to add more")
+            return("ERROR:You've already hit the max of 15 prefixes!\nRemove some to add more")
 
     async def delete_prefix(self, guild_id: str, prefix: str) -> str:
         """
-        Delete a prefix from a guild
+        Delete a prefix from a guild, deletes to both our database and cache
+
+        Parameters
+        ----------
+        guild_id: str
+            The guild id
+        prefix: str
+            The prefix which we will also sanitize
+
+        Returns
+        -------
+        str
         """
         prefixes = await self.get_prefixes(guild_id)
         prefix = self.sanitize_prefix(prefix)
         if prefix not in prefixes:
             return(f"ERROR:You don't have {prefix} as a prefix in your server")
+        elif len(prefixes) == 2:
+            return(f"ERROR:You must have at least one prefix for the bot at all times!")
         else:
             pnum = "p" + str(prefixes.index(prefix))
             async with aiosqlite.connect("server.db") as db:
@@ -119,7 +152,14 @@ class Prefixes:
                 return(f"SUCCESS:Deleted prefix `{prefix}` from your server!")
 
     async def add_guild(self, guild_id: str) -> None:
-        """Add a guild to our db with default prefixes"""
+        """
+        Add a guild to our db with default prefixes
+
+        Parameters
+        ----------
+        guild_id: str
+            The guild id to add.
+        """
         async with aiosqlite.connect("server.db") as db:
             await db.execute("""INSERT INTO prefixes VALUES(?, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");""", (str(guild_id),))
             await db.commit()

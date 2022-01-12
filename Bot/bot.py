@@ -1,11 +1,12 @@
 import aiohttp
 import asyncio
 import discord
+import math
 import json
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
-from gears import util
+from gears import util, style
 from gears.info_printer import InfoPrinter
 
 
@@ -63,12 +64,59 @@ async def start_bot():
 
     @bot.event
     async def on_ready():
-        """On ready tell us"""
+        """
+        On ready dispatch and print stuff
+        """
         bot.dispatch("load_musicdb")
         bot.dispatch("load_playlists")
         bot.dispatch("load_mongodb")
         bot.dispatch("load_prefixes")
         await bot.printer.print_bot_update("LOGGED IN")
+
+    @bot.event
+    async def on_guild_join(guild):
+        """
+        When we join a guild print it out
+        """
+        guild_bots = 0
+        for member in guild.members:
+            if member.bot:
+                guild_bots += 1
+
+        humans = len(guild.members) - guild_bots
+
+        bot_percentage = (math.trunc(guild_bots / (humans)) * 10000) / 100
+
+        await bot.printer.print_bot(f"JOINED {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{humans})")
+
+        if bot_percentage > 90 and humans < 19:
+            sent = False
+            embed = discord.Embed(
+                title=f"Sorry!",
+                description=f"""Your server has **{guild_bots}** compared to your **{len(guild.members)}**
+                Either:
+                - Have `20+` humans
+                - Lower your servers percentage of bots
+                Currently **{bot_percentage}%** bots""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red")
+            )
+            for channel in guild.channels:
+                if "general" in channel.name:
+                    
+                    await channel.send(embed=embed)
+                    sent = True
+                    break
+            if not sent:
+                try:
+                    await guild.channels[0].send(embed=embed)
+                except Exception as e:
+                    print(e)
+
+            await bot.printer.print_bot(f"AUTOLEFT {guild.name} {guild.id}")
+
+        
+    
 
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
