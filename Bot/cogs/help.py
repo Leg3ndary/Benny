@@ -6,13 +6,6 @@ from gears.style import c_get_color
 
 '''
 Example for command help formats
-    @commands.command(
-        name="Command Name", <== Optional 
-        help="We treat this as a small description",
-        brief="Title of Help Embed", 
-        usage="MD formatting for usage",
-        description="Extra Info About the command"
-    )
 
 @commands.command(
     name="CommandName",
@@ -31,6 +24,7 @@ async def my_command(self, ctx):
 
 
 class BennyHelp(commands.HelpCommand):
+    """Custom Help Command Class"""
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
         embed = discord.Embed(title="Help", color=c_get_color())
@@ -45,7 +39,7 @@ class BennyHelp(commands.HelpCommand):
 
             if command_signatures:
                 cog_name = getattr(cog, "qualified_name", "ERROR")
-                if cog_name in ["Dev"]:
+                if cog_name in ["ERROR", "Dev", "CustomCommands"]:
                     pass
                 else:
                     signatures = "\n".join(command_signatures)
