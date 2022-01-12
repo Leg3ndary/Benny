@@ -37,7 +37,6 @@ async def load_cogs(bot, cogs):
                 bot.load_extension(f"cogs.{file[:-3]}")
                 await bot.printer.print_cog_update(file[:-3], "LOAD")
                 cog_list.append(f"cogs.{file[:-3]}")
-                print(f"Loaded {file[:-3]}")
 
         except Exception as e:
             print(f"Cog {file[:-3]} failed loading\nError: {e}")

@@ -47,13 +47,12 @@ async def get_prefix(bot, msg):
 
 async def start_bot():
     """Start the bot with a session"""
-    start = time.monotonic()
 
     bot = commands.Bot(
         command_prefix=get_prefix, intents=intents, description="The coolest bot ever"
     )
 
-    bot.printer = InfoPrinter()
+    bot.printer = InfoPrinter(bot)
     await bot.printer.print_load("Printer")
 
     bot.config = config
@@ -70,11 +69,11 @@ async def start_bot():
         bot.dispatch("load_playlists")
         bot.dispatch("load_mongodb")
         bot.dispatch("load_prefixes")
-        print(f"Bot {bot.user} logged in.")
+        await bot.printer.print_bot_update("LOGGEDIN")
 
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
-        print("Loaded aiohttp session")
+        await bot.printer.print_load("AIOHTTP Session")
 
         await bot.start(os.getenv("Bot_Token"))
 
