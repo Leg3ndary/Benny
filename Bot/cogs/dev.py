@@ -215,14 +215,14 @@ class Dev(commands.Cog):
         await ctx.send(embed=embed)
 
     @dev.command(
-        help="Clears Terminal by making a massive space",
+        help="Clears Terminal",
         brief="Terminal Cleared",
         usage="",
         description="None",
         hidden=True,
     )
     async def ct(self, ctx):
-        print("\x1b[2J")
+        os.system("clear")
         embed = discord.Embed(
             title="Terminal Cleared",
             timestamp=discord.utils.utcnow(),
@@ -280,7 +280,7 @@ class Dev(commands.Cog):
 
     @commands.command(name="eval", aliases=["exec"])
     @commands.is_owner()
-    async def eval_cmd(self, ctx, *, code: str):
+    async def _eval(self, ctx, *, code: str):
         """Evaluates code given"""
 
         if "```py" not in code:

@@ -7,6 +7,7 @@ import time
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears import util
+from gears.info_printer import InfoPrinter
 
 
 load_dotenv()
@@ -52,11 +53,13 @@ async def start_bot():
         command_prefix=get_prefix, intents=intents, description="The coolest bot ever"
     )
 
+    bot.printer = InfoPrinter()
+    await bot.printer.print_load("Printer")
+
     bot.config = config
-    print("Loaded Bot Config")
+    await bot.printer.print_load("Config")
 
     bot.prefix = prefix
-    print("Loaded default prefix")
 
     util.load_cogs(bot, os.listdir("Bot/cogs"))
 
