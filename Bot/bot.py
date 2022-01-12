@@ -112,7 +112,7 @@ async def start_bot():
                     await guild.channels[0].send(embed=embed)
                 except:
                     pass
-
+            await guild.leave()
             await bot.printer.print_bot(f"AUTOLEFT {guild.name} {guild.id}")
 
         
