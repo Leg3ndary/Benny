@@ -3,7 +3,6 @@ import asyncio
 import discord
 import json
 import os
-import time
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears import util
@@ -69,7 +68,7 @@ async def start_bot():
         bot.dispatch("load_playlists")
         bot.dispatch("load_mongodb")
         bot.dispatch("load_prefixes")
-        await bot.printer.print_bot_update("LOGGEDIN")
+        await bot.printer.print_bot_update("LOGGED IN")
 
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
