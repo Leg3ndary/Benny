@@ -72,10 +72,8 @@ async def start_bot():
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
         print("Loaded aiohttp session")
-        await bot.start(os.getenv("Bot_Token"))
 
-        end = time.monotonic()
-        print(f"Bot loaded in {(round((end - start) * 1000, 2))/1000} seconds.")
+        await bot.start(os.getenv("Bot_Token"))
 
 
 asyncio.run(start_bot())

@@ -197,9 +197,9 @@ class Dev(commands.Cog):
                 success += 1
 
         if fails > 0:
-            embed_color = c_get_color("red")
+            embed_color = style.get_color("red")
         else:
-            embed_color = c_get_color("green")
+            embed_color = style.get_color("green")
 
         cog_visual = f"\n".join(cog_statuslist)
 
@@ -406,7 +406,7 @@ Add stuff here later..
             color=style.get_color("green"),
         )
         await ctx.send(embed=embed)
-        os.system("bash Benny/restart.sh")
+        os.system("bash start_bot.sh")
 
 
 def setup(bot):
