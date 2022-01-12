@@ -16,7 +16,6 @@ class CogExample(commands.Cog):
         description="""Description of Command""",
         help="""Long Help text for this command""",
         brief="""Short help text""",
-        usage="Usage",
         aliases=["None"],
         enabled=True,
         hidden=False,

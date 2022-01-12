@@ -52,7 +52,6 @@ class Dev(commands.Cog):
     @dev.command(
         help="Load a cog",
         brief="Loading Cogs",
-        usage="<cog = FileName>",
         description="None",
         hidden=True,
     )
@@ -86,7 +85,6 @@ class Dev(commands.Cog):
     @dev.command(
         help="Unload a cog",
         brief="Unloading Cogs",
-        usage="<cog = FileName>",
         description="None",
         hidden=True,
     )
@@ -120,7 +118,6 @@ class Dev(commands.Cog):
     @dev.command(
         help="Unload then Load a cog",
         brief="Reloading Cogs",
-        usage="<cog = FileName>",
         description="None",
         hidden=True,
     )
@@ -155,7 +152,6 @@ class Dev(commands.Cog):
     @dev.command(
         help="Shows a list of all servers that Tenshi is in.",
         brief="Servers List",
-        usage="",
         description="None",
         hidden=True,
     )
@@ -177,7 +173,6 @@ class Dev(commands.Cog):
     @dev.command(
         help="Tries to reload every cog",
         brief="Syncing Cogs",
-        usage="",
         description="None",
         hidden=True,
     )
@@ -221,7 +216,6 @@ class Dev(commands.Cog):
     @dev.command(
         help="Clears Terminal",
         brief="Terminal Cleared",
-        usage="",
         description="None",
         hidden=True,
     )
@@ -372,7 +366,6 @@ class Dev(commands.Cog):
         description="""Description of Command""",
         help="""Long Help text for this command""",
         brief="""Short help text""",
-        usage="Usage",
         aliases=["end", "stop"],
         enabled=True,
         hidden=True,
@@ -396,7 +389,6 @@ Add stuff here later..
         description="""restart the bot by running an sh script""",
         help="""Long Help text for this command""",
         brief="""Short help text""",
-        usage="Usage",
         aliases=[],
         enabled=True,
         hidden=True,
