@@ -85,33 +85,33 @@ async def start_bot():
 
         humans = len(guild.members) - guild_bots
 
-        bot_percentage = (math.trunc(guild_bots / (humans)) * 10000) / 100
+        bot_percentage = (math.trunc(guild_bots / (len(guild.members))) * 10000) / 100
 
-        await bot.printer.print_bot(f"JOINED {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{humans})")
+        await bot.printer.print_bot(f"JOINED {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})")
 
-        if bot_percentage > 90 and humans < 19:
+        if bot_percentage > 80 and humans < 19:
             sent = False
             embed = discord.Embed(
                 title=f"Sorry!",
-                description=f"""Your server has **{guild_bots}** compared to your **{len(guild.members)}**
+                description=f"""Your server has **{guild_bots} Bots ** compared to **{len(guild.members)} Members**
                 Either:
                 - Have `20+` humans
-                - Lower your servers percentage of bots
+                Currently **{humans}** humans
+                - Lower your servers percentage of bots to under 80%
                 Currently **{bot_percentage}%** bots""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red")
             )
             for channel in guild.channels:
                 if "general" in channel.name:
-                    
                     await channel.send(embed=embed)
                     sent = True
                     break
             if not sent:
                 try:
                     await guild.channels[0].send(embed=embed)
-                except Exception as e:
-                    print(e)
+                except:
+                    pass
 
             await bot.printer.print_bot(f"AUTOLEFT {guild.name} {guild.id}")
 

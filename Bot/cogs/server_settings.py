@@ -1,5 +1,5 @@
 import aiosqlite
-import asyncio
+from colorama import Fore
 import discord
 import discord.utils
 from discord.ext import commands
@@ -20,8 +20,8 @@ class Prefixes:
     A way to update prefixes both in the bot's cache and in the database with nice simple functions
     """
 
-    def __init__(self, bot_prefixes) -> None:
-        self.bot_prefixes = bot_prefixes
+    def __init__(self, bot) -> None:
+        self.bot = bot
 
     def sanitize_prefix(self, prefix: str) -> str:
         """
@@ -114,7 +114,7 @@ class Prefixes:
                         # We don't worry about injection because it's literally not possible for pnum
                         await db.execute(f"""UPDATE prefixes SET {pnum} = ? WHERE guild_id = ?;""", (prefix, str(guild_id)))
                         await db.commit()
-                        self.bot_prefixes[str(guild_id)] = await self.generate_prefix_list(await self.get_prefixes(guild_id))
+                        self.bot.prefixes[str(guild_id)] = await self.generate_prefix_list(await self.get_prefixes(guild_id))
                         return(f"SUCCESS:Added prefix `{prefix}` to your server!")
                 else:
                     clear += 1
@@ -148,7 +148,7 @@ class Prefixes:
                 # We don't worry about injection because it's literally not possible for pnum
                 await db.execute(f"""UPDATE prefixes SET {pnum} = "" WHERE guild_id = ?;""", (str(guild_id),))
                 await db.commit()
-                self.bot_prefixes[str(guild_id)] = await self.generate_prefix_list(await self.get_prefixes(guild_id))
+                self.bot.prefixes[str(guild_id)] = await self.generate_prefix_list(await self.get_prefixes(guild_id))
                 return(f"SUCCESS:Deleted prefix `{prefix}` from your server!")
 
     async def add_guild(self, guild_id: str) -> None:
@@ -159,13 +159,36 @@ class Prefixes:
         ----------
         guild_id: str
             The guild id to add.
+
+        Returns
+        -------
+        None
         """
         async with aiosqlite.connect("server.db") as db:
             await db.execute("""INSERT INTO prefixes VALUES(?, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");""", (str(guild_id),))
             await db.commit()
             # Since we already know that they should only one value, nice
-            self.bot_prefixes[str(guild_id)] = ["?"]
-            print(f"[SERVER SETTINGS] Added {guild_id} to the database")
+            self.bot.prefixes[str(guild_id)] = ["?"]
+            await self.bot.printer.print_cog(await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"), f"Added {guild_id} to prefixes")
+
+    async def delete_guild(self, guild_id: str) -> None:
+        """
+        Delete a guild to our db, remove all prefixes
+        
+        Parameters
+        ----------
+        guild_id: str
+            The guild_id to delete the data from
+
+        Returns
+        -------
+        None
+        """
+        async with aiosqlite.connect("server.db") as db:
+            await db.execute("""DELETE FROM prefixes WHERE guild_id = ?;""", (str(guild_id),))
+            await db.commit()
+            del self.bot.prefixes[str(guild_id)]
+            await self.bot.printer.print_cog(await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"), f"Deleted {guild_id} from  prefixes")
 
 
 
@@ -186,7 +209,7 @@ class ServerSettings(commands.Cog):
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS prefixes(guild_id text, p1 text, p2 text, p3 text, p4 text, p5 text, p6 text, p7 text, p8 text, p9 text, p10 text, p11 text, p12 text, p13 text, p14 text, p15 text);"""
             )
-            self.bot.prefix_manager = Prefixes(self.bot.prefixes)
+            self.bot.prefix_manager = Prefixes(self.bot)
         
         for guild in self.bot.guilds:
             prefix_tup = await self.bot.prefix_manager.get_prefixes(guild.id)
@@ -196,10 +219,21 @@ class ServerSettings(commands.Cog):
                 # We didn't find the prefix added to to the db, add and add to prefixes
                 await self.bot.prefix_manager.add_guild(guild.id)
 
+        await self.bot.printer.print_load("Prefixes")
+
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        """Whenever we join a guild add our data"""
+        """
+        Whenever we join a guild add our data
+        """
         await self.bot.prefix_manager.add_guild(guild.id)
+    
+    @commands.Cog.listener()
+    async def on_guild_leave(self, guild):
+        """
+        Whenever we leave a guild, remove prefix data
+        """
+        await self.bot.prefix_manager.delete_guild(guild.id)
 
     @commands.group(
         name="prefix",

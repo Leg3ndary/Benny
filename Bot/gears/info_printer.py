@@ -82,13 +82,40 @@ class InfoPrinter:
         """
         print(f"{await self.generate_category(f'{Fore.YELLOW}CONNECTED')} {info}")
 
-    async def print_bot(self, info: str):
+    async def print_bot(self, categories: str, info: str):
         """
         [BOT] Bot related info that needs to be printed
         
         Parameters
         ----------
+        categories: str
+            Extra categories if I need it
         info: str
             The info to add or print
         """
-        print(f"{await self.generate_category(f'{Fore.CYAN}BOT')} {info}")
+        print(f"{await self.generate_category(f'{Fore.CYAN}BOT')}{categories} {info}")
+    
+    async def print_update_db(self, dbtype: str, name: str, info: str):
+        """
+        [DB] DB related info that needs to be printed
+        
+        Parameters
+        ----------
+        dbtype
+        info: str
+            The info to add or print
+        """
+        print(f"{await self.generate_category(f'{Fore.MAGENTA}DB')} {info}")
+
+    async def print_cog(self, categories: str, info: str):
+        """
+        [COG] Cog related info that needs to be printed
+        
+        Parameters
+        ----------
+        categories: str
+            Extra categories if I need it
+        info: str
+            The info to add or print
+        """
+        print(f"{await self.generate_category(f'{Fore.RED}COG')}{categories} {info}")
