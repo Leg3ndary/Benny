@@ -83,7 +83,6 @@ class BennyHelp(commands.HelpCommand):
         description="""Description of Command, complete overview""",
         help="""Long Help text for this command""",
         brief="""Help Command Title""",
-        usage="Usage in MD Format",
         aliases=[],
         enabled=True,
         hidden=False
@@ -122,7 +121,13 @@ class BennyHelp(commands.HelpCommand):
 
         embed.add_field(name="Extra Info", value=command.description, inline=False)
 
+        embed.set_author(
+            name=f"{self.ctx.author.name}#{self.ctx.author.discriminator}",
+            url=self.ctx.author.avatar.url
+        )
+
         channel = self.get_destination()
+        await channel.send(self.get_command_signature(command))
         await channel.send(embed=embed)
 
     async def send_error_message(self, error):
