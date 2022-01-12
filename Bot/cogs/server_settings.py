@@ -52,7 +52,8 @@ class Prefixes:
     async def generate_prefix_list(self, prefixes: tuple) -> list:
         """Generate a prefix list from a tuple"""
         prefix_list = []
-        for prefix in prefixes:
+        
+        for prefix in prefixes.pop(0):
             if prefix == "":
                 pass
             elif prefix in prefix_list:
