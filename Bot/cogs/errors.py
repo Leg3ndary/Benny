@@ -5,7 +5,7 @@ import discord.utils
 import traceback
 from discord.ext import commands
 from gears.style import c_get_color, c_get_emoji
-from gears.useful import report_error
+from gears import util
 
 
 class Errors(commands.Cog):
@@ -63,7 +63,7 @@ Type: {error.converter}
                 color=c_get_color("red"),
             )
             conversion_error.set_thumbnail(url=c_get_emoji("image", "cancel"))
-            await report_error(
+            await util.report_error(
                 self.bot,
                 f"""
 [Error Report]({url})

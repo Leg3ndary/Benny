@@ -5,7 +5,7 @@ import json
 import os
 from discord.ext import commands
 from dotenv import load_dotenv
-from gears.useful import load_cogs
+from gears import util
 
 
 load_dotenv()
@@ -16,11 +16,11 @@ intents = discord.Intents(
     bans=True,
     dm_messages=True,
     dm_reactions=True,
-    dm_typing=True,
+    dm_typing=False,
     emojis=True,
     guild_messages=True,
     guild_reactions=True,
-    guild_typing=True,
+    guild_typing=False,
     guilds=True,
     integrations=True,
     invites=True,
@@ -28,7 +28,7 @@ intents = discord.Intents(
     messages=True,
     presences=True,
     reactions=True,
-    typing=True,
+    typing=False,
     voice_states=True,
     webhooks=True,
 )
@@ -56,7 +56,7 @@ async def start_bot():
     bot.prefix = prefix
     print("Loaded default prefix")
 
-    load_cogs(bot, os.listdir("Benny/cogs"))
+    util.load_cogs(bot, os.listdir("Benny/cogs"))
 
     @bot.event
     async def on_ready():

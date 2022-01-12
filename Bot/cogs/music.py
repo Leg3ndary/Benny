@@ -8,7 +8,7 @@ import tekore
 from discord.ext import commands
 from gears.msg_views import LoopButton, PlayerSelector
 from gears.style import c_get_color, c_get_emoji
-from gears.useful import remove_zcs
+from gears import util
 
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
@@ -420,7 +420,7 @@ class Music(commands.Cog):
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
-= Duration: {remove_zcs(lavalink.format_time(track.duration))} =
+= Duration: {util.remove_zcs(lavalink.format_time(track.duration))} =
 ```""",
             timestamp=discord.utils.utcnow(),
             color=c_get_color("red"),
@@ -522,7 +522,7 @@ class Music(commands.Cog):
         total_duration += player.current.duration
 
         for count, track in enumerate(queue, 1):
-            queue_visual = f"{queue_visual}\n{count}. {track.title} [{track.author}] ({remove_zcs(lavalink.format_time(track.duration))})"
+            queue_visual = f"{queue_visual}\n{count}. {track.title} [{track.author}] ({util.remove_zcs(lavalink.format_time(track.duration))})"
             total_duration += track.duration
 
         embed = discord.Embed(
@@ -548,7 +548,7 @@ class Music(commands.Cog):
             inline=False,
         )
         embed.set_footer(
-            text=f"""Total Duration: {remove_zcs(lavalink.format_time(total_duration))}"""
+            text=f"""Total Duration: {util.remove_zcs(lavalink.format_time(total_duration))}"""
         )
         await ctx.send(embed=embed)
 
@@ -584,7 +584,7 @@ class Music(commands.Cog):
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
-= Duration: {remove_zcs(lavalink.format_time(current.duration))} =
+= Duration: {util.remove_zcs(lavalink.format_time(current.duration))} =
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=c_get_color(),
@@ -672,7 +672,7 @@ class Music(commands.Cog):
         embed = discord.Embed(
             title=f"Lavalink Statistics",
             description=f"""```yaml
-Uptime: {remove_zcs(lavalink.format_time(stats.uptime))}
+Uptime: {util.remove_zcs(lavalink.format_time(stats.uptime))}
 Players: {stats.players}
 
 Memory Free: {get_size(stats.memory_free)}
