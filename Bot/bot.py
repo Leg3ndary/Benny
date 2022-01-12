@@ -90,7 +90,7 @@ async def start_bot():
 
         await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.GREEN}JOINED"), f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})")
 
-        if bot_percentage > 80 and humans < 19:
+        if bot_percentage > 20 and humans < 19:
             sent = False
             embed = discord.Embed(
                 title=f"Sorry!",
@@ -98,7 +98,7 @@ async def start_bot():
                 Either:
                 - Have `20+` humans
                 Currently **{humans}** humans
-                - Lower your servers percentage of bots to under 80%
+                - Lower your servers percentage of bots to under 20%
                 Currently **{bot_percentage}%** bots""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red")
