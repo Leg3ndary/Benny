@@ -35,13 +35,12 @@ intents = discord.Intents(
 
 prefix = config.get("Bot").get("Prefix")
 
-'''async def get_prefix(bot, message):
+async def get_prefix(bot, message):
     """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
     if message.guild is None:
         return bot.prefix
     else:
         return bot.prefix_cache[str(message.guild.id)]
-'''
 
 
 async def start_bot():
@@ -56,7 +55,7 @@ async def start_bot():
     bot.prefix = prefix
     print("Loaded default prefix")
 
-    util.load_cogs(bot, os.listdir("Benny/cogs"))
+    util.load_cogs(bot, os.listdir("Bot/cogs"))
 
     @bot.event
     async def on_ready():
