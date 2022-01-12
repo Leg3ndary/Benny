@@ -189,7 +189,7 @@ class ServerSettings(commands.Cog):
         help="""Long Help text for this command""",
         brief="""Short help text""",
         usage="Usage",
-        aliases=["None"],
+        aliases=[],
         enabled=True,
         hidden=False,
     )
@@ -222,7 +222,7 @@ class ServerSettings(commands.Cog):
         help="""Long Help text for this command""",
         brief="""Short help text""",
         usage="Usage",
-        aliases=["None"],
+        aliases=[],
         enabled=True,
         hidden=False,
     )
