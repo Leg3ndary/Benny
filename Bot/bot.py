@@ -86,7 +86,7 @@ async def start_bot():
 
         humans = len(guild.members) - guild_bots
 
-        bot_percentage = (math.trunc(guild_bots / (len(guild.members))) * 10000) / 100
+        bot_percentage = math.trunc(( guild_bots / len(guild.members) ) * 10000) / 100
 
         await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.GREEN}JOINED"), f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})")
 
