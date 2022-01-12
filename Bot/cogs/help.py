@@ -1,4 +1,5 @@
 import discord
+from discord.commands import SlashCommand
 from discord.ext import commands
 from gears.style import c_get_color
 
@@ -34,11 +35,17 @@ class BennyHelp(commands.HelpCommand):
         """When help is ran on its own no args"""
         embed = discord.Embed(title="Help", color=c_get_color())
         for cog, commands in mapping.items():
-            command_signatures = [self.get_command_signature(c) for c in commands]
+            command_signatures = []
+
+            for command in commands:
+                if isinstance(command, SlashCommand):
+                    pass
+                else:
+                    command_signatures.append(self.get_command_signature(command))
+
             if command_signatures:
                 cog_name = getattr(cog, "qualified_name", "ERROR")
-                if cog_name in ["DevOnly", "ERROR", "Redis"]:
-                    # Hiding certain names :L
+                if cog_name in ["Dev"]:
                     pass
                 else:
                     signatures = "\n".join(command_signatures)
