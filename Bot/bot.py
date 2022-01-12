@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+from colorama import Fore
 import discord
 import math
 import json
@@ -87,7 +88,7 @@ async def start_bot():
 
         bot_percentage = (math.trunc(guild_bots / (len(guild.members))) * 10000) / 100
 
-        await bot.printer.print_bot(f"JOINED {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})")
+        await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.GREEN}JOINED"), f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})")
 
         if bot_percentage > 80 and humans < 19:
             sent = False
@@ -113,10 +114,14 @@ async def start_bot():
                 except:
                     pass
             await guild.leave()
-            await bot.printer.print_bot(f"AUTOLEFT {guild.name} {guild.id}")
+            await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.MAGENTA}AUTOLEFT"),f" {guild.name} {guild.id}")
 
-        
-    
+    @bot.event
+    async def on_guild_remove(guild):
+        """
+        When we leave a guild
+        """
+        await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.RED}LEFT"),f" {guild.name} {guild.id}")
 
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session

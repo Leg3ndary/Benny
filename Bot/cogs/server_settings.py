@@ -229,7 +229,7 @@ class ServerSettings(commands.Cog):
         await self.bot.prefix_manager.add_guild(guild.id)
     
     @commands.Cog.listener()
-    async def on_guild_leave(self, guild):
+    async def on_guild_remove(self, guild):
         """
         Whenever we leave a guild, remove prefix data
         """
