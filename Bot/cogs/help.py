@@ -8,14 +8,14 @@ COG_COLOR = {
     "Playlist": style.get_color("red"),
     "ServerSettings": style.get_color("grey"),
     "Exalia": style.get_color("black"),
-    "Help": style.get_color("cyan"),
+    "Help": style.get_color("aqua"),
     "MongoDB": style.get_color("green"),
     "Games": style.get_color("black"),
     "Base": style.get_color("blue"),
     "Music": style.get_color("orange"),
     "Errors": style.get_color("red"),
     "SystemInfo": style.get_color("orange"),
-    "Dev": style.get_color("cyan"),
+    "Dev": style.get_color("aqua"),
     "Moderation": style.get_color("purple"),
     "CustomCommands": style.get_color("white")
 }
@@ -46,7 +46,7 @@ class BennyHelp(commands.HelpCommand):
         """When help is ran on its own no args"""
         embed = discord.Embed(
             title="Help",
-            color=style.get_color("cyan")
+            color=style.get_color("aqua")
         )
         for cog, commands in mapping.items():
             command_signatures = []
@@ -79,7 +79,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=cog.qualified_name,
             description=cog.description,
-            color=COG_COLOR.get(cog),
+            color=COG_COLOR.get(cog.qualified_name),
         )
         commands_view = "\n".join(cog.get_commands())
         embed.add_field(
@@ -95,7 +95,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=group.signature,
             description=f"""{group.short_doc}""",
-            color=group.cog,
+            color=COG_COLOR.get(group.cog),
         )
         for command in group.walk_commands():
             embed.add_field(
@@ -117,7 +117,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=self.get_command_signature(command),
             description=command.description,
-            color=style.get_color(command.cog),
+            color=COG_COLOR.get(command.cog_name),
         )
         embed.add_field(
             name="Help",
