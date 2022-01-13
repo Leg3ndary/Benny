@@ -1,16 +1,36 @@
 import discord
 import discord.utils
+import re
 from discord.ext import commands
 from gears import style
 
 
-class Moderation(commands.Cog):
+class Mod(commands.Cog):
     """Moderation related commands"""
 
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(name="ban")
+
+        '''
+        name="command",
+        description="""Description of command, complete overview with all neccessary info""",
+        help="""More help""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+        '''
+
+    @commands.command(
+        name="ban",
+        description="""Ban a user from this guild""",
+        help="""More help""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
     @commands.has_permissions(ban_members=True)
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
     async def ban_user(self, ctx, user: discord.Member = None, *, reason: str = None):
@@ -23,6 +43,13 @@ class Moderation(commands.Cog):
                 color=style.get_color("red"),
             )
             return await ctx.send(embed=same_user_embed)
+
+        elif not user and re.match(r"[0-9]{15,19}", str(user)):
+            try:
+                user = await self.bot.fetch_user(int(user))
+            except:
+                pass
+
         elif not user:
             none_mentioned = discord.Embed(
                 title=f"Error",
@@ -31,6 +58,7 @@ class Moderation(commands.Cog):
                 color=style.get_color("red"),
             )
             return await ctx.send(embed=none_mentioned)
+
         elif user.id == 889672871620780082:
             ban_bot = discord.Embed(
                 title=f"Rude",
@@ -125,4 +153,4 @@ class Moderation(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(Moderation(bot))
+    bot.add_cog(Mod(bot))
