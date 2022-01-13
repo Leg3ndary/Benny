@@ -103,7 +103,7 @@ class BennyHelp(commands.HelpCommand):
                 else:
                     embed.add_field(
                         name=f"{COG_INFO.get(cog_name).get('emoji')} {cog_name}",
-                        value=cog.short_doc,
+                        value="not done yet",
                         inline=True,
                     )
 
