@@ -76,6 +76,8 @@ class BennyHelp(commands.HelpCommand):
 
     async def send_cog_help(self, cog):
         """Sending help for cogs"""
+        print(cog)
+        print(cog.qualified_name)
         embed = discord.Embed(
             title=cog.qualified_name,
             description=cog.description,
@@ -95,7 +97,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=group.signature,
             description=f"""{group.short_doc}""",
-            color=COG_COLOR.get(group.cog),
+            color=COG_COLOR.get(group.cog_name),
         )
         for command in group.walk_commands():
             embed.add_field(
