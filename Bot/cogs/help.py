@@ -6,9 +6,31 @@ from gears import style
 
 class BennyHelp(commands.HelpCommand):
     """Custom Help Command Class"""
+
+    def get_command_signature(self, command):
+        """
+        Rewriting the get_command_signature method to remove stuff I don't like
+        """
+        parent = command.parent
+        entries = []
+        while parent is not None:
+            if not parent.signature or parent.invoke_without_command:
+                entries.append(parent.name)
+            else:
+                entries.append(parent.name + " " + parent.signature)
+            parent = parent.parent
+        parent_sig = " ".join(reversed(entries))
+
+        alias = command.name if not parent_sig else parent_sig + " " + command.name
+
+        return f"{self.context.clean_prefix}{alias} {command.signature}"
+
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
-        embed = discord.Embed(title="Help", color=style.get_color())
+        embed = discord.Embed(
+            title="Help",
+            color=style.get_color()
+        )
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -38,13 +60,16 @@ class BennyHelp(commands.HelpCommand):
     async def send_cog_help(self, cog):
         """Sending help for cogs"""
         embed = discord.Embed(
-            title=cog.qualified_name, description=cog.description, color=style.get_color()
+            title=cog.qualified_name,
+            description=cog.description,
+            color=style.get_color(),
         )
-        commands_view = ""
-        for command in cog.get_commands():
-            commands_view = f"{commands_view}\n{command}"
-
-        embed.add_field(name="Commands", value=commands_view, inline=False)
+        commands_view = "\n".join(cog.get_commands())
+        embed.add_field(
+            name="Commands",
+            value=commands_view,
+            inline=False
+        )
         channel = self.get_destination()
         await channel.send(embed=embed)
 
@@ -53,13 +78,11 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=group.name,
             description=f"""{group.short_doc}""",
-            color=style.get_color()
+            color=style.get_color(),
         )
         commands = ""
-        for cc, command in enumerate(group.walk_commands(), start=1):
-            commands = (
-                f"""{commands}\n{cc}. {str(command).replace(f"{group.name} ", "")}"""
-            )
+        for command in group.walk_commands():
+            commands += f"""\n- {str(command).replace(f"{group.name} ", "")}"""
 
         if commands == "":
             commands = "None"
@@ -73,16 +96,16 @@ class BennyHelp(commands.HelpCommand):
         )
 
         channel = self.get_destination()
-        await channel.send(embed=embed)\
+        await channel.send(embed=embed)
 
     '''
     Example for command help formats
 
     @commands.command(
-        name="CommandName",
-        description="""Description of Command, complete overview""",
-        help="""Long Help text for this command""",
-        brief="""Help Command Title""",
+        name="command",
+        description="""Description of command, complete overview with all neccessary info""",
+        help="""More help""",
+        brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
         hidden=False
@@ -91,39 +114,37 @@ class BennyHelp(commands.HelpCommand):
     async def my_command(self, ctx):
         """Command description"""
     '''
+
     async def send_command_help(self, command):
         """
         Sending help for actual commands
         """
         embed = discord.Embed(
-            title=command.brief, 
-            description=command.description, 
-            color=style.get_color()
+            title=self.get_command_signature,
+            description=command.description,
+            color=style.get_color(),
         )
         embed.add_field(
-            name="Help", value=command.help)
+            name="Help",
+            value=command.help
+        )
         alias = command.aliases
         if alias:
             alias_text = ", ".join(alias)
         else:
             alias_text = "None"
-
-        alias_text = f"[Aliases]({alias_text})"
-
         embed.add_field(
-            name="Usage",
+            name="Usage and Aliases",
             value=f"""```md
 {self.get_command_signature(command)}
+
 {alias_text}
 ```""",
             inline=False,
         )
-
-        embed.add_field(name="Extra Info", value=command.description, inline=False)
-
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
-            url=self.context.author.avatar
+            url=self.context.author.avatar,
         )
 
         channel = self.get_destination()
@@ -132,9 +153,7 @@ class BennyHelp(commands.HelpCommand):
     async def send_error_message(self, error):
         """Error Messages that may appear"""
         embed = discord.Embed(
-            title="Error",
-            description=error,
-            color=style.get_color("red")
+            title="Error", description=error, color=style.get_color("red")
         )
         channel = self.get_destination()
         await channel.send(embed=embed)
@@ -145,7 +164,6 @@ class Help(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
         help_command = BennyHelp()
         help_command.cog = self
         bot.help_command = help_command

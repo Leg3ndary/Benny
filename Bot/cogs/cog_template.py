@@ -12,16 +12,19 @@ class CogExample(commands.Cog):
         self.bot = bot
 
     @commands.command(
-        name="CommandName",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=["None"],
+        name="command",
+        description="""Description of command, complete overview with all neccessary info""",
+        help="""More help""",
+        brief="Brief one liner about the command",
+        aliases=[],
         enabled=True,
-        hidden=False,
+        hidden=False
     )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx):
         """Command description"""
+
+    
 
 
 def setup(bot):
