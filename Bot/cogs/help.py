@@ -9,7 +9,7 @@ COG_INFO = {
         "color": style.get_color("red"),
         "emoji": ":notepad_spiral:"
     },
-    "ServerSettings": {
+    "Settings": {
         "color": style.get_color("grey"),
         "emoji": ":gear:"
     },
@@ -49,7 +49,7 @@ COG_INFO = {
         "color": style.get_color("aqua"),
         "emoji": ":lock:"
     },
-    "Moderation": {
+    "Mod": {
         "color": style.get_color("purple"),
         "emoji": ":hammer:"
     },
