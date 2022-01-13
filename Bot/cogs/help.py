@@ -4,6 +4,23 @@ from discord.ext import commands
 from gears import style
 
 
+COG_COLOR = {
+    "Playlist": style.get_color("red"),
+    "ServerSettings": style.get_color("grey"),
+    "Exalia": style.get_color("black"),
+    "Help": style.get_color("cyan"),
+    "MongoDB": style.get_color("green"),
+    "Games": style.get_color("black"),
+    "Base": style.get_color("blue"),
+    "Music": style.get_color("orange"),
+    "Errors": style.get_color("red"),
+    "SystemInfo": style.get_color("orange"),
+    "Dev": style.get_color("cyan"),
+    "Moderation": style.get_color("purple"),
+    "CustomCommands": style.get_color("white")
+}
+
+
 class BennyHelp(commands.HelpCommand):
     """Custom Help Command Class"""
 
@@ -29,7 +46,7 @@ class BennyHelp(commands.HelpCommand):
         """When help is ran on its own no args"""
         embed = discord.Embed(
             title="Help",
-            color=style.get_color()
+            color=style.get_color("cyan")
         )
         for cog, commands in mapping.items():
             command_signatures = []
@@ -62,7 +79,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=cog.qualified_name,
             description=cog.description,
-            color=style.get_color(),
+            color=COG_COLOR.get(cog),
         )
         commands_view = "\n".join(cog.get_commands())
         embed.add_field(
@@ -76,9 +93,9 @@ class BennyHelp(commands.HelpCommand):
     async def send_group_help(self, group):
         """Sending help for groups"""
         embed = discord.Embed(
-            title=group.name,
+            title=group.signature,
             description=f"""{group.short_doc}""",
-            color=style.get_color(),
+            color=group.cog,
         )
         for command in group.walk_commands():
             embed.add_field(
@@ -86,6 +103,10 @@ class BennyHelp(commands.HelpCommand):
                 value=command.brief,
                 inline=False
             )
+        embed.set_author(
+            name=f"{self.context.author.name}#{self.context.author.discriminator}",
+            icon_url=self.context.author.avatar,
+        )
         channel = self.get_destination()
         await channel.send(embed=embed)
 
@@ -96,7 +117,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=self.get_command_signature(command),
             description=command.description,
-            color=style.get_color(),
+            color=style.get_color(command.cog),
         )
         embed.add_field(
             name="Help",
@@ -118,7 +139,7 @@ class BennyHelp(commands.HelpCommand):
         )
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
-            url=self.context.author.avatar,
+            icon_url=self.context.author.avatar,
         )
 
         channel = self.get_destination()
