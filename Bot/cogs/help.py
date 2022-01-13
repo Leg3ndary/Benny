@@ -4,20 +4,59 @@ from discord.ext import commands
 from gears import style
 
 
-COG_COLOR = {
-    "Playlist": style.get_color("red"),
-    "ServerSettings": style.get_color("grey"),
-    "Exalia": style.get_color("black"),
-    "Help": style.get_color("aqua"),
-    "MongoDB": style.get_color("green"),
-    "Games": style.get_color("black"),
-    "Base": style.get_color("blue"),
-    "Music": style.get_color("orange"),
-    "Errors": style.get_color("red"),
-    "SystemInfo": style.get_color("orange"),
-    "Dev": style.get_color("aqua"),
-    "Moderation": style.get_color("purple"),
-    "CustomCommands": style.get_color("white")
+COG_INFO = {
+    "Playlist": {
+        "color": style.get_color("red"),
+        "emoji": ":notepad_spiral:"
+    },
+    "ServerSettings": {
+        "color": style.get_color("grey"),
+        "emoji": ":gear:"
+    },
+    "Exalia": {
+        "color": style.get_color("black"),
+        "emoji": ":crossed_swords:"
+    },
+    "Help": {
+        "color": style.get_color("aqua"),
+        "emoji": ":question:"
+    },
+    "MongoDB": {
+        "color": style.get_color("green"),
+        "emoji": ":leaves:"
+    },
+    "Games": {
+        "color": style.get_color("black"),
+        "emoji": ":game_die:"
+    },
+    "Base": {
+        "color": style.get_color("blue"),
+        "emoji": ":crystal_ball:"
+    },
+    "Music": {
+        "color": style.get_color("orange"),
+        "emoji": ":musical_note:"
+    },
+    "Errors": {
+        "color": style.get_color("red"),
+        "emoji": ":x:"
+    },
+    "SystemInfo": {
+        "color": style.get_color("orange"),
+        "emoji": ":desktop:"
+    },
+    "Dev": {
+        "color": style.get_color("aqua"),
+        "emoji": ":lock:"
+    },
+    "Moderation": {
+        "color": style.get_color("purple"),
+        "emoji": ":hammer:"
+    },
+    "CustomCommands": {
+        "color": style.get_color("white"),
+        "emoji": ":confetti_ball:"
+    }
 }
 
 
@@ -62,32 +101,38 @@ class BennyHelp(commands.HelpCommand):
                 if cog_name in ["ERROR", "Dev", "CustomCommands"]:
                     pass
                 else:
-                    signatures = "\n".join(command_signatures)
                     embed.add_field(
-                        name=cog_name,
-                        value=f"""```
-{signatures}
-```""",
+                        name=f"{COG_INFO.get(cog_name).get('emoji')} {cog_name}",
+                        value=cog.short_doc,
                         inline=True,
                     )
+
+        embed.set_author(
+            name=f"{self.context.author.name}#{self.context.author.discriminator}",
+            icon_url=self.context.author.avatar,
+        )
 
         channel = self.get_destination()
         await channel.send(embed=embed)
 
     async def send_cog_help(self, cog):
         """Sending help for cogs"""
-        print(cog)
-        print(cog.qualified_name)
         embed = discord.Embed(
             title=cog.qualified_name,
             description=cog.description,
-            color=COG_COLOR.get(cog.qualified_name),
+            color=COG_INFO.get(cog.qualified_name).get("color"),
         )
-        commands_view = "\n".join(cog.get_commands())
+        commands_view = ""
+        for command in cog.get_commands():
+            commands_view += f"\n{command}"
         embed.add_field(
             name="Commands",
             value=commands_view,
             inline=False
+        )
+        embed.set_author(
+            name=f"{self.context.author.name}#{self.context.author.discriminator}",
+            icon_url=self.context.author.avatar,
         )
         channel = self.get_destination()
         await channel.send(embed=embed)
@@ -97,7 +142,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=group.signature,
             description=f"""{group.short_doc}""",
-            color=COG_COLOR.get(group.cog_name),
+            color=COG_INFO.get(group.cog_name).get("color"),
         )
         for command in group.walk_commands():
             embed.add_field(
@@ -119,7 +164,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=self.get_command_signature(command),
             description=command.description,
-            color=COG_COLOR.get(command.cog_name),
+            color=COG_INFO.get(command.cog_name).get("color"),
         )
         embed.add_field(
             name="Help",
