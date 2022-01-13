@@ -3,8 +3,7 @@ import discord
 import discord.utils
 from discord import guild
 from discord.ext import commands
-from gears.msg_views import DeleteView
-from gears import style
+from gears import style, cviews
 
 
 def is_tong_guild():
@@ -40,7 +39,7 @@ class CustomCommands(commands.Cog):
     @is_tong_guild()
     async def bangurmomthing(self, ctx):
         """Friend said he'd pay me shit to add this"""
-        deleteview = DeleteView()
+        deleteview = cviews.DeleteView()
         if not ctx.message.mentions:
             deleteview.bctx = await ctx.send(
                 f"id bang ur mom {ctx.author.mention}", view=deleteview
@@ -57,7 +56,7 @@ class CustomCommands(commands.Cog):
     @is_tong_guild()
     async def anotherweirdcommand(self, ctx):
         """Send a picture because... idk"""
-        deleteview = DeleteView()
+        deleteview = cviews.DeleteView()
         deleteview.bctx = await ctx.send(
             "https://media.discordapp.net/attachments/839606979457450024/923705170553077840/9400DB00-2E69-49FC-B1BB-985496EA56C5.png?width=198&height=429",
             view=deleteview,
@@ -75,7 +74,7 @@ class CustomCommands(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx):
         """Command description"""
-        deleteview = DeleteView()
+        deleteview = cviews.DeleteView()
         deleteview.bctx = await ctx.send(
             "https://media.discordapp.net/attachments/839605885700669444/925219138572550144/IMG_2617.png?width=372&height=661",
             view=deleteview,

@@ -2,7 +2,7 @@ import discord
 import discord.utils
 from discord.commands import Option, slash_command
 from discord.ext import commands
-from gears.msg_views import DeleteView
+from gears import cviews
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
@@ -29,7 +29,7 @@ class Base(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def avatar_cmd(self, ctx, *, user: discord.Member = None):
         """Show a users avatar"""
-        view = DeleteView()
+        view = cviews.DeleteView()
         if not user:
             user = ctx.author
 
@@ -44,7 +44,7 @@ class Base(commands.Cog):
         self, ctx, user: Option(str, "Enter someone's Name", required=False)
     ):
         """Show a users avatar"""
-        view = DeleteView(True)
+        view = cviews.DeleteView(True)
         if not user:
             user = ctx.author
         else:
