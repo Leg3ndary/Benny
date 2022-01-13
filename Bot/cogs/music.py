@@ -6,7 +6,7 @@ import os
 import re
 import tekore
 from discord.ext import commands
-from gears.msg_views import LoopButton, PlayerSelector
+from gears import cviews
 from gears import style
 from gears import util
 
@@ -376,7 +376,7 @@ class Music(commands.Cog):
             await ctx.send(embed=embed)
 
         else:
-            ps_view = PlayerSelector(ctx, player, results["tracks"][:25])
+            ps_view = cviews.PlayerSelector(ctx, player, results["tracks"][:25])
             embed = discord.Embed(
                 title=f"Select a Song to Play",
                 description=f"""```asciidoc
@@ -476,7 +476,7 @@ class Music(commands.Cog):
             title = "Unlooping"
             description = "Unlooping the current queue"
 
-        view = LoopButton(False, player.repeat, player)
+        view = cviews.LoopButton(False, player.repeat, player)
 
         embed = discord.Embed(
             title=f"""{style.get_emoji("regular", "loop")} {title}""",
