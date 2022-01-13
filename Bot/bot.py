@@ -61,7 +61,9 @@ async def start_bot():
 
     bot.prefix = prefix
 
-    await util.load_cogs(bot, os.listdir("Bot/cogs"))
+    bot.util = util.BotUtil(bot)
+
+    await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
     @bot.event
     async def on_ready():
@@ -122,6 +124,20 @@ async def start_bot():
         When we leave a guild
         """
         await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.RED}LEFT"),f" {guild.name} {guild.id}")
+
+    @bot.check
+    async def global_check(ctx):
+        """
+        Global check that applies to all commands
+        ├─ Check if its me, so I bypass everything
+        ├─ Check if the user is blacklisted from the bot
+        ├─ Check if command is disabled
+        ├─ Check if channel/thread is being ignored
+        ├─ 
+        ├─
+        └─
+        """
+        return True
 
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session

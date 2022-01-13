@@ -290,7 +290,7 @@ class Music(commands.Cog):
     @commands.Cog.listener()
     async def on_load_musicdb(self):
         """Load the music db and create a connection"""
-        self.client.musicdb = await aiosqlite.connect("music.db")
+        self.client.musicdb = await aiosqlite.connect("Databases/music.db")
         await self.client.printer.print_connect("Music Database")
 
     @commands.Cog.listener()

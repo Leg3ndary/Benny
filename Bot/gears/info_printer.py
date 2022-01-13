@@ -58,6 +58,8 @@ class InfoPrinter:
             category = f"{Fore.RED}COG UNLOAD"
         elif update == "RELOAD":
             category = f"{Fore.MAGENTA}COG RELOAD"
+        elif update =="FAIL":
+            category = f"{Fore.RED}COG FAIL"
         print(f"{await self.generate_category(category)} {cog}")
 
     async def print_bot_update(self, status: str):

@@ -79,7 +79,7 @@ class Prefixes:
         -------
         tuple
         """
-        async with aiosqlite.connect("server.db") as db:
+        async with aiosqlite.connect("Databases/server.db") as db:
             async with db.execute(
                 """SELECT * FROM prefixes WHERE guild_id = ?;""", (str(guild_id),)
             ) as cursor:
@@ -110,7 +110,7 @@ class Prefixes:
             for prefix_slot in prefixes:
                 if prefix_slot == "":
                     pnum = "p" + str(clear)
-                    async with aiosqlite.connect("server.db") as db:
+                    async with aiosqlite.connect("Databases/server.db") as db:
                         # We don't worry about injection because it's literally not possible for pnum
                         await db.execute(f"""UPDATE prefixes SET {pnum} = ? WHERE guild_id = ?;""", (prefix, str(guild_id)))
                         await db.commit()
@@ -144,7 +144,7 @@ class Prefixes:
             return(f"ERROR:You must have at least one prefix for the bot at all times!")
         else:
             pnum = "p" + str(prefixes.index(prefix))
-            async with aiosqlite.connect("server.db") as db:
+            async with aiosqlite.connect("Databases/server.db") as db:
                 # We don't worry about injection because it's literally not possible for pnum
                 await db.execute(f"""UPDATE prefixes SET {pnum} = "" WHERE guild_id = ?;""", (str(guild_id),))
                 await db.commit()
@@ -164,7 +164,7 @@ class Prefixes:
         -------
         None
         """
-        async with aiosqlite.connect("server.db") as db:
+        async with aiosqlite.connect("Databases/server.db") as db:
             await db.execute("""INSERT INTO prefixes VALUES(?, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");""", (str(guild_id),))
             await db.commit()
             # Since we already know that they should only one value, nice
@@ -184,15 +184,14 @@ class Prefixes:
         -------
         None
         """
-        async with aiosqlite.connect("server.db") as db:
+        async with aiosqlite.connect("Databases/server.db") as db:
             await db.execute("""DELETE FROM prefixes WHERE guild_id = ?;""", (str(guild_id),))
             await db.commit()
             del self.bot.prefixes[str(guild_id)]
             await self.bot.printer.print_cog(await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"), f"Deleted {guild_id} from  prefixes")
 
 
-
-class ServerSettings(commands.Cog):
+class Settings(commands.Cog):
     """Manage server settings like prefixes, welcome messages, etc"""
 
     def __init__(self, bot):
@@ -204,7 +203,7 @@ class ServerSettings(commands.Cog):
         Loading every prefix into a cache so we can quickly access it
         """
         self.bot.prefixes = {}
-        async with aiosqlite.connect("server.db") as db:
+        async with aiosqlite.connect("Databases/server.db") as db:
             # Ha carl, this bot has 15 prefixes if you ever see this
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS prefixes(guild_id text, p1 text, p2 text, p3 text, p4 text, p5 text, p6 text, p7 text, p8 text, p9 text, p10 text, p11 text, p12 text, p13 text, p14 text, p15 text);"""
@@ -337,4 +336,4 @@ class ServerSettings(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(ServerSettings(bot))
+    bot.add_cog(Settings(bot))
