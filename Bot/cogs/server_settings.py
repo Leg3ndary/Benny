@@ -237,7 +237,7 @@ class ServerSettings(commands.Cog):
 
     @commands.group(
         name="prefix",
-        description="""Manage or view prefixes""",
+        description="""View all of your prefixes""",
         help="""NMot done""",
         brief="""also not done :eyes:""",
         aliases=[],
@@ -248,7 +248,9 @@ class ServerSettings(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     @commands.has_permissions(manage_messages=True)
     async def prefix_manage(self, ctx):
-        """Command description"""
+        """
+        Prefix group for commands
+        """
         if not ctx.invoked_subcommand:
             prefixes = await self.bot.prefix_manager.generate_prefix_list(await self.bot.prefix_manager.get_prefixes(ctx.guild.id))
             prefix_visual = ""
@@ -257,7 +259,9 @@ class ServerSettings(commands.Cog):
             embed = discord.Embed(
                 title=f"Prefixes",
                 description=f"""Viewing prefixes for {ctx.guild.name}
-                {prefix_visual}""",
+```md
+{prefix_visual}
+```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color()
             )
@@ -265,10 +269,12 @@ class ServerSettings(commands.Cog):
 
     @prefix_manage.command(
         name="add",
-        description="""Add a prefix""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=[],
+        description="""Add a prefix to your server
+        Prefix may not have spaces before or after it, spaces inbetween are fine
+        You may have up to 15 different prefixes""",
+        help="""Prefix yay meh laksjd lkajs lkdj lksa jlk""",
+        brief="""Add a prefix to your server""",
+        aliases=["create", "+"],
         enabled=True,
         hidden=False,
     )
@@ -297,10 +303,11 @@ class ServerSettings(commands.Cog):
 
     @prefix_manage.command(
         name="remove",
-        description="""Remove a prefix""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=[],
+        description="""Remove a prefix from your server
+        You must always have at least one prefix in your server.""",
+        help="""Help text""",
+        brief="""Remove a prefix from your server""",
+        aliases=["del", "rm", "delete", "-"],
         enabled=True,
         hidden=False,
     )

@@ -80,47 +80,21 @@ class BennyHelp(commands.HelpCommand):
             description=f"""{group.short_doc}""",
             color=style.get_color(),
         )
-        commands = ""
         for command in group.walk_commands():
-            commands += f"""\n- {str(command).replace(f"{group.name} ", "")}"""
-
-        if commands == "":
-            commands = "None"
-
-        embed.add_field(
-            name="Commands",
-            value=f"""```md
-{commands}
-```""",
-            inline=False,
-        )
-
+            embed.add_field(
+                name=self.get_command_signature(command),
+                value=command.brief,
+                inline=False
+            )
         channel = self.get_destination()
         await channel.send(embed=embed)
-
-    '''
-    Example for command help formats
-
-    @commands.command(
-        name="command",
-        description="""Description of command, complete overview with all neccessary info""",
-        help="""More help""",
-        brief="Brief one liner about the command",
-        aliases=[],
-        enabled=True,
-        hidden=False
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx):
-        """Command description"""
-    '''
 
     async def send_command_help(self, command):
         """
         Sending help for actual commands
         """
         embed = discord.Embed(
-            title=self.get_command_signature,
+            title=self.get_command_signature(command),
             description=command.description,
             color=style.get_color(),
         )
@@ -132,7 +106,7 @@ class BennyHelp(commands.HelpCommand):
         if alias:
             alias_text = ", ".join(alias)
         else:
-            alias_text = "None"
+            alias_text = "<No Aliases>"
         embed.add_field(
             name="Usage and Aliases",
             value=f"""```md
