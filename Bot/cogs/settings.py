@@ -268,10 +268,10 @@ class Settings(commands.Cog):
 
     @prefix_manage.command(
         name="add",
-        description="""Add a prefix to your server
+        description="""Add a prefix to said guild""",
+        help="""Add a prefix to your server
         Prefix may not have spaces before or after it, spaces inbetween are fine
         You may have up to 15 different prefixes""",
-        help="""Prefix yay meh laksjd lkajs lkdj lksa jlk""",
         brief="""Add a prefix to your server""",
         aliases=["create", "+"],
         enabled=True,
@@ -302,9 +302,9 @@ class Settings(commands.Cog):
 
     @prefix_manage.command(
         name="remove",
-        description="""Remove a prefix from your server
+        description="""Remove a prefix from said guild""",
+        help="""Remove a prefix from your server
         You must always have at least one prefix in your server.""",
-        help="""Help text""",
         brief="""Remove a prefix from your server""",
         aliases=["del", "rm", "delete", "-"],
         enabled=True,
