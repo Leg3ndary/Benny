@@ -52,7 +52,7 @@ class BotUtil:
         """
         files = []
         if directory:
-            if directory in ["__pycache__", "Databases"]:
+            if directory in ["__pycache__", "Databases", "logs"]:
                 directories = []
             else:
                 directories = os.listdir(directory)
