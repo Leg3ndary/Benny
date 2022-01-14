@@ -76,7 +76,7 @@ async def start_bot():
         file_list[file] = file_len
         total += file_len
     file_list["total"] = total
-    bot.file_list = file_list
+    bot.file_list = await bot.util.reformat_file_list(file_list)
 
     await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
