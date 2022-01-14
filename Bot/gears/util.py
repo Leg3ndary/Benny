@@ -1,6 +1,7 @@
 import discord
 import discord.utils
 import numpy
+import math
 from discord.ext import commands
 from gears import style
 
@@ -163,9 +164,68 @@ def remove_zcs(text: str) -> str:
             break
     return text.split(split)[1]
 
-async def gen_loading_bar(self, percentage) -> str:
+async def gen_loading_bar(self, percentage: float) -> list:
     """
-    Generate a nice loading bar based on the stuff we output
+    Generate a nice loading bar based on the stuff we output, returns in a list format
 
     An embed can have up to ████████████████████████████████████████████████████████████ (60 things)
     """
+    bar_num = math.trunc(percentage / (100 / 60))
+    
+    bars = []
+    bars.append(bar_num * "█")
+    bars.append((60 - bar_num) * "█")
+    
+
+ANSI_COLOR_DICT = {
+    "RESET": "0",
+    "CLEAR": "0",
+    "NORMAL": "0",
+    "GREY": "30",
+    "GRAY": "30",
+    "RED": "31",
+    "GREEN": "32",
+    "YELLOW": "33",
+    "BLUE": "34",
+    "PINK": "35",
+    "CYAN": "36",
+    "WHITE": "37"
+}
+
+BACKGROUND_DICT = {
+    "DARK": "40",
+    "DARKBLUE": "40",
+    "ORANGE": "41",
+    "GREY4": "42",
+    "GRAY4": "42",
+    "GREY3": "43",
+    "GRAY3": "43",
+    "GREY2": "44",
+    "GRAY2": "44",
+    "INDIGO": "45",
+    "GREY1": "46",
+    "GRAY1": "46",
+    "WHITE": "47"
+}
+
+STYLE_DICT = {
+    "RESET": "0",
+    "CLEAR": "0",
+    "BOLD": "1",
+    "UNDERLINE": "4"
+}
+    
+def ansi(color, background=None, style=None, style2=None) -> str:
+    """Generates codes for you in a nice way"""
+    origin = "["
+    if style:
+        origin += STYLE_DICT.get(style.upper()) + ";"
+    if background:
+        origin += BACKGROUND_DICT.get(background.upper()) + ";"
+    if style2:
+        origin += STYLE_DICT.get(style2.upper()) + ";"
+    if origin == "[":
+        origin += "0;"
+
+    origin += ANSI_COLOR_DICT.get(color.upper()) + "m"
+    return origin
