@@ -62,6 +62,7 @@ async def start_bot():
     bot.prefix = prefix
 
     bot.util = util.BotUtil(bot)
+    await bot.printer.print_load("Bot Util")
 
     await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
