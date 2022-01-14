@@ -1,6 +1,7 @@
 import datetime
 import discord
 import discord.utils
+import json
 import platform
 import psutil
 import random
@@ -206,6 +207,22 @@ system {random.choice(options)}
         cmd = self. bot.get_command("command name")
         await cmd(ctx, "positional argument", kwarg='etc')
         """
+
+    @commands.command()
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def files(self, ctx):
+        """
+        Send our stuff
+        """
+        embed = discord.Embed(
+            title=f"File Lines",
+            description=f"""```json
+{json.dumps(self.bot.file_list, indent=4, sort_keys=True)}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("aqua")
+        )
+        await ctx.send(embed=embed)
 
 
 def setup(bot):

@@ -5,11 +5,13 @@ import discord
 import math
 import json
 import os
+import time
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears import util, style
 from gears.info_printer import InfoPrinter
 
+start = time.monotonic()
 
 load_dotenv()
 
@@ -47,8 +49,9 @@ async def get_prefix(bot, msg):
 
 
 async def start_bot():
-    """Start the bot with a session"""
-
+    """
+    Start the bot with everything it needs
+    """
     bot = commands.Bot(
         command_prefix=get_prefix, intents=intents, description="The coolest bot ever"
     )
@@ -63,6 +66,16 @@ async def start_bot():
 
     bot.util = util.BotUtil(bot)
     await bot.printer.print_load("Bot Util")
+
+    file_list = {}
+    total = 0
+
+    for file in await bot.util.get_files():
+        file_len = await bot.util.len_file(file)
+        file_list[file] = file_len
+        total += file_len
+    file_list["total"] = total
+    bot.file_list = file_list
 
     await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
@@ -143,7 +156,8 @@ async def start_bot():
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
         await bot.printer.print_connect("AIOHTTP Session")
-
+        end = time.monotonic()
+        await bot.printer.print_bot("", f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds")
         await bot.start(os.getenv("Bot_Token"))
 
 

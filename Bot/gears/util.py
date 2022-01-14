@@ -2,6 +2,7 @@ import discord
 import discord.utils
 import numpy
 import math
+import os
 from discord.ext import commands
 from gears import style
 
@@ -13,11 +14,18 @@ class BotUtil:
     def __init__(self, bot) -> None:
         self.bot = bot
 
-    async def len_file(file: str) -> int:
+    async def len_file(self, file: str) -> int:
         """
         Return the file length for a given file
         
         Parameters
+        ----------
+        file: str
+            The file to open and count
+
+        Returns
+        -------
+        int
         """
         try:
             with open(file, encoding="utf8") as f:
@@ -27,6 +35,40 @@ class BotUtil:
         except Exception as e:
             print(e)
             return 0
+    
+    async def get_files(self, directory: str=None) -> list:
+        """
+        Return every file using recursion
+        
+        Parameters
+        ----------
+        directory: str (Optional)
+            The directory to search, if none given opens then it leaves it
+
+        Returns
+        -------
+        list
+        """
+        files = []
+        if directory:
+            if directory in ["__pycache__", "Databases"]:
+                directories = []
+            else:
+                directories = os.listdir(directory)
+                filepath = directory + "/"
+        else:
+            filepath = ""
+            directories = os.listdir()
+
+        for file in directories: 
+            if file.endswith(".exe") or file.endswith(".png") or file.endswith(".pyc") or file.endswith(".jar") or file.endswith(".git"):
+                pass
+            elif "." not in file:
+                recursion = await self.get_files(f"{filepath}{file}")
+                files = files + recursion
+            else:
+                files.append(f"{filepath}{file}")
+        return files
 
     async def load_cogs(self, cogs) -> None:
         """
