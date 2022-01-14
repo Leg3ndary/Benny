@@ -7,7 +7,6 @@ Style: DIM, NORMAL, BRIGHT, RESET_ALL
 """
 
 
-
 class InfoPrinter:
     """Printing info to our terminal from our bot in a nice way"""
 
@@ -17,7 +16,7 @@ class InfoPrinter:
     async def generate_category(self, category: str) -> str:
         """
         Generate a category and return so this looks cool
-        
+
         Parameters
         ----------
         category: str
@@ -27,7 +26,9 @@ class InfoPrinter:
         -------
         str
         """
-        brackets = f"{Fore.WHITE}[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"
+        brackets = (
+            f"{Fore.WHITE}[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"
+        )
         return brackets
 
     async def print_load(self, info: str):
@@ -44,7 +45,7 @@ class InfoPrinter:
     async def print_cog_update(self, cog: str, update: str):
         """
         [COG LOAD|UNLOAD|RELOAD] When a cog is loaded or unloaded (ALSO ON SYNC)
-        
+
         Parameters
         ----------
         cog: str
@@ -58,7 +59,7 @@ class InfoPrinter:
             category = f"{Fore.RED}COG UNLOAD"
         elif update == "RELOAD":
             category = f"{Fore.MAGENTA}COG RELOAD"
-        elif update =="FAIL":
+        elif update == "FAIL":
             category = f"{Fore.RED}COG FAIL"
         print(f"{await self.generate_category(category)} {cog}")
 
@@ -71,12 +72,14 @@ class InfoPrinter:
         status: str
             The status to print in the category
         """
-        print(f"{await self.generate_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}")
-    
+        print(
+            f"{await self.generate_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}"
+        )
+
     async def print_connect(self, info: str) -> None:
         """
         [CONNECTED] When the bot has connected successfully to something
-        
+
         Parameters
         ----------
         info: str
@@ -87,7 +90,7 @@ class InfoPrinter:
     async def print_bot(self, categories: str, info: str):
         """
         [BOT] Bot related info that needs to be printed
-        
+
         Parameters
         ----------
         categories: str
@@ -96,11 +99,11 @@ class InfoPrinter:
             The info to add or print
         """
         print(f"{await self.generate_category(f'{Fore.CYAN}BOT')}{categories} {info}")
-    
+
     async def print_update_db(self, dbtype: str, name: str, info: str):
         """
         [DB] DB related info that needs to be printed
-        
+
         Parameters
         ----------
         dbtype
@@ -112,7 +115,7 @@ class InfoPrinter:
     async def print_cog(self, categories: str, info: str):
         """
         [COG] Cog related info that needs to be printed
-        
+
         Parameters
         ----------
         categories: str

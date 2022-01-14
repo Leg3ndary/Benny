@@ -18,13 +18,11 @@ class CogExample(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx):
         """Command description"""
-
-    
 
 
 def setup(bot):

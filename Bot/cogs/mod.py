@@ -11,7 +11,6 @@ class Mod(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-
         '''
         name="command",
         description="""Description of command, complete overview with all neccessary info""",
@@ -29,7 +28,7 @@ class Mod(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.has_permissions(ban_members=True)
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)

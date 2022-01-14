@@ -220,7 +220,7 @@ system {random.choice(options)}
 {json.dumps(self.bot.file_list, indent=4, sort_keys=True)}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua")
+            color=style.get_color("aqua"),
         )
         await ctx.send(embed=embed)
 

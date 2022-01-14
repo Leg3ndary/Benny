@@ -6,6 +6,7 @@ import os
 from discord.ext import commands
 from gears import style
 
+
 class BotUtil:
     """
     Bot utility.
@@ -17,7 +18,7 @@ class BotUtil:
     async def len_file(self, file: str) -> int:
         """
         Return the file length for a given file
-        
+
         Parameters
         ----------
         file: str
@@ -35,11 +36,11 @@ class BotUtil:
         except Exception as e:
             print(e)
             return 0
-    
-    async def get_files(self, directory: str=None) -> list:
+
+    async def get_files(self, directory: str = None) -> list:
         """
         Return every file using recursion
-        
+
         Parameters
         ----------
         directory: str (Optional)
@@ -60,8 +61,14 @@ class BotUtil:
             filepath = ""
             directories = os.listdir()
 
-        for file in directories: 
-            if file.endswith(".exe") or file.endswith(".png") or file.endswith(".pyc") or file.endswith(".jar") or file.endswith(".git"):
+        for file in directories:
+            if (
+                file.endswith(".exe")
+                or file.endswith(".png")
+                or file.endswith(".pyc")
+                or file.endswith(".jar")
+                or file.endswith(".git")
+            ):
                 pass
             elif "." not in file:
                 recursion = await self.get_files(f"{filepath}{file}")
@@ -140,7 +147,7 @@ def default_cooldown_manager(msg):
     async def ping(ctx):
         await ctx.send("pong")
     """
-    user = "" #global_db.find_one({"_id": msg.author.id})
+    user = ""  # global_db.find_one({"_id": msg.author.id})
 
     # Checking if the user is a patron and his/her level
 
@@ -188,7 +195,7 @@ def match_calc(string1, string2):
 def remove_zcs(text: str) -> str:
     """
     Remove leading zeros and colons
-    
+
     Parameters
     ----------
     text: str
@@ -206,6 +213,7 @@ def remove_zcs(text: str) -> str:
             break
     return text.split(split)[1]
 
+
 async def gen_loading_bar(self, percentage: float) -> list:
     """
     Generate a nice loading bar based on the stuff we output, returns in a list format
@@ -213,11 +221,11 @@ async def gen_loading_bar(self, percentage: float) -> list:
     An embed can have up to ████████████████████████████████████████████████████████████ (60 things)
     """
     bar_num = math.trunc(percentage / (100 / 60))
-    
+
     bars = []
     bars.append(bar_num * "█")
     bars.append((60 - bar_num) * "█")
-    
+
 
 ANSI_COLOR_DICT = {
     "RESET": "0",
@@ -231,7 +239,7 @@ ANSI_COLOR_DICT = {
     "BLUE": "34",
     "PINK": "35",
     "CYAN": "36",
-    "WHITE": "37"
+    "WHITE": "37",
 }
 
 BACKGROUND_DICT = {
@@ -247,16 +255,12 @@ BACKGROUND_DICT = {
     "INDIGO": "45",
     "GREY1": "46",
     "GRAY1": "46",
-    "WHITE": "47"
+    "WHITE": "47",
 }
 
-STYLE_DICT = {
-    "RESET": "0",
-    "CLEAR": "0",
-    "BOLD": "1",
-    "UNDERLINE": "4"
-}
-    
+STYLE_DICT = {"RESET": "0", "CLEAR": "0", "BOLD": "1", "UNDERLINE": "4"}
+
+
 def ansi(color, background=None, style=None, style2=None) -> str:
     """Generates codes for you in a nice way"""
     origin = "["

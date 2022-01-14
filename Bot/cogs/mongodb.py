@@ -48,5 +48,6 @@ class MongoDB(commands.Cog):
         document = await collection.find_one({"Command": command})
     '''
 
+
 def setup(bot):
     bot.add_cog(MongoDB(bot))

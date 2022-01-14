@@ -40,6 +40,7 @@ intents = discord.Intents(
 
 prefix = config.get("Bot").get("Prefix")
 
+
 async def get_prefix(bot, msg):
     """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
     if msg.guild is None:
@@ -102,9 +103,12 @@ async def start_bot():
 
         humans = len(guild.members) - guild_bots
 
-        bot_percentage = math.trunc(( guild_bots / len(guild.members) ) * 10000) / 100
+        bot_percentage = math.trunc((guild_bots / len(guild.members)) * 10000) / 100
 
-        await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.GREEN}JOINED"), f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})")
+        await bot.printer.print_bot(
+            await bot.printer.generate_category(f"{Fore.GREEN}JOINED"),
+            f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
+        )
 
         if bot_percentage > 20 and humans < 19:
             sent = False
@@ -117,7 +121,7 @@ async def start_bot():
                 - Lower your servers percentage of bots to under 20%
                 Currently **{bot_percentage}%** bots""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red")
+                color=style.get_color("red"),
             )
             for channel in guild.channels:
                 if "general" in channel.name:
@@ -130,14 +134,20 @@ async def start_bot():
                 except:
                     pass
             await guild.leave()
-            await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.MAGENTA}AUTOLEFT"),f" {guild.name} {guild.id}")
+            await bot.printer.print_bot(
+                await bot.printer.generate_category(f"{Fore.MAGENTA}AUTOLEFT"),
+                f" {guild.name} {guild.id}",
+            )
 
     @bot.event
     async def on_guild_remove(guild):
         """
         When we leave a guild
         """
-        await bot.printer.print_bot(await bot.printer.generate_category(f"{Fore.RED}LEFT"),f" {guild.name} {guild.id}")
+        await bot.printer.print_bot(
+            await bot.printer.generate_category(f"{Fore.RED}LEFT"),
+            f" {guild.name} {guild.id}",
+        )
 
     @bot.check
     async def global_check(ctx):
@@ -147,7 +157,7 @@ async def start_bot():
         ├─ Check if the user is blacklisted from the bot
         ├─ Check if command is disabled
         ├─ Check if channel/thread is being ignored
-        ├─ 
+        ├─
         ├─
         └─
         """
@@ -157,7 +167,10 @@ async def start_bot():
         bot.aiosession = session
         await bot.printer.print_connect("AIOHTTP Session")
         end = time.monotonic()
-        await bot.printer.print_bot("", f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds")
+        await bot.printer.print_bot(
+            "",
+            f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+        )
         await bot.start(os.getenv("Bot_Token"))
 
 

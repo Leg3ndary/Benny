@@ -85,10 +85,7 @@ class BennyHelp(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
-        embed = discord.Embed(
-            title="Help",
-            color=style.get_color("aqua")
-        )
+        embed = discord.Embed(title="Help", color=style.get_color("aqua"))
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -181,7 +178,7 @@ class BennyHelp(commands.HelpCommand):
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
             icon_url=self.context.author.avatar,
         )
- 
+
         channel = self.get_destination()
         await channel.send(embed=embed)
 
