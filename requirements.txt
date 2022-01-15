@@ -1,6 +1,6 @@
 git+https://github.com/Pycord-Development/pycord
 aiohttp==3.6.3
-aiosqlite==0.17.0
+asqlite==git+https://github.com/Rapptz/asqlite
 aioredis==2.0.0a1
 async_timeout==4.0.2
 motor==2.4.0

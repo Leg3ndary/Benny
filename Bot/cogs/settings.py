@@ -1,4 +1,4 @@
-import aiosqlite
+import asqlite
 from colorama import Fore
 import discord
 import discord.utils
@@ -80,7 +80,7 @@ class Prefixes:
         -------
         tuple
         """
-        async with aiosqlite.connect("Databases/server.db") as db:
+        async with asqlite.connect("Databases/server.db") as db:
             async with db.execute(
                 """SELECT * FROM prefixes WHERE guild_id = ?;""", (str(guild_id),)
             ) as cursor:
@@ -111,7 +111,7 @@ class Prefixes:
             for prefix_slot in prefixes:
                 if prefix_slot == "":
                     pnum = "p" + str(clear)
-                    async with aiosqlite.connect("Databases/server.db") as db:
+                    async with asqlite.connect("Databases/server.db") as db:
                         # We don't worry about injection because it's literally not possible for pnum
                         await db.execute(
                             f"""UPDATE prefixes SET {pnum} = ? WHERE guild_id = ?;""",
@@ -152,7 +152,7 @@ class Prefixes:
             return f"ERROR:You must have at least one prefix for the bot at all times!"
         else:
             pnum = "p" + str(prefixes.index(prefix))
-            async with aiosqlite.connect("Databases/server.db") as db:
+            async with asqlite.connect("Databases/server.db") as db:
                 # We don't worry about injection because it's literally not possible for pnum
                 await db.execute(
                     f"""UPDATE prefixes SET {pnum} = "" WHERE guild_id = ?;""",
@@ -177,7 +177,7 @@ class Prefixes:
         -------
         None
         """
-        async with aiosqlite.connect("Databases/server.db") as db:
+        async with asqlite.connect("Databases/server.db") as db:
             await db.execute(
                 """INSERT INTO prefixes VALUES(?, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");""",
                 (str(guild_id),),
@@ -203,7 +203,7 @@ class Prefixes:
         -------
         None
         """
-        async with aiosqlite.connect("Databases/server.db") as db:
+        async with asqlite.connect("Databases/server.db") as db:
             await db.execute(
                 """DELETE FROM prefixes WHERE guild_id = ?;""", (str(guild_id),)
             )
@@ -227,10 +227,28 @@ class Settings(commands.Cog):
         Loading every prefix into a cache so we can quickly access it
         """
         self.bot.prefixes = {}
-        async with aiosqlite.connect("Databases/server.db") as db:
+        async with asqlite.connect("Databases/server.db") as db:
             # Ha carl, this bot has 15 prefixes if you ever see this
             await db.execute(
-                """CREATE TABLE IF NOT EXISTS prefixes(guild_id text, p1 text, p2 text, p3 text, p4 text, p5 text, p6 text, p7 text, p8 text, p9 text, p10 text, p11 text, p12 text, p13 text, p14 text, p15 text);"""
+                """CREATE TABLE IF NOT EXISTS prefixes (
+                    guild_id TEXT PRIMARY KEY,
+                    p1       TEXT,
+                    p2       TEXT,
+                    p3       TEXT,
+                    p4       TEXT,
+                    p5       TEXT,
+                    p6       TEXT,
+                    p7       TEXT,
+                    p8       TEXT,
+                    p9       TEXT,
+                    p10      TEXT,
+                    p11      TEXT,
+                    p12      TEXT,
+                    p13      TEXT,
+                    p14      TEXT,
+                    p15      TEXT
+                );
+                """
             )
             self.bot.prefix_manager = Prefixes(self.bot)
 

@@ -1,10 +1,12 @@
 import aiohttp
+import asqlite
 import asyncio
 from colorama import Fore
 import discord
 import math
 import json
 import os
+import sqlite3
 import time
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -54,7 +56,9 @@ async def start_bot():
     Start the bot with everything it needs
     """
     bot = commands.Bot(
-        command_prefix=get_prefix, intents=intents, description="The coolest bot ever"
+        command_prefix=get_prefix,
+        intents=intents,
+        description="Benny Bot"
     )
 
     bot.printer = InfoPrinter(bot)
@@ -68,6 +72,12 @@ async def start_bot():
     bot.util = util.BotUtil(bot)
     await bot.printer.print_load("Bot Util")
 
+    bot.settingsDB = await asqlite.connect("Databases/server.db")
+    await bot.printer.print_connect("Settings Database")
+
+    bot.musicDB = await asqlite.connect("Databases/music.db")
+    await bot.printer.print_connect("Music Database")
+
     file_list = {}
     total = 0
 
@@ -76,7 +86,7 @@ async def start_bot():
         file_list[file] = file_len
         total += file_len
     file_list["total"] = total
-    bot.file_list = await bot.util.reformat_file_list(file_list)
+    bot.file_list = file_list
 
     await bot.util.load_cogs(os.listdir("Bot/cogs"))
 

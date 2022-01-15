@@ -1,4 +1,4 @@
-import aiosqlite
+import asqlite
 import discord
 import discord.utils
 from discord.ext import commands
@@ -70,7 +70,7 @@ class PlaylistManager:
         ERROR:
             Errored, .split(":")[1] will get you the reason
         """
-        async with aiosqlite.connect("Databases/music.db") as db:
+        async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
                 """SELECT id FROM playlists WHERE id = ?;""", (int(user_id),)
             ) as cursor:
@@ -105,7 +105,7 @@ class PlaylistManager:
         ERROR:
             Errored, .split(":")[1] will get you the reason
         """
-        async with aiosqlite.connect("Databases/music.db") as db:
+        async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
                 """SELECT id, name FROM playlists WHERE id = ? and name = ?;""",
                 (int(user_id), playlist_name),
@@ -148,7 +148,7 @@ class PlaylistManager:
         if len(song) > self.SONG_NAME_LIMIT:
             return f"ERROR:Please limit the song name to 50 characters ({self.SONG_NAME_LIMIT} currently)"
 
-        async with aiosqlite.connect("Databases/music.db") as db:
+        async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
                 """SELECT * FROM playlists WHERE id = ? AND name = ?""",
                 (int(user_id), playlist_name),
@@ -202,7 +202,7 @@ class PlaylistManager:
         if song_index.is_numeric() and song_index > self.PLAYLIST_SONG_LIMIT:
             return f"ERROR:Max"
 
-        async with aiosqlite.connect("Databases/music.db") as db:
+        async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
                 """SELECT * FROM playlists WHERE id = ? AND name = ?""",
                 (int(user_id), playlist_name),
@@ -239,7 +239,7 @@ class PlaylistManager:
         -------
         list
         """
-        async with aiosqlite.connect("Databases/music.db") as db:
+        async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
                 """SELECT * FROM playlists WHERE id = ?;""", (int(user_id),)
             ) as cursor:
@@ -257,7 +257,7 @@ class Playlist(commands.Cog):
     @commands.Cog.listener()
     async def on_load_playlists(self):
         """Load up playlist related stuff"""
-        async with aiosqlite.connect("Databases/music.db") as db:
+        async with asqlite.connect("Databases/music.db") as db:
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);"""
             )

@@ -1,4 +1,4 @@
-import aiosqlite
+import asqlite
 import asyncio
 import discord
 import lavalink
@@ -288,12 +288,6 @@ class Music(commands.Cog):
                 self.client.dispatch("expire_player", guild_id)
 
     @commands.Cog.listener()
-    async def on_load_musicdb(self):
-        """Load the music db and create a connection"""
-        self.client.musicdb = await aiosqlite.connect("Databases/music.db")
-        await self.client.printer.print_connect("Music Database")
-
-    @commands.Cog.listener()
     async def on_expire_player(self, guild_id: int):
         """Expire players when we dispatch it, we check after 180 seconds"""
         await asyncio.sleep(180.0)
@@ -306,20 +300,27 @@ class Music(commands.Cog):
         """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
         player = self.client.lavalink.player_manager.get(member.guild.id)
         try:
-            if before.channel.id == int(player.channel_id) and not after.channel:
-                if member.guild.id in self.client.expiring_players:
+            if before.channel.id == int(player.channel_id) and not after.channel and len(before.channel.members) == 0:
+                if int(member.guild.id) in self.client.expiring_players:
                     pass
                 else:
-                    self.client.expiring_players.append(member.guild.id)
-                    self.client.dispatch("expire_player", member.guild.id)
-            if after.channel.id == int(player.channel_id):
-                pass
+                    self.client.expiring_players.append(int(member.guild.id))
+                    self.client.dispatch("expire_player", int(member.guild.id))
+            elif int(after.channel.id) == int(player.channel_id):
+                try:
+                    self.client.expiring_players.remove(int(member.guild.id))
+                except:
+                    pass
         except AttributeError:
             pass
         except TypeError:
             pass
 
-    @commands.command(name="play", aliases=["p"])
+    @commands.command(
+        name="play", 
+        aliases=["p"],
+        help="""""",
+    )
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, args: str):
         """Searches and plays a song from a given query."""
@@ -350,7 +351,9 @@ class Music(commands.Cog):
             )
             return await ctx.send(embed=nothing_found, delete_after=10)
 
-        embed = discord.Embed(color=style.get_color())
+        embed = discord.Embed(
+            color=style.get_color()
+        )
 
         # Valid loadTypes are:
         #   TRACK_LOADED    - single video/direct URL)
