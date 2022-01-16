@@ -326,21 +326,24 @@ class Music(commands.Cog):
 
     @commands.command(
         name="play", 
+        description="""Queue up a song""",
+        help="""Play a song!
+        You can use regular words or a spotify link!""",
+        brief="Play songs",
         aliases=["p"],
-        help="""Play a song, from a link, a name, anything!""",
+        enabled=True,
+        hidden=False
     )
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
-    async def play_cmd(self, ctx, *, args: str):
+    async def play_cmd(self, ctx, *, song: str):
         """Searches and plays a song from a given query."""
-
         if ctx.guild.id in self.client.expiring_players:
             self.client.expiring_players.remove(ctx.guild.id)
 
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        query = args.strip("<>")
+        query = song.strip("<>")
 
         try:
-        # Non URL's
             if not url_rx.match(query):
                 query = f"{self.search_prefix}:{query}"
 
@@ -350,7 +353,6 @@ class Music(commands.Cog):
         except tekore.ConversionError:
             pass
 
-        # Get the results for the query from Lavalink.
         results = await player.node.get_tracks(query)
 
         # Results could be None if Lavalink returns an invalid response results["tracks"] could be an empty array if the query yielded no tracks
@@ -396,7 +398,7 @@ class Music(commands.Cog):
                 title=f"Select a Song to Play",
                 description=f"""```asciidoc
 = Showing Song Results for: =
-[ {args} ]
+[ {song} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("grey"),
