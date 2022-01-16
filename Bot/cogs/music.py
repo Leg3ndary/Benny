@@ -678,7 +678,7 @@ Memory Allocated: {get_size(stats.memory_allocated)}
 Memory Reservable: {get_size(stats.memory_reservable)}
 
 CPU Cores: {stats.cpu_cores}
-Total System Load: {math.trunc(stats.system_load * 100000) / 100}%
+Total System Load: {math.trunc(stats.system_load * 10000) / 100}%
 Lavalink System Load: {stats.lavalink_load}
 
 Frames Sent to Discord: {stats.frames_sent}
