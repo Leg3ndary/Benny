@@ -150,11 +150,6 @@ class SpotifyClient:
                 embed=embed,
                 view=ps_view
             )
-            print("play embed")
-            track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
-            print("playeradd")
-            player.add(requester=ctx.author.id, track=track)
-            print("last")
 
         elif from_url[0] == "playlist":
             # Not done
@@ -304,7 +299,7 @@ class Music(commands.Cog):
     async def on_load_spotify(self):
         """Load our spotify client"""
         self.spotifyclient = SpotifyClient(self.client)
-        self.client.printer.print_connect("Tekore Spotify")
+        await self.client.printer.print_connect("Tekore Spotify")
 
     @commands.Cog.listener()
     async def on_expire_player(self, guild_id: int):
