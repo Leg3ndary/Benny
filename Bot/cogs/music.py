@@ -453,8 +453,56 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command(
+        name="clear",
+        description="""clear the queue""",
+        help="""Clear the entire queue, requires confirmation""",
+        brief="Clear the queue",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def clear_command(self, ctx):
+        """Clear the queue"""
+        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        
+        if not player.is_playing:
+            nothing_playing = discord.Embed(
+                title=f"Nothing is playing!",
+                description=f"""Use `play` to queue a song!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("aqua"),
+            )
+            return await ctx.send(embed=nothing_playing)
+        queue = player.queue
+        if not queue:
+            embed = discord.Embed(
+                title=f"Nothing's been Queued!",
+                description=f"""Use the play command to queue more songs!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("aqua"),
+            )
+            return await ctx.send(embed=embed)
+        else:
+            songs = len(queue)
+            
+            view = cviews.QueueClear(ctx, queue)
+            embed = discord.Embed(
+                title=f"Confirm",
+                description=f"""Are you sure you want to clear the queue?
+                This will remove **{songs}** songs.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("grey")
+            )
+            embed.set_footer(
+                text="This action is irreversible"
+            )
+            view.embed = await ctx.send(embed=embed, view=view)
+
+
+    @commands.command(
         name="skip",
-        description="""Description of Command""",
+        description="""skip the song""",
         help="""Long Help text for this command""",
         brief="""Short help text""",
         aliases=["s"],
@@ -464,9 +512,42 @@ class Music(commands.Cog):
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
     async def skip_cmd(self, ctx):
         """Skip the song and move onto the next one"""
-        # Get the player for this guild from cache.
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        await player.skip()
+        
+        if not player.is_playing:
+            nothing_playing = discord.Embed(
+                title=f"Nothing is playing!",
+                description=f"""Use `play` to queue a song!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("aqua"),
+            )
+            return await ctx.send(embed=nothing_playing)
+
+        else:
+            current = player.current
+
+            embed = discord.Embed(
+                title=f"Skipping",
+                url=current.uri,
+                description=f"""```asciidoc
+[ {current.title} ]
+= Duration: {util.remove_zcs(lavalink.format_time(current.duration))} =
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color(),
+            )
+            embed.set_author(name=current.author)
+
+            requester = self.client.get_user(current.requester)
+
+            if not requester:
+                requester = await self.client.fetch_user(current.requester)
+
+            embed.set_footer(
+                text=requester.display_name, icon_url=requester.display_avatar.url
+            )
+            await player.skip()
+            await ctx.send(embed=embed)
 
     @commands.command(
         name="loop",

@@ -204,6 +204,18 @@ class PlayerSelector(discord.ui.View):
         if interaction.user != self.ctx.author:
             return False
         return True
+    
+    async def on_timeout(self):
+        """On timeout make this look cool"""
+        for item in self.children:
+            item.disabled = True
+        embed = discord.Embed(
+            title=f"Select a Song to Play",
+            description=f"""Timed out""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("Red")
+        )
+        await self.play_embed.edit(embed=embed, view=self)
 
     @discord.ui.button(
         emoji=style.get_emoji("regular", "cancel"),
@@ -214,3 +226,54 @@ class PlayerSelector(discord.ui.View):
     async def button_callback(self, button, interaction):
         """Delete the message if clicked"""
         await self.play_embed.delete()
+        await interaction.response.send_message("Cancelled", ephemeral=True)
+
+class QueueClear(discord.ui.View):
+    """Clear the queue?"""
+
+    def __init__(self, ctx, queue):
+        self.ctx = ctx
+        self.queue = queue
+        self.embed = None
+        super().__init__()
+
+    async def interaction_check(self, interaction):
+        """If the interaction isn't by the user, return a fail."""
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "check"),
+        label="Confirm",
+        style=discord.ButtonStyle.green
+    )
+    async def confirm_callback(self, button, interaction):
+        """Delete the message if clicked"""
+        embed = discord.Embed(
+            title=f"Confirmed",
+            description=f"""The queue has been cleared""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("green")
+        )
+        for item in self.children:
+            item.disabled = True
+        await self.embed.edit(embed=embed, view=self)
+        self.queue.clear()
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "cancel"),
+        label="Cancel",
+        style=discord.ButtonStyle.danger
+    )
+    async def cancel_callback(self, button, interaction):
+        """Delete the message if clicked"""
+        embed = discord.Embed(
+            title=f"Cancelled",
+            description=f"""Action cancelled""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("red")
+        )
+        for item in self.children:
+            item.disabled = True
+        await self.embed.edit(embed=embed, view=self)

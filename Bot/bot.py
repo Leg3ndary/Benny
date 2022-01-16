@@ -102,12 +102,12 @@ async def start_bot():
         """
         Global check that applies to all commands
         ├─ Check if its me, so I bypass everything
-        ├─ Check if the user is blacklisted from the bot
-        ├─ Check if command is disabled
-        ├─ Check if channel/thread is being ignored
-        ├─
-        ├─
-        └─
+        ├── Check if the user is blacklisted from the bot
+        ├─── Check if command is disabled
+        ├──── Check if channel/thread is being ignored
+        ├─────
+        ├──────
+        └───────
         """
         return True
 
