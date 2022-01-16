@@ -353,7 +353,7 @@ class Music(commands.Cog):
 
         try:
             if tekore.from_url(query):
-                pass
+                return await self.spotifyclient.search_spotify(query)
 
         except tekore.ConversionError():
             pass
