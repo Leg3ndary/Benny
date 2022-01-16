@@ -129,7 +129,8 @@ class SpotifyClient:
             artist = track.artists[0].name
             query = f"{title} {artist}"
 
-            results = await player.node.get_tracks(query)
+            
+            results = await player.node.get_tracks(f"yt:{query}")
 
             if not results or not results["tracks"]:
                 nothing_found = discord.Embed(
@@ -347,15 +348,15 @@ class Music(commands.Cog):
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         query = args.strip("<>")
 
-        # Non URL's
-        if not url_rx.match(query):
-            query = f"{self.search_prefix}:{query}"
-
         try:
-            if tekore.from_url(query):
-                return await self.spotifyclient.search_spotify(query)
+        # Non URL's
+            if not url_rx.match(query):
+                query = f"{self.search_prefix}:{query}"
 
-        except tekore.ConversionError():
+            elif tekore.from_url(query):
+                await self.spotifyclient.search_spotify(query)
+                return
+        except tekore.ConversionError:
             pass
 
         # Get the results for the query from Lavalink.
