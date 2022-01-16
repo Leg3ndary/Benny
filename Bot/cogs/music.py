@@ -115,14 +115,14 @@ class SpotifyClient:
         if from_url[0] == "track":
             print(from_url)
             track = await self.client.spotify.track(from_url[1])
-
+            print("trackname")
             title = track.name
-            try:
-                artist = track.artists[0].name
-            except:
-                artist = ""
+            print("trackartist")
+            artist = track.artists[0].name
+            print("trackquery")
             query = f"ytsearch:{title} {artist}"
             
+            print("results")
             results = await player.node.get_tracks(query)
 
             if not results or not results["tracks"]:
@@ -133,8 +133,9 @@ class SpotifyClient:
                     color=style.get_color("red"),
                 )
                 return await ctx.send(embed=nothing_found, delete_after=10)
-
+            print("psview")
             ps_view = cviews.PlayerSelector(ctx, player, results["tracks"][:25])
+            print("embed")
             embed = discord.Embed(
                 title=f"{style.get_emoji('regular', 'spotify')} Select a Song to Play",
                 description=f"""```asciidoc
@@ -144,13 +145,16 @@ class SpotifyClient:
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("green"),
             )
+            print("created")
             ps_view.play_embed = await ctx.send(
                 embed=embed,
                 view=ps_view
             )
-
+            print("play embed")
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
+            print("playeradd")
             player.add(requester=ctx.author.id, track=track)
+            print("last")
 
         elif from_url[0] == "playlist":
             # Not done
@@ -208,8 +212,8 @@ class Music(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-        self.spotifyclient = SpotifyClient(client)
         self.client.expiring_players = []
+        self.client.dispatch("load_spotify")
         self.search_prefix = client.config.get("Lavalink").get("Search")
         # When reloaded, doesn't terminate connection with client
         if not hasattr(client, "lavalink"):
@@ -296,6 +300,12 @@ class Music(commands.Cog):
             else:
                 self.client.expiring_players.append(guild_id)
                 self.client.dispatch("expire_player", guild_id)
+    
+    @commands.Cog.listener()
+    async def on_load_spotify(self):
+        """Load our spotify client"""
+        self.spotifyclient = SpotifyClient(self.client)
+        self.client.printer.print_connect("Tekore Spotify")
 
     @commands.Cog.listener()
     async def on_expire_player(self, guild_id: int):
