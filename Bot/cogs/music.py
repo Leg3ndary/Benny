@@ -115,7 +115,7 @@ class SpotifyClient:
 
         if from_url[0] == "track":
             print(from_url)
-            track = await self.bot.spotify.track(from_url[1])
+            track = await self.client.spotify.track(from_url[1])
 
             title = track.name
             artist = track.artists[0].name
