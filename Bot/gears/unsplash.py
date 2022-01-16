@@ -9,9 +9,14 @@ class UnsplashClient:
     """Accessing unsplash"""
 
     def __init__(self):
-        self.client_id = os.getenv("UnsplashToken")
+        self.auth = {
+            "Authorization": f"Client-ID {os.getenv('Unsplash_Access')}"
+        }
+        self.session = aiohttp.ClientSession(
+            base_url="https://api.unsplash.com",
+            headers=self.auth
+        )
         self.latest_header = None
-        self.api_url = "https://api.unsplash.com"
 
     """Cache for latest save data from unsplash NOT FINISHED"""
 
@@ -107,11 +112,9 @@ class UnsplashClient:
 
     async def request_url(self, url: str):
         """Get a url and update latest header"""
-        headers = {"Authorization": f"""Client-ID {self.client_id}"""}
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get(self.api_url + url) as request:
-                await self.set_latest_header(request.headers)
-                return await request.json()
+        request = await self.session.get(self.api_url + url)
+        await self.set_latest_header(request.headers)
+        return await request.json()
 
     async def get_param(self, method: str):
         """Return possible parameters from methods"""
