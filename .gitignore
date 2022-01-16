@@ -131,3 +131,4 @@ dmypy.json
 # Others
 application.yml
 Databases
+.vscode
