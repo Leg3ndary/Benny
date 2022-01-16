@@ -119,9 +119,9 @@ class SpotifyClient:
 
             title = track.name
             artist = track.artists[0].name
-            query = f"{title} {artist}"
+            query = f"ytsearch:{title} {artist}"
             
-            results = await player.node.get_tracks(f"yt:{query}")
+            results = await player.node.get_tracks(query)
 
             if not results or not results["tracks"]:
                 nothing_found = discord.Embed(
