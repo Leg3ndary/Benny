@@ -213,7 +213,6 @@ class Music(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.client.expiring_players = []
-        self.client.dispatch("load_spotify")
         self.search_prefix = client.config.get("Lavalink").get("Search")
         # When reloaded, doesn't terminate connection with client
         if not hasattr(client, "lavalink"):
