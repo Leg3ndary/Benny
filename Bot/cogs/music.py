@@ -89,7 +89,7 @@ class SpotifyClient:
         self.client = client
         print("Initializing Spotify Client")
         spotify_token = tekore.request_client_token(
-            os.getenv("Spotify_ClientID"), os.getenv("Spotify_ClientSecret")
+            os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret")
         )
         self.client.spotify = tekore.Spotify(spotify_token, asynchronous=True)
         self.playlist_limit
