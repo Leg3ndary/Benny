@@ -193,9 +193,8 @@ class PlayerSelector(discord.ui.View):
 
     def __init__(self, ctx, player, songs: list):
         self.ctx = ctx
-        self.timeout = 10
         self.play_embed = None
-        super().__init__()
+        super().__init__(timeout=10)
 
         self.add_item(PlayerDropdown(ctx, player, songs))
 
