@@ -87,7 +87,6 @@ class SpotifyClient:
     def __init__(self, client):
         """Init with a url that we can use"""
         self.client = client
-        self.client.printer.print_connect("Tekore Client")
         spotify_token = tekore.request_client_token(
             os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret")
         )
