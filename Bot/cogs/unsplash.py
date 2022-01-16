@@ -120,23 +120,10 @@ class UnsplashClient:
 
 
 class Photos(commands.Cog):
-    """Cog Example Description"""
+    """Everything to do with photos!"""
 
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.command(
-        name="command",
-        description="""Description of command, complete overview with all neccessary info""",
-        help="""More help""",
-        brief="Brief one liner about the command",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx):
-        """Command description"""
 
 
 def setup(bot):

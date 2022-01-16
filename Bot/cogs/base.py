@@ -2,7 +2,7 @@ import discord
 import discord.utils
 from discord.commands import Option, slash_command
 from discord.ext import commands
-from gears import cviews, style
+from gears import style, cviews
 import unicodedata
 
 

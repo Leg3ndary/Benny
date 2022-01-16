@@ -268,6 +268,41 @@ class QueueClear(discord.ui.View):
         style=discord.ButtonStyle.danger
     )
     async def cancel_callback(self, button, interaction):
+        """Edit the message if clicked"""
+        embed = discord.Embed(
+            title=f"Cancelled",
+            description=f"""Action cancelled""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("red")
+        )
+        for item in self.children:
+            item.disabled = True
+        await self.embed.edit(embed=embed, view=self)
+
+
+class PlaylistViewer(discord.ui.View):
+    """Clear the queue?"""
+
+    def __init__(self, ctx, player, playlistdb):
+        self.ctx = ctx
+        self.player = player
+        self.playlistdb = playlistdb
+        self.embed = None
+        super().__init__()
+
+    async def interaction_check(self, interaction):
+        """If the interaction isn't by the user, return a fail."""
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "cancel"),
+        label="Close",
+        style=discord.ButtonStyle.danger,
+        row=2
+    )
+    async def cancel_callback(self, button, interaction):
         """Delete the message if clicked"""
         embed = discord.Embed(
             title=f"Cancelled",

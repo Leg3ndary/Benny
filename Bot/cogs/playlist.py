@@ -266,7 +266,7 @@ class Playlist(commands.Cog):
     @commands.group(
         name="playlist",
         description="""Manage playlists""",
-        help="""Long Help text for this command""",
+        help="""Take a look at all of your playlists""",
         brief="""Short help text""",
         aliases=["pl"],
         enabled=True,
