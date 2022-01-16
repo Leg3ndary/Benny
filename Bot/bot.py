@@ -1,16 +1,13 @@
+import time
 import aiohttp
 import asqlite
 import asyncio
-from colorama import Fore
 import discord
-import math
 import json
 import os
-import sqlite3
-import time
 from discord.ext import commands
 from dotenv import load_dotenv
-from gears import util, style
+from gears import util
 from gears.info_printer import InfoPrinter
 
 start = time.monotonic()
@@ -100,64 +97,6 @@ async def start_bot():
         bot.dispatch("load_mongodb")
         bot.dispatch("load_prefixes")
         await bot.printer.print_bot_update("LOGGED IN")
-
-    @bot.event
-    async def on_guild_join(guild):
-        """
-        When we join a guild print it out
-        """
-        guild_bots = 0
-        for member in guild.members:
-            if member.bot:
-                guild_bots += 1
-
-        humans = len(guild.members) - guild_bots
-
-        bot_percentage = math.trunc((guild_bots / len(guild.members)) * 10000) / 100
-
-        await bot.printer.print_bot(
-            await bot.printer.generate_category(f"{Fore.GREEN}JOINED"),
-            f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
-        )
-
-        if bot_percentage > 20 and humans < 19:
-            sent = False
-            embed = discord.Embed(
-                title=f"Sorry!",
-                description=f"""Your server has **{guild_bots} Bots ** compared to **{len(guild.members)} Members**
-                Either:
-                - Have `20+` humans
-                Currently **{humans}** humans
-                - Lower your servers percentage of bots to under 20%
-                Currently **{bot_percentage}%** bots""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
-            )
-            for channel in guild.channels:
-                if "general" in channel.name:
-                    await channel.send(embed=embed)
-                    sent = True
-                    break
-            if not sent:
-                try:
-                    await guild.channels[0].send(embed=embed)
-                except:
-                    pass
-            await guild.leave()
-            await bot.printer.print_bot(
-                await bot.printer.generate_category(f"{Fore.MAGENTA}AUTOLEFT"),
-                f" {guild.name} {guild.id}",
-            )
-
-    @bot.event
-    async def on_guild_remove(guild):
-        """
-        When we leave a guild
-        """
-        await bot.printer.print_bot(
-            await bot.printer.generate_category(f"{Fore.RED}LEFT"),
-            f" {guild.name} {guild.id}",
-        )
 
     @bot.check
     async def global_check(ctx):

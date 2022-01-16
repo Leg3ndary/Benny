@@ -1,8 +1,8 @@
+import math
+import os
 import discord
 import discord.utils
 import numpy
-import math
-import os
 from discord.ext import commands
 from gears import style
 
@@ -52,7 +52,7 @@ class BotUtil:
         """
         files = []
         if directory:
-            if directory in ["__pycache__", "Databases", "logs"]:
+            if directory in ["__pycache__", "Databases", "logs", ".vscode"]:
                 directories = []
             else:
                 directories = os.listdir(directory)
