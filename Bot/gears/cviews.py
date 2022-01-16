@@ -216,6 +216,7 @@ class PlayerSelector(discord.ui.View):
             color=style.get_color("red")
         )
         await self.play_embed.edit(embed=embed, view=self)
+        await self.stop()
 
     @discord.ui.button(
         emoji=style.get_emoji("regular", "cancel"),
