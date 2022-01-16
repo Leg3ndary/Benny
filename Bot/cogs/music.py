@@ -113,16 +113,11 @@ class SpotifyClient:
         from_url = tekore.from_url(args)
 
         if from_url[0] == "track":
-            print(from_url)
             track = await self.client.spotify.track(from_url[1])
-            print("trackname")
             title = track.name
-            print("trackartist")
             artist = track.artists[0].name
-            print("trackquery")
+
             query = f"ytsearch:{title} {artist}"
-            
-            print("results")
             results = await player.node.get_tracks(query)
 
             if not results or not results["tracks"]:
@@ -133,9 +128,9 @@ class SpotifyClient:
                     color=style.get_color("red"),
                 )
                 return await ctx.send(embed=nothing_found, delete_after=10)
-            print("psview")
+
             ps_view = cviews.PlayerSelector(ctx, player, results["tracks"][:25])
-            print("embed")
+
             embed = discord.Embed(
                 title=f"{style.get_emoji('regular', 'spotify')} Select a Song to Play",
                 description=f"""```asciidoc
@@ -145,7 +140,6 @@ class SpotifyClient:
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("green"),
             )
-            print("created")
             ps_view.play_embed = await ctx.send(
                 embed=embed,
                 view=ps_view
