@@ -94,10 +94,11 @@ class Base(commands.Cog):
         help="""Evaluate some code, dev only.""",
         brief="Get one or multiple characters info",
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def charinfo(self, ctx, *, characters: str):
         """Gives you the character info"""
+
         def to_string(c):
             digit = f"{ord(c):x}"
             name = unicodedata.name(c, "Name not found.")

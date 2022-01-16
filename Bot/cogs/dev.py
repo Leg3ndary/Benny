@@ -260,7 +260,7 @@ class Dev(commands.Cog):
         help="""Evaluate some code, dev only.""",
         brief="Eval some code",
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.is_owner()
     async def _eval(self, ctx, *, code: str):

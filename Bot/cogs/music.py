@@ -140,10 +140,7 @@ class SpotifyClient:
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("green"),
             )
-            ps_view.play_embed = await ctx.send(
-                embed=embed,
-                view=ps_view
-            )
+            ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
 
         elif from_url[0] == "playlist":
             # Not done
@@ -288,7 +285,7 @@ class Music(commands.Cog):
             else:
                 self.client.expiring_players.append(guild_id)
                 self.client.dispatch("expire_player", guild_id)
-    
+
     @commands.Cog.listener()
     async def on_load_spotify(self):
         """Load our spotify client"""
@@ -308,7 +305,11 @@ class Music(commands.Cog):
         """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
         player = self.client.lavalink.player_manager.get(member.guild.id)
         try:
-            if before.channel.id == int(player.channel_id) and not after.channel and len(before.channel.members) == 0:
+            if (
+                before.channel.id == int(player.channel_id)
+                and not after.channel
+                and len(before.channel.members) == 0
+            ):
                 if int(member.guild.id) in self.client.expiring_players:
                     pass
                 else:
@@ -325,14 +326,14 @@ class Music(commands.Cog):
             pass
 
     @commands.command(
-        name="play", 
+        name="play",
         description="""Queue up a song""",
         help="""Play a song!
         You can use regular words or a spotify link!""",
         brief="Play songs",
         aliases=["p"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, song: str):
@@ -365,9 +366,7 @@ class Music(commands.Cog):
             )
             return await ctx.send(embed=nothing_found, delete_after=10)
 
-        embed = discord.Embed(
-            color=style.get_color()
-        )
+        embed = discord.Embed(color=style.get_color())
 
         # Valid loadTypes are:
         #   TRACK_LOADED    - single video/direct URL)

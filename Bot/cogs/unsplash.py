@@ -10,12 +10,9 @@ class UnsplashClient:
     """Accessing unsplash"""
 
     def __init__(self):
-        self.auth = {
-            "Authorization": f"Client-ID {os.getenv('Unsplash_Access')}"
-        }
+        self.auth = {"Authorization": f"Client-ID {os.getenv('Unsplash_Access')}"}
         self.session = aiohttp.ClientSession(
-            base_url="https://api.unsplash.com",
-            headers=self.auth
+            base_url="https://api.unsplash.com", headers=self.auth
         )
         self.latest_header = None
 
@@ -120,6 +117,7 @@ class UnsplashClient:
     async def get_param(self, method: str):
         """Return possible parameters from methods"""
         return param_dict.get(method)
+
 
 class Photos(commands.Cog):
     """Cog Example Description"""
