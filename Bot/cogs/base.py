@@ -2,7 +2,8 @@ import discord
 import discord.utils
 from discord.commands import Option, slash_command
 from discord.ext import commands
-from gears import cviews
+from gears import cviews, style
+import unicodedata
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
@@ -84,6 +85,35 @@ class Base(commands.Cog):
             color=person.color,
         )
         embed.set_thumbnail(url=person.avatar)
+        await ctx.send(embed=embed)
+
+    @commands.command(
+        name="charinfo",
+        aliases=["ci"],
+        description="""Get some charinfo yay""",
+        help="""Evaluate some code, dev only.""",
+        brief="Get one or multiple characters info",
+        enabled=True,
+        hidden=False
+    )
+    async def charinfo(self, ctx, *, characters: str):
+        """Gives you the character info"""
+        def to_string(c):
+            digit = f"{ord(c):x}"
+            name = unicodedata.name(c, "Name not found.")
+            return f"""```fix
+\\U{digit:>08}
+```
+{c} - [{name}](http://www.fileformat.info/info/unicode/char/{digit})"""
+
+        msg = "\n".join(map(to_string, characters))
+
+        embed = discord.Embed(
+            title="Charinfo",
+            description=msg,
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color(),
+        )
         await ctx.send(embed=embed)
 
 

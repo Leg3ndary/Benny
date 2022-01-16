@@ -4,7 +4,6 @@ import io
 import os
 import textwrap
 import traceback
-import unicodedata
 from contextlib import redirect_stdout
 from discord.ext import commands
 from gears import style
@@ -254,29 +253,15 @@ class Dev(commands.Cog):
             )
             await ctx.send(embed=embed_error)
 
-    @commands.command()
-    async def charinfo(self, ctx, *, characters: str):
-        """Gives you the character info"""
-
-        def to_string(c):
-            digit = f"{ord(c):x}"
-            name = unicodedata.name(c, "Name not found.")
-            return f"""```fix
-\\U{digit:>08}
-```
-{c} - [{name}](http://www.fileformat.info/info/unicode/char/{digit})"""
-
-        msg = "\n".join(map(to_string, characters))
-
-        embed = discord.Embed(
-            title="Charinfo",
-            description=msg,
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(name="eval", aliases=["exec"])
+    @commands.command(
+        name="eval",
+        aliases=["exec"],
+        description="""Evaluate code""",
+        help="""Evaluate some code, dev only.""",
+        brief="Eval some code",
+        enabled=True,
+        hidden=True
+    )
     @commands.is_owner()
     async def _eval(self, ctx, *, code: str):
         """Evaluates code given"""
@@ -311,6 +296,7 @@ class Dev(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
             )
+            print(f"{e.__class__.__name__}: {e}")
             return await ctx.send(embed=embed_e1)
 
         func = env["func"]
@@ -329,12 +315,13 @@ class Dev(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
             )
+            print(value + traceback.format_exc())
             return await ctx.send(embed=embed_e2)
 
         else:
             value = stdout.getvalue()
             try:
-                await ctx.message.add_reaction("\u2705")
+                await ctx.message.add_reaction(style.get_emoji("regular", "check"))
             except:
                 pass
 
@@ -359,13 +346,14 @@ class Dev(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("red"),
                 )
+                print(value + out)
                 return await ctx.send(embed=embed_e3)
 
     @dev.command(
         name="close",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
+        description="""Immediately stops the bot""",
+        help="""Stop the bot immediately""",
+        brief="""Stop the bot""",
         aliases=["end", "stop"],
         enabled=True,
         hidden=True,
@@ -386,10 +374,10 @@ Add stuff here later..
 
     @dev.command(
         name="restart",
-        description="""restart the bot by running an sh script""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=[],
+        description="""Restart the bot by running an sh script""",
+        help="""Restart the bot using a sh script""",
+        brief="""Restart the bot""",
+        aliases=["r"],
         enabled=True,
         hidden=True,
     )
