@@ -211,6 +211,8 @@ def remove_zcs(text: str) -> str:
             split += i
         else:
             break
+    print(text)
+    print(split)
     return text.split(split)[1]
 
 
