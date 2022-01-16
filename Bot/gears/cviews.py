@@ -193,7 +193,7 @@ class PlayerSelector(discord.ui.View):
 
     def __init__(self, ctx, player, songs: list):
         self.ctx = ctx
-        self.timeout = 60
+        self.timeout = 10
         self.play_embed = None
         super().__init__()
 
@@ -213,7 +213,7 @@ class PlayerSelector(discord.ui.View):
             title=f"Select a Song to Play",
             description=f"""Timed out""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("Red")
+            color=style.get_color("red")
         )
         await self.play_embed.edit(embed=embed, view=self)
 
