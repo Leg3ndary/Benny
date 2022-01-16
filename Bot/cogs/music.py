@@ -114,21 +114,12 @@ class SpotifyClient:
         from_url = tekore.from_url(args)
 
         if from_url[0] == "track":
-            try:
-                track = await self.bot.spotify.track(from_url[1])
-            except:
-                trackNF = discord.Embed(
-                    title=f"Error",
-                    description=f"""The Spotify link is invalid!""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
-                )
-                return await ctx.send(embed=trackNF)
+            print(from_url)
+            track = await self.bot.spotify.track(from_url[1])
 
             title = track.name
             artist = track.artists[0].name
             query = f"{title} {artist}"
-
             
             results = await player.node.get_tracks(f"yt:{query}")
 
