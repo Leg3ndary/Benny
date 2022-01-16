@@ -70,7 +70,8 @@ class LoopButton(discord.ui.View):
 class PlayerManagerView(discord.ui.View):
     """View to manage player from a specific guild (not done)"""
 
-    def __init__(self, player):
+    def __init__(self, player, emoji=PlayerDropdownEmoji):
+        self.emoji = emoji
         self.player = player
         super().__init__()
 
@@ -148,7 +149,7 @@ class PlayerDropdown(discord.ui.Select):
         for song in songs:
             options.append(
                 discord.SelectOption(
-                    emoji=PlayerDropdownEmoji,
+                    emoji=self.emoji,
                     label=song["info"]["title"],
                     description=f"""{song["info"]["author"]} - Duration: {util.remove_zcs(lavalink.format_time(song["info"]["length"]))}""",
                     value=str(counter),

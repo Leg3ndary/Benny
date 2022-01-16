@@ -7,9 +7,7 @@ import os
 import re
 import tekore
 from discord.ext import commands
-from gears import cviews
-from gears import style
-from gears import util
+from gears import cviews, style, util
 
 
 url_rx = re.compile(r"https?://(?:www\.)?.+")
@@ -96,7 +94,7 @@ class SpotifyClient:
         self.client.spotify = tekore.Spotify(spotify_token, asynchronous=True)
         self.playlist_limit
 
-    async def search_spotify(self, player, ctx, args: str):
+    async def search_spotify(self, player, ctx, args: str) -> None:
         """
         Search a spotify link and return in the format `title artist`
         Parameters
@@ -107,18 +105,13 @@ class SpotifyClient:
             Command context
         Args:
             The search
+
+        Returns
+        -------
+        None
         """
-        try:
-            from_url = tekore.from_url(args)
-        except:
-            embed = discord.Embed(
-                title=f"Error",
-                description=f"""```diff
-- The spotify link {args} was not found. -""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
-            )
-            return await ctx.send(embed=embed, delete_after=10)
+        # We already verified this is legit
+        from_url = tekore.from_url(args)
 
         if from_url[0] == "track":
             try:
@@ -130,7 +123,7 @@ class SpotifyClient:
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("red"),
                 )
-                await ctx.send(embed=trackNF)
+                return await ctx.send(embed=trackNF)
 
             title = track.name
             artist = track.artists[0].name
@@ -147,10 +140,27 @@ class SpotifyClient:
                 )
                 return await ctx.send(embed=nothing_found, delete_after=10)
 
+            ps_view = cviews.PlayerSelector(ctx, player, results["tracks"][:25])
+            embed = discord.Embed(
+                title=f"{style.get_emoji('regular', 'spotify')} Select a Song to Play",
+                description=f"""```asciidoc
+= Showing Song Results for: =
+[ {args} ]
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("green"),
+            )
+            ps_view.play_embed = await ctx.send(
+                embed=embed,
+                view=ps_view
+            )
+
             track = lavalink.models.AudioTrack(track, ctx.author.id, recommended=True)
             player.add(requester=ctx.author.id, track=track)
 
         elif from_url[0] == "playlist":
+            # Not done
+            return ctx.send("Sorry playlists currently aren't supported")
             playlistId = tekore.from_url(args)
             try:
                 playlist = await self.bot.spotify.playlist(playlistId[1])
@@ -204,6 +214,7 @@ class Music(commands.Cog):
 
     def __init__(self, client):
         self.client = client
+        self.spotifyclient = SpotifyClient(client)
         self.client.expiring_players = []
         self.search_prefix = client.config.get("Lavalink").get("Search")
         # When reloaded, doesn't terminate connection with client
@@ -217,11 +228,15 @@ class Music(commands.Cog):
         lavalink.add_event_hook(self.track_hook)
 
     def cog_unload(self):
-        """Cog unload handler. This removes any event hooks that were registered"""
+        """
+        Cog unload handler. This removes any event hooks that were registered
+        """
         self.client.lavalink._event_hooks.clear()
 
     async def cog_before_invoke(self, ctx):
-        """A guild only check"""
+        """
+        A guild only check
+        """
         guild_check = ctx.guild is not None
         if guild_check:
             await self.ensure_voice(ctx)
@@ -320,7 +335,7 @@ class Music(commands.Cog):
     @commands.command(
         name="play", 
         aliases=["p"],
-        help="""""",
+        help="""Play a song, from a link, a name, anything!""",
     )
     @commands.cooldown(1.0, 1.5, commands.BucketType.user)
     async def play_cmd(self, ctx, *, args: str):
@@ -331,13 +346,17 @@ class Music(commands.Cog):
 
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
         query = args.strip("<>")
+
+        # Non URL's
         if not url_rx.match(query):
-            # Treat as a regular search
             query = f"{self.search_prefix}:{query}"
 
-        else:
-            # Is a link...
-            query = ""
+        try:
+            if tekore.from_url(query):
+                pass
+
+        except tekore.ConversionError():
+            pass
 
         # Get the results for the query from Lavalink.
         results = await player.node.get_tracks(query)
