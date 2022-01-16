@@ -2,6 +2,7 @@ import asqlite
 import asyncio
 import discord
 import lavalink
+import math
 import os
 import re
 import tekore
@@ -677,7 +678,7 @@ Memory Allocated: {get_size(stats.memory_allocated)}
 Memory Reservable: {get_size(stats.memory_reservable)}
 
 CPU Cores: {stats.cpu_cores}
-Total System Load: {stats.system_load}
+Total System Load: {math.trunc(stats.system_load * 1000) / 100}
 Lavalink System Load: {stats.lavalink_load}
 
 Frames Sent to Discord: {stats.frames_sent}
