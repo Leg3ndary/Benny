@@ -92,7 +92,7 @@ class SpotifyClient:
             os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret")
         )
         self.client.spotify = tekore.Spotify(spotify_token, asynchronous=True)
-        self.playlist_limit
+        self.playlist_limit = 100
 
     async def search_spotify(self, player, ctx, args: str) -> None:
         """
