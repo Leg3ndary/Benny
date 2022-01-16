@@ -194,7 +194,7 @@ class PlayerSelector(discord.ui.View):
     def __init__(self, ctx, player, songs: list):
         self.ctx = ctx
         self.play_embed = None
-        super().__init__(timeout=10)
+        super().__init__(timeout=60)
 
         self.add_item(PlayerDropdown(ctx, player, songs))
 
@@ -208,6 +208,7 @@ class PlayerSelector(discord.ui.View):
         """On timeout make this look cool"""
         for item in self.children:
             item.disabled = True
+
         embed = discord.Embed(
             title=f"Select a Song to Play",
             description=f"""Timed out""",
