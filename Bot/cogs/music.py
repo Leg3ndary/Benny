@@ -87,7 +87,7 @@ class SpotifyClient:
     def __init__(self, client):
         """Init with a url that we can use"""
         self.client = client
-        print("Initializing Spotify Client")
+        self.client.printer.print_connect("Tekore Client")
         spotify_token = tekore.request_client_token(
             os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret")
         )
@@ -118,7 +118,10 @@ class SpotifyClient:
             track = await self.client.spotify.track(from_url[1])
 
             title = track.name
-            artist = track.artists[0].name
+            try:
+                artist = track.artists[0].name
+            except:
+                artist = ""
             query = f"ytsearch:{title} {artist}"
             
             results = await player.node.get_tracks(query)
