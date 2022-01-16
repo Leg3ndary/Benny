@@ -354,7 +354,7 @@ class Music(commands.Cog):
                 query = f"{self.search_prefix}:{query}"
 
             elif tekore.from_url(query):
-                await self.spotifyclient.search_spotify(query)
+                await self.spotifyclient.search_spotify(player, ctx, query)
                 return
         except tekore.ConversionError:
             pass
