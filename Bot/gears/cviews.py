@@ -186,6 +186,8 @@ class PlayerDropdown(discord.ui.Select):
         # We don't want to call .play() if the player is playing as that will effectively skip the current track.
         if not self.player.is_playing:
             await self.player.play()
+        
+        self.view.stop()
 
 
 class PlayerSelector(discord.ui.View):
@@ -216,7 +218,6 @@ class PlayerSelector(discord.ui.View):
             color=style.get_color("red")
         )
         await self.play_embed.edit(embed=embed, view=self)
-        await self.stop()
 
     @discord.ui.button(
         emoji=style.get_emoji("regular", "cancel"),
