@@ -17,7 +17,7 @@ class Users(commands.Cog):
         async with asqlite.connect("Databases/users.db") as db:
             await db.execute(
                 """
-                CREATE TABLE users (
+                CREATE TABLE IF NOT EXISTS users (
                     id           TEXT    PRIMARY KEY
                                         NOT NULL,
                     patron_level INTEGER NOT NULL

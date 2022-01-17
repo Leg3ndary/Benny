@@ -22,7 +22,7 @@ class Profile(commands.Cog):
         async with asqlite.connect("Databases/profile.db") as db:
             await db.execute(
                 """
-                CREATE TABLE profiles (
+                CREATE TABLE IF NOT EXISTS profiles (
                     id               TEXT PRIMARY KEY
                                         NOT NULL,
                     name             TEXT NOT NULL,
