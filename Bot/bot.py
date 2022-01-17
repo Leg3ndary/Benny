@@ -96,6 +96,7 @@ async def start_bot():
         bot.dispatch("load_prefixes")
         bot.dispatch("load_spotify")
         bot.dispatch("load_profiles")
+        bot.dispatch("load_users")
         await bot.printer.print_bot_update("LOGGED IN")
 
     @bot.check

@@ -97,7 +97,7 @@ class BennyHelp(commands.HelpCommand):
 
             if command_signatures:
                 cog_name = getattr(cog, "qualified_name", "ERROR")
-                if cog_name in ["ERROR", "Dev", "CustomCommands", "Events"]:
+                if cog_name in ["ERROR", "Dev", "CustomCommands", "Events", "Users"]:
                     pass
                 else:
                     embed.add_field(
