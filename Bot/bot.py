@@ -116,7 +116,7 @@ async def start_bot():
     async with aiohttp.ClientSession() as session:
         bot.aiosession = session
         await bot.printer.print_connect("AIOHTTP Session")
-        end = time.monotonic()  
+        end = time.monotonic()
         await bot.printer.print_bot(
             "",
             f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
