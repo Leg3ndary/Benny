@@ -117,6 +117,29 @@ class Base(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.command(
+        name="dog",
+        description="""Dog command to give you a random image of a dog""",
+        help="""What good bot doesn't have a dog command?""",
+        brief="Get a random dog image",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 3.0, commands.BucketType.user)
+    async def dog_cmd(self, ctx):
+        """dog command"""
+        dog = await self.bot.aiosession.get("https://dog.ceo/api/breeds/image/random")
+
+        dog_image = (await dog.json()).get("message")
+        embed = discord.Embed(
+            color=style.get_color()
+        )
+        embed.set_image(
+            url=dog_image
+        )
+        await ctx.send(embed=embed)
+
 
 def setup(bot):
     bot.add_cog(Base(bot))

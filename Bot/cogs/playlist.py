@@ -236,7 +236,7 @@ class Playlist(commands.Cog):
         async with asqlite.connect("Databases/music.db") as db:
             await db.execute(
                 """
-                CREATE TABLE playlists (
+                CREATE TABLE IF NOT EXISTS playlists (
                     id    TEXT    NOT NULL
                                 PRIMARY KEY,
                     name  TEXT    NOT NULL,
