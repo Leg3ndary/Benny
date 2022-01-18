@@ -1,33 +1,9 @@
+from ast import Str
 import asqlite
 import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
-
-
-"""
-
-CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);
-INSERT INTO playlists VALUES(1, "playlistttt", 0, "");
-INSERT INTO playlists VALUES(3, "another playlist", 0, "song, song2, song33333333");
-INSERT INTO playlists VALUES(1235551, "somethingelse", 5, "i like it like that, sdasdasd");
-CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);
-
-INSERT INTO tablename VALUES(values go here);
-INSERT INTO playlists VALUES(id, playlist_name, songs);
-
-SELECT * FROM playlists;
-
-SELECT * FROM playlists WHERE id IS 1289739812739821;
-
-ALTER TABLE playlists ADD COLUMN plays integer;
-
-UPDATE playlists SET plays = 0 WHERE id=11111;
-
-DELETE FROM playlists WHERE plays <= 1;
-
-cursor.execute("SELECT * FROM table_name WHERE value = ?", ('peepeepoopoo',))
-"""
 
 
 class PlaylistManager:
@@ -50,13 +26,13 @@ class PlaylistManager:
         self.PLAYLIST_LIMIT = 5
         self.SONG_NAME_LIMIT = 50
 
-    async def create_playlist(self, user_id: int, playlist_name: str) -> str:
+    async def create_playlist(self, user_id: str, playlist_name: str) -> str:
         """
         Create a playlist in our database
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             The users ID
         playlist_name: str
             The name to call the playlist
@@ -72,7 +48,7 @@ class PlaylistManager:
         """
         async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
-                """SELECT id FROM playlists WHERE id = ?;""", (int(user_id),)
+                """SELECT id FROM playlists WHERE id = ?;""", (str(user_id),)
             ) as cursor:
                 length = len(await cursor.fetchall())
                 if length > self.PLAYLIST_LIMIT:
@@ -85,13 +61,13 @@ class PlaylistManager:
             await db.commit()
             return "SUCCESS"
 
-    async def delete_playlist(self, user_id: int, playlist_name: str) -> str:
+    async def delete_playlist(self, user_id: str, playlist_name: str) -> str:
         """
         Delete a playlist in our database
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             The users ID
         playlist_name: str
             The name of the playlist to delete
@@ -120,13 +96,13 @@ class PlaylistManager:
             await db.commit()
             return "SUCCESS"
 
-    async def add_song(self, user_id: int, playlist_name: str, song: str) -> str:
+    async def add_song(self, user_id: str, playlist_name: str, song: str) -> str:
         """
         Add a song to a playlist by ID
 
         Parameters
         ----------
-        user_id: int
+        user_id: str
             The users ID
         playlist_name: str
             The name of the playlist
@@ -150,8 +126,8 @@ class PlaylistManager:
 
         async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
-                """SELECT * FROM playlists WHERE id = ? AND name = ?""",
-                (int(user_id), playlist_name),
+                """SELECT * FROM playlists WHERE id = ? AND name = ?;""",
+                (str(user_id), playlist_name),
             ) as cursor:
                 if not await cursor.fetch():
                     return f"ERROR:You have no playlists named {playlist_name}!"
@@ -172,7 +148,7 @@ class PlaylistManager:
             await db.commit()
             return f"SUCCESS"
 
-    async def delete_song(self, user_id: int, playlist_name: str, song_index) -> str:
+    async def delete_song(self, user_id: str, playlist_name: str, song_index) -> str:
         """
         Add a song to a playlist by ID
 
@@ -226,7 +202,7 @@ class PlaylistManager:
             await db.commit()
             return f"SUCCESS"
 
-    async def get_playlists(self, user_id: int) -> list:
+    async def get_playlists(self, user_id: str) -> list:
         """
         Get a list of all of a user's playlists and info about them...
 
@@ -241,7 +217,7 @@ class PlaylistManager:
         """
         async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
-                """SELECT * FROM playlists WHERE id = ?;""", (int(user_id),)
+                """SELECT * FROM playlists WHERE id = ?;""", (str(user_id),)
             ) as cursor:
                 playlists = await cursor.fetchall()
                 return playlists
@@ -259,7 +235,15 @@ class Playlist(commands.Cog):
         """Load up playlist related stuff"""
         async with asqlite.connect("Databases/music.db") as db:
             await db.execute(
-                """CREATE TABLE IF NOT EXISTS playlists(id integer NOT NULL, name text NOT NULL, plays integer NOT NULL, songs text);"""
+                """
+                CREATE TABLE playlists (
+                    id    TEXT    NOT NULL
+                                PRIMARY KEY,
+                    name  TEXT    NOT NULL,
+                    plays INTEGER NOT NULL,
+                    songs TEXT
+                );
+                """
             )
         await self.bot.printer.print_load("Playlist")
 
