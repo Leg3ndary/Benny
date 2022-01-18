@@ -53,7 +53,7 @@ async def start_bot():
     Start the bot with everything it needs
     """
     bot = commands.Bot(
-        command_prefix=get_prefix, intents=intents, description="Benny Bot"
+        command_prefix=get_prefix, intents=intents, description="Benny Bot, a cool bot obviously"
     )
 
     bot.printer = InfoPrinter(bot)
