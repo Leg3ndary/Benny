@@ -803,8 +803,9 @@ Missing Frames: {stats.frames_deficit}
             for line in logs:
                 if length > 4000:
                     lines.append(temp)
+                    temp = ""
                 else:
-                    line += f"\n{line}"
+                    temp += f"\n{line}"
 
         for line in lines:
             await ctx.send(line)
