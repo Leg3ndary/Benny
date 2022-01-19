@@ -796,7 +796,7 @@ Missing Frames: {stats.frames_deficit}
     @commands.is_owner()
     async def musiclogs(self, ctx):
         """Command description"""
-        async with open("logs/spring.log", "r") as logs:
+        async with aiofiles.open("logs/spring.log", "r") as logs:
             lines = []
             temp = ""
             length = 0
