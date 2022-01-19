@@ -7,7 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 
 class MongoDB(commands.Cog):
-    """Basically everything related to mongodb goes here"""
+    """Unimportant cog ha L bozo ratio'd"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -25,28 +25,6 @@ class MongoDB(commands.Cog):
 
         self.bot.mongo = AsyncIOMotorClient(mongo_uri)
         await self.bot.printer.print_connect("MONGODB")
-        self.bot.mongo.CommandStats
-
-    """
-    Command Stats Document Schema
-    
-    {
-        "_id": ObjectId("Stuff"),
-        "command": "qualified_command name",
-        "uses": int,
-        "": ""
-    }
-    
-    """
-
-    '''
-    @commands.Cog.listener()
-    async def on_command(self, ctx):
-        """How we track all commands usage"""
-        command = ctx.command.qualified_name
-        collection = self.CommandStats["Uses"]
-        document = await collection.find_one({"Command": command})
-    '''
 
 
 def setup(bot):

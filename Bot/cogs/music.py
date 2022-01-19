@@ -1,3 +1,4 @@
+import aiofiles
 import asqlite
 import asyncio
 import discord
@@ -783,6 +784,30 @@ Missing Frames: {stats.frames_deficit}
         )
         await ctx.send(embed=embed)
 
+    @commands.command(
+        name="musiclogs",
+        description="""Display logs""",
+        help="""Command displays music logs from lavalink what else""",
+        brief="Music Logs",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.is_owner()
+    async def musiclogs(self, ctx):
+        """Command description"""
+        async with open("logs/spring.log", "r") as logs:
+            lines = []
+            temp = ""
+            length = 0
+            for line in logs:
+                if length > 4000:
+                    lines.append(temp)
+                else:
+                    line += f"\n{line}"
+
+        for line in lines:
+            await ctx.send(line)
 
 def setup(client):
     client.add_cog(Music(client))
