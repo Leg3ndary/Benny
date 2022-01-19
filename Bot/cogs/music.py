@@ -800,7 +800,7 @@ Missing Frames: {stats.frames_deficit}
             lines = []
             temp = ""
             length = 0
-            for line in logs:
+            async for line in logs:
                 if length > 4000:
                     lines.append(temp)
                     temp = ""
