@@ -19,6 +19,34 @@ class Base(commands.Cog):
         self.MemberConverter = commands.MemberConverter()
 
     @commands.command(
+        name="about",
+        description="""tells you some stuff about the bot""",
+        help="""About the bot, why I built it, what it can and is going to do""",
+        brief="About the bot",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
+    async def about_cmd(self, ctx):
+        """About command"""
+        embed = discord.Embed(
+            title=f"About the Bot",
+            description=f"""I first started making bots in 2020, these were mainly small community bots for me and my online/offline friends
+            As I learned more and more I saw some popular bots and decided to learn more about them too.
+            However as the time went on many of my favorite bots died for different reasons, Pokecord, Rythm, and other ones I will not be mentioning for reasons.
+            
+            This inspired me in a sense to create my first public bot, one that had features that were useful and up to date, things that users would actually want.
+            You will always be able to suggest things to add, things to remove, and ways to optimise the bot for the smoothest interactions with users.
+            
+            I hope you've enjoyed using this bot thus far.
+            - Ben""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("aqua")
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(
         name="avatar",
         description="""Enlarge the avatar of an user""",
         help="""Show a users avatar in a nice clean embed.""",
