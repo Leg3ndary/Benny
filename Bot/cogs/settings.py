@@ -151,7 +151,7 @@ class Prefixes:
         elif len(prefixes) == 2:
             return f"ERROR:You must have at least one prefix for the bot at all times!"
         else:
-            pnum = "p" + str(prefixes.index(prefix))
+            pnum = "p" + str(tuple(prefixes).index(prefix))
             async with asqlite.connect("Databases/server.db") as db:
                 # We don't worry about injection because it's literally not possible for pnum
                 await db.execute(
