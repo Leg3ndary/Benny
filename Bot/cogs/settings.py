@@ -144,14 +144,14 @@ class Prefixes:
         -------
         str
         """
-        prefixes = await self.get_prefixes(guild_id)
+        prefixes = tuple(await self.get_prefixes(guild_id))
         prefix = self.sanitize_prefix(prefix)
         if prefix not in prefixes:
             return f"ERROR:You don't have {prefix} as a prefix in your server"
         elif len(prefixes) == 2:
             return f"ERROR:You must have at least one prefix for the bot at all times!"
         else:
-            pnum = "p" + str(tuple(prefixes).index(prefix))
+            pnum = "p" + str(prefixes.index(prefix))
             async with asqlite.connect("Databases/server.db") as db:
                 # We don't worry about injection because it's literally not possible for pnum
                 await db.execute(
