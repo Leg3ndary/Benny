@@ -405,7 +405,7 @@ class QueueView(discord.ui.View):
         total_duration += self.player.current.duration
 
         for count, track in enumerate(queue, 1):
-            queue_visual = f"""{queue_visual}\n{util.ansi("WHITE", None, "BOLD")}[{util.ansi("RED", None, "BOLD", "UNDERLINE")} {count} {util.ansi("WHITE", None, "BOLD")}] {util.ansi("BLUE")}{track.title} {util.ansi("WHITE", None, "BOLD")}[{util.ansi("GREEN", None, "UNDERLINE")}{track.author}{util.ansi("WHITE", None, "BOLD")}] ({util.remove_zcs(lavalink.format_time(track.duration))})"""
+            queue_visual = f"""{queue_visual}\n{util.ansi("WHITE", None, "BOLD")}[{util.ansi("RED", None, "BOLD", "UNDERLINE")} {count} {util.ansi("WHITE", None, "BOLD")}] {util.ansi("BLUE")}{track.title} {util.ansi("WHITE", None, "BOLD")}[{util.ansi("GREEN", None, "UNDERLINE")}{track.author}{util.ansi("WHITE", None, "BOLD")}]{util.ansi("RESET")} ({util.remove_zcs(lavalink.format_time(track.duration))})"""
             total_duration += track.duration
 
         embed = discord.Embed(
