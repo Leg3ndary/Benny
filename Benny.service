@@ -10,7 +10,7 @@ User=root
 
 # Activates your virtual environment and starts the bot
 # replace bot.py with whatever Python file that starts your bot
-ExecStart=/bin/bash -c "python3 Benny/bot.py" 
+ExecStart=/usr/bin/python3 -c "python3 Benny/bot.py" 
 
 # This will restart your bot if your bot doesn't return a 0 exit code
 Restart=on-failure
