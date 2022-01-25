@@ -1,18 +1,12 @@
 [Unit]
-Description=Benny Discord bot   
-After=multi-user.target
+Description=Benny Bot
+After=network-online.target
 
 [Service]
-WorkingDirectory=/root/Benny
-# This is where your bot's code lies
+Type=simple
+WorkingDirectory=/Benny/
+ExecStart=/usr/bin/python3 /Benny/bot.py
 User=root
-# Change user if you aren't using root
-
-# Activates your virtual environment and starts the bot
-# replace bot.py with whatever Python file that starts your bot
-ExecStart=/usr/bin/python3 -c "python3 Benny/bot.py" 
-
-# This will restart your bot if your bot doesn't return a 0 exit code
 Restart=on-failure
 
 [Install]
