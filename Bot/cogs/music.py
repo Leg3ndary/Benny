@@ -610,6 +610,8 @@ class Music(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
+        view = cviews.QueueView(player)
+
         queue_visual = ""
 
         total_duration = 0
@@ -644,7 +646,7 @@ class Music(commands.Cog):
         embed.set_footer(
             text=f"""Total Duration: {util.remove_zcs(lavalink.format_time(total_duration))}"""
         )
-        await ctx.send(embed=embed)
+        view.embed = await ctx.send(embed=embed, view=view)
 
     @commands.command(
         name="np",

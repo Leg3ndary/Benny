@@ -1,8 +1,7 @@
 import discord
 import json
 import lavalink
-from gears import style
-from gears import util
+from gears import style, util
 
 
 config = json.load(open("config.json"))
@@ -313,4 +312,125 @@ class PlaylistViewer(discord.ui.View):
         )
         for item in self.children:
             item.disabled = True
+        await self.embed.edit(embed=embed, view=self)
+
+
+class QueueView(discord.ui.View):
+    """Queue view"""
+
+    def __init__(self, player):
+        self.player = player
+        self.embed = None
+        super().__init__(timeout=60)
+
+    @discord.ui.button(
+        label="Normal",
+        style=discord.ButtonStyle.grey
+    )
+    async def normal_button(self, button, interaction):
+        """When the user wants to see the normal view"""
+        queue = self.player.queue
+
+        if not queue:
+            # Queue is empty
+            embed = discord.Embed(
+                title=f"Nothing's been Queued!",
+                description=f"""Use the play command to queue more songs!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("aqua"),
+            )
+            await self.embed.edit(embed=embed)
+            self.stop()
+            
+
+        queue_visual = ""
+
+        total_duration = 0
+        total_duration += self.player.current.duration
+
+        for count, track in enumerate(queue, 1):
+            queue_visual = f"{queue_visual}\n{count}. {track.title} [{track.author}] ({util.remove_zcs(lavalink.format_time(track.duration))})"
+            total_duration += track.duration
+
+        embed = discord.Embed(
+            title=f"Queue - {len(queue)} Tracks",
+            description=f"""```md
+{queue_visual}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("green"),
+        )
+        if self.player.repeat:
+            lemoji = style.get_emoji("regular", "check")
+        else:
+            lemoji = style.get_emoji("regular", "cancel")
+        if self.player.shuffle:
+            semoji = style.get_emoji("regular", "check")
+        else:
+            semoji = style.get_emoji("regular", "cancel")
+        embed.add_field(
+            name="Other Info",
+            value=f"""Loop {lemoji}
+            Shuffle {semoji}""",
+            inline=False,
+        )
+        embed.set_footer(
+            text=f"""Total Duration: {util.remove_zcs(lavalink.format_time(total_duration))}"""
+        )
+        await self.embed.edit(embed=embed, view=self)
+
+    @discord.ui.button(
+        label="Colorful",
+        style=discord.ButtonStyle.blurple
+    )
+    async def normal_button(self, button, interaction):
+        """When the user wants to see the normal view"""
+        queue = self.player.queue
+
+        if not queue:
+            # Queue is empty
+            embed = discord.Embed(
+                title=f"Nothing's been Queued!",
+                description=f"""Use the play command to queue more songs!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("aqua"),
+            )
+            await self.embed.edit(embed=embed)
+            self.stop()
+            
+
+        queue_visual = ""
+
+        total_duration = 0
+        total_duration += self.player.current.duration
+
+        for count, track in enumerate(queue, 1):
+            queue_visual = f"""{queue_visual}\n{util.ansi("WHITE", None, "BOLD")}[{util.ansi("RED", None, "BOLD", "UNDERLINE")}{count}.{util.ansi("WHITE", None, "BOLD")}] {util.ansi("BLUE")}{track.title} {util.ansi("WHITE", None, "BOLD")}[{util.ansi("GREEN", None, "UNDERLINE")}{track.author}{util.ansi("WHITE", None, "BOLD")}] ({util.remove_zcs(lavalink.format_time(track.duration))})"""
+            total_duration += track.duration
+
+        embed = discord.Embed(
+            title=f"Queue - {len(queue)} Tracks",
+            description=f"""```ansi
+{queue_visual}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("green"),
+        )
+        if self.player.repeat:
+            lemoji = style.get_emoji("regular", "check")
+        else:
+            lemoji = style.get_emoji("regular", "cancel")
+        if self.player.shuffle:
+            semoji = style.get_emoji("regular", "check")
+        else:
+            semoji = style.get_emoji("regular", "cancel")
+        embed.add_field(
+            name="Other Info",
+            value=f"""Loop {lemoji}
+            Shuffle {semoji}""",
+            inline=False,
+        )
+        embed.set_footer(
+            text=f"""Total Duration: {util.remove_zcs(lavalink.format_time(total_duration))}"""
+        )
         await self.embed.edit(embed=embed, view=self)
