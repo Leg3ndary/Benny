@@ -3,7 +3,7 @@ Description=Benny Discord bot
 After=multi-user.target
 
 [Service]
-WorkingDirectory=/Benny
+WorkingDirectory=/root/Benny
 # This is where your bot's code lies
 User=root
 # Change user if you aren't using root
