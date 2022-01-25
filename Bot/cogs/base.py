@@ -39,7 +39,7 @@ class Base(commands.Cog):
             This inspired me in a sense to create my first public bot, one that had features that were useful and up to date, things that users would actually want.
             You will always be able to suggest things to add, things to remove, and ways to optimise the bot for the smoothest interactions with users.
             
-            I hope you've enjoyed using this bot thus far.
+            I hope you've enjoyed using this bot thus far and I hope you'll enjoy the bot to come.
             - Ben""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("aqua")
