@@ -280,15 +280,15 @@ class Settings(commands.Cog):
 
     @commands.group(
         name="prefix",
-        description="""View all of your prefixes""",
-        help="""NMot done""",
+        description="""View all of your servers prefixes in a neat way""",
+        help="""View all of your prefixes""",
         brief="""also not done :eyes:""",
         aliases=[],
         enabled=True,
         hidden=False,
     )
     @commands.guild_only()
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.cooldown(1.0, 3.0, commands.BucketType.user)
     @commands.has_permissions(manage_messages=True)
     async def prefix_manage(self, ctx):
         """
@@ -323,7 +323,6 @@ class Settings(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def add_prefix(self, ctx, *, prefix: str):
         """Command description"""
         add_prefix = await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
@@ -356,9 +355,8 @@ class Settings(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def remove_prefix(self, ctx, *, prefix: str):
-        """Command description"""
+        """Remove a prefix from your server"""
         del_prefix = await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
 
         if del_prefix.split(":")[0] == "SUCCESS":
@@ -379,6 +377,52 @@ class Settings(commands.Cog):
             )
             await ctx.send(embed=embed)
 
+    @commands.group(
+        name="premium",
+        description="""View premium perks and what you have""",
+        help="""View premium related info and perks""",
+        brief="""View premium related info""",
+        aliases=["prem"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.guild_only()
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def premium_info(self, ctx):
+        """
+        Premium group for commands
+        """
+        if not ctx.invoked_subcommand:
+            pass
+
+    @premium_info.command(
+        name="add",
+        description="""Add premium to said guild""",
+        help="""Add premium to a server if it doesn't already have it""",
+        brief="""Add a prefix to your server""",
+        aliases=["create", "+"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def add_premium(self, ctx, *, prefix: str):
+        """Add premium to the bot"""
+        pass
+
+    @premium_info.command(
+        name="remove",
+        description="""Remove a prefix from said guild""",
+        help="""Remove a prefix from your server
+        You must always have at least one prefix in your server.""",
+        brief="""Remove a prefix from your server""",
+        aliases=["del", "rm", "delete", "-"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def remove_premium(self, ctx, *, prefix: str):
+        """Command description"""
+        pass
 
 def setup(bot):
     bot.add_cog(Settings(bot))
