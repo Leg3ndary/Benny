@@ -85,11 +85,11 @@ async def start_bot():
 
     await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
-    @bot.event
-    async def on_ready():
+    async def when_bot_ready():
         """
         On ready dispatch and print stuff
         """
+        await bot.wait_until_ready()
         bot.dispatch("load_musicdb")
         bot.dispatch("load_playlists")
         bot.dispatch("load_mongodb")
@@ -121,6 +121,7 @@ async def start_bot():
             "",
             f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
         )
+        bot.loop.create_task(when_bot_ready())
         await bot.start(os.getenv("Bot_Token"))
 
 
