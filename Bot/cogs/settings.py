@@ -424,5 +424,6 @@ class Settings(commands.Cog):
         """Command description"""
         pass
 
+
 def setup(bot):
     bot.add_cog(Settings(bot))

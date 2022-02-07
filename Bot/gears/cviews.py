@@ -185,7 +185,7 @@ class PlayerDropdown(discord.ui.Select):
         # We don't want to call .play() if the player is playing as that will effectively skip the current track.
         if not self.player.is_playing:
             await self.player.play()
-        
+
         self.view.stop()
 
 
@@ -204,7 +204,7 @@ class PlayerSelector(discord.ui.View):
         if interaction.user != self.ctx.author:
             return False
         return True
-    
+
     async def on_timeout(self):
         """On timeout make this look cool"""
         for item in self.children:
@@ -214,7 +214,7 @@ class PlayerSelector(discord.ui.View):
             title=f"Select a Song to Play",
             description=f"""Timed out""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red")
+            color=style.get_color("red"),
         )
         await self.play_embed.edit(embed=embed, view=self)
 
@@ -228,6 +228,7 @@ class PlayerSelector(discord.ui.View):
         """Delete the message if clicked"""
         await self.play_embed.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
+
 
 class QueueClear(discord.ui.View):
     """Clear the queue?"""
@@ -247,7 +248,7 @@ class QueueClear(discord.ui.View):
     @discord.ui.button(
         emoji=style.get_emoji("regular", "check"),
         label="Confirm",
-        style=discord.ButtonStyle.green
+        style=discord.ButtonStyle.green,
     )
     async def confirm_callback(self, button, interaction):
         """Delete the message if clicked"""
@@ -255,7 +256,7 @@ class QueueClear(discord.ui.View):
             title=f"Confirmed",
             description=f"""The queue has been cleared""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green")
+            color=style.get_color("green"),
         )
         for item in self.children:
             item.disabled = True
@@ -265,7 +266,7 @@ class QueueClear(discord.ui.View):
     @discord.ui.button(
         emoji=style.get_emoji("regular", "cancel"),
         label="Cancel",
-        style=discord.ButtonStyle.danger
+        style=discord.ButtonStyle.danger,
     )
     async def cancel_callback(self, button, interaction):
         """Edit the message if clicked"""
@@ -273,7 +274,7 @@ class QueueClear(discord.ui.View):
             title=f"Cancelled",
             description=f"""Action cancelled""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red")
+            color=style.get_color("red"),
         )
         for item in self.children:
             item.disabled = True
@@ -300,7 +301,7 @@ class PlaylistViewer(discord.ui.View):
         emoji=style.get_emoji("regular", "cancel"),
         label="Close",
         style=discord.ButtonStyle.danger,
-        row=2
+        row=2,
     )
     async def cancel_callback(self, button, interaction):
         """Delete the message if clicked"""
@@ -308,7 +309,7 @@ class PlaylistViewer(discord.ui.View):
             title=f"Cancelled",
             description=f"""Action cancelled""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red")
+            color=style.get_color("red"),
         )
         for item in self.children:
             item.disabled = True
@@ -323,10 +324,7 @@ class QueueView(discord.ui.View):
         self.embed = None
         super().__init__(timeout=60)
 
-    @discord.ui.button(
-        label="Normal",
-        style=discord.ButtonStyle.grey
-    )
+    @discord.ui.button(label="Normal", style=discord.ButtonStyle.grey)
     async def normal_button(self, button, interaction):
         """When the user wants to see the normal view"""
         queue = self.player.queue
@@ -341,7 +339,6 @@ class QueueView(discord.ui.View):
             )
             await self.embed.edit(embed=embed)
             self.stop()
-            
 
         queue_visual = ""
 
@@ -379,10 +376,7 @@ class QueueView(discord.ui.View):
         )
         await self.embed.edit(embed=embed, view=self)
 
-    @discord.ui.button(
-        label="Colorful",
-        style=discord.ButtonStyle.blurple
-    )
+    @discord.ui.button(label="Colorful", style=discord.ButtonStyle.blurple)
     async def colorful_button(self, button, interaction):
         """When the user wants to see the normal view"""
         queue = self.player.queue
@@ -397,7 +391,6 @@ class QueueView(discord.ui.View):
             )
             await self.embed.edit(embed=embed)
             self.stop()
-            
 
         queue_visual = ""
 

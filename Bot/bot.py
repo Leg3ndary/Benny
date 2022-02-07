@@ -13,12 +13,13 @@ import logging
 
 start = time.monotonic()
 
-logger = logging.getLogger('discord')
+logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+handler = logging.FileHandler(filename="discord.log", encoding="utf-8", mode="w")
+handler.setFormatter(
+    logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+)
 logger.addHandler(handler)
-
 
 load_dotenv()
 
@@ -61,7 +62,9 @@ async def start_bot():
     Start the bot with everything it needs
     """
     bot = commands.Bot(
-        command_prefix=get_prefix, intents=intents, description="Benny Bot, a cool bot obviously"
+        command_prefix=get_prefix,
+        intents=intents,
+        description="Benny Bot, a cool bot obviously",
     )
 
     bot.printer = InfoPrinter(bot)

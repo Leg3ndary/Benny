@@ -25,7 +25,7 @@ class Base(commands.Cog):
         brief="About the bot",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def about_cmd(self, ctx):
@@ -42,7 +42,7 @@ class Base(commands.Cog):
             I hope you've enjoyed using this bot thus far and I hope you'll enjoy the bot to come.
             - Ben""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua")
+            color=style.get_color("aqua"),
         )
         await ctx.send(embed=embed)
 
@@ -152,7 +152,7 @@ class Base(commands.Cog):
         brief="Get a random dog image",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
     async def dog_cmd(self, ctx):
@@ -160,12 +160,8 @@ class Base(commands.Cog):
         dog = await self.bot.aiosession.get("https://dog.ceo/api/breeds/image/random")
 
         dog_image = (await dog.json()).get("message")
-        embed = discord.Embed(
-            color=style.get_color()
-        )
-        embed.set_image(
-            url=dog_image
-        )
+        embed = discord.Embed(color=style.get_color())
+        embed.set_image(url=dog_image)
         await ctx.send(embed=embed)
 
 

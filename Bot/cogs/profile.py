@@ -7,8 +7,10 @@ from gears import style
 
 class ProfileView(discord.ui.View):
     """Class for a user's profile"""
+
     def __init__(self):
         super().__init__()
+
 
 class Profile(commands.Cog):
     """Profile Cog"""
@@ -32,6 +34,7 @@ class Profile(commands.Cog):
                 """
             )
         await self.bot.printer.print_load("Profiles")
+
 
 def setup(bot):
     bot.add_cog(Profile(bot))

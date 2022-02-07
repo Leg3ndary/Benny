@@ -460,13 +460,13 @@ class Music(commands.Cog):
         brief="Clear the queue",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def clear_command(self, ctx):
         """Clear the queue"""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        
+
         if not player.is_playing:
             nothing_playing = discord.Embed(
                 title=f"Nothing is playing!",
@@ -486,20 +486,17 @@ class Music(commands.Cog):
             return await ctx.send(embed=embed)
         else:
             songs = len(queue)
-            
+
             view = cviews.QueueClear(ctx, queue)
             embed = discord.Embed(
                 title=f"Confirm",
                 description=f"""Are you sure you want to clear the queue?
                 This will remove **{songs}** songs.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("grey")
+                color=style.get_color("grey"),
             )
-            embed.set_footer(
-                text="This action is irreversible"
-            )
+            embed.set_footer(text="This action is irreversible")
             view.embed = await ctx.send(embed=embed, view=view)
-
 
     @commands.command(
         name="skip",
@@ -514,7 +511,7 @@ class Music(commands.Cog):
     async def skip_cmd(self, ctx):
         """Skip the song and move onto the next one"""
         player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        
+
         if not player.is_playing:
             nothing_playing = discord.Embed(
                 title=f"Nothing is playing!",
@@ -793,7 +790,7 @@ Missing Frames: {stats.frames_deficit}
         brief="Music Logs",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.is_owner()
     async def musiclogs(self, ctx):
@@ -811,6 +808,7 @@ Missing Frames: {stats.frames_deficit}
 
         for line in lines:
             await ctx.send(line)
+
 
 def setup(client):
     client.add_cog(Music(client))
