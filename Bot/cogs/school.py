@@ -1,5 +1,4 @@
-from __future__ import print_function
-
+import aiofiles
 import json
 import googleapiclient.discovery
 from httplib2 import Http
@@ -96,7 +95,7 @@ class APHSDoc:
         doc = docs_service.documents().get(documentId=self.DOCUMENT_ID).execute()
         doc_content = doc.get("body").get("content")
 
-        with open("school/APHS/announcements.txt", "w", encoding="utf-8") as file:
+        async with aiofiles.open("school/APHS/announcements.txt", "w", encoding="utf-8") as file:
             #json.dump(await self.read_strucutural_elements(doc_content), file, indent=4)
             text = await self.read_strucutural_elements(doc_content)
             file.write(text)
@@ -125,7 +124,7 @@ class APHSDoc:
             
             organized_doc[item] = new_a_list
 
-        with open("school/APHS/announcements.json", "w", encoding="utf-8") as file:
+        async with aiofiles.open("school/APHS/announcements.json", "w", encoding="utf-8") as file:
             json.dump(organized_doc, file, indent=4)
 
 
@@ -133,7 +132,7 @@ class APHSJson:
     """Read from the announcements json document"""
     async def get_latest_day(self) -> list:
         """Get latest days list of announcements"""
-        with open("school/APHS/announcements.json", "r", encoding="utf-8") as file:
+        async with aiofiles.open("school/APHS/announcements.json", "r", encoding="utf-8") as file:
             latest_json = json.loads(file.read())
 
         first_key = latest_json.keys()
@@ -144,7 +143,7 @@ class APHSJson:
 
     async def get_day(self, day:int) -> list:
         """Get a certain days announcement"""
-        with open("school/APHS/announcements.json", "r", encoding="utf-8") as file:
+        async with aiofiles.open("school/APHS/announcements.json", "r", encoding="utf-8") as file:
             latest_json = json.loads(file.read())
         # Removing one from the index value
         day -= 1
@@ -188,11 +187,10 @@ class School(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         """On ready save the doc to our text file"""
-        print("Saving Doc")
         await self.APHSDoc.save_doc()
-        print("Doc saved to school/APHS/announcements.txt")
+        await self.bot.printer.print_save("Text Saved to school/APHS/announcements.txt")
         await self.APHSDoc.organize_doc()
-        print("Json saved to school/APHS/announcements.json")
+        await self.bot.printer.print_save("Json saved to school/APHS/announcements.json")
 
     @commands.group()
     async def aphs(self, ctx):

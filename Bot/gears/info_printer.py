@@ -124,3 +124,14 @@ class InfoPrinter:
             The info to add or print
         """
         print(f"{await self.generate_category(f'{Fore.RED}COG')}{categories} {info}")
+
+    async def print_save(self, info: str):
+        """
+        [SAVE] Save info
+
+        Parameters
+        ----------
+        info: str
+            The info to add or print
+        """
+        print(f"{await self.generate_category(f'{Fore.GREEN}SAVE')} {info}")
