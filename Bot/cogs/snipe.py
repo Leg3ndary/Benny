@@ -1,6 +1,8 @@
 import asyncio
 import discord
 import discord.utils
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
 import time
 from discord.ext import commands
 from gears import style
@@ -28,7 +30,20 @@ class Snipe(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.snipe = self.bot.mongo["Snipe"]
+
+    @commands.Cog.listener()
+    async def on_load_mongodb(self):
+        """Load mongodb for snipe when called"""
+
+        mongo_uri = (
+            self.bot.config.get("Mongo")
+            .get("URL")
+            .replace("<Username>", self.bot.config.get("Mongo").get("User"))
+            .replace("<Password>", os.getenv("Mongo_Pass"))
+        )
+
+        self.snipe = AsyncIOMotorClient(mongo_uri)["Snipe"]
+        await self.bot.printer.print_connect("SNIPE MONGODB")
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):
