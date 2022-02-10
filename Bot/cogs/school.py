@@ -98,7 +98,7 @@ class APHSDoc:
         async with aiofiles.open("school/APHS/announcements.txt", "w", encoding="utf-8") as file:
             #json.dump(await self.read_strucutural_elements(doc_content), file, indent=4)
             text = await self.read_strucutural_elements(doc_content)
-            file.write(text)
+            await file.write(text)
             self.text = text
 
 
@@ -125,7 +125,7 @@ class APHSDoc:
             organized_doc[item] = new_a_list
 
         async with aiofiles.open("school/APHS/announcements.json", "w", encoding="utf-8") as file:
-            json.dump(organized_doc, file, indent=4)
+            await file.write(json.dumps(organized_doc, indent=4))
 
 
 class APHSJson:
