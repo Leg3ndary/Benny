@@ -48,7 +48,7 @@ class Snipe(commands.Cog):
     @commands.Cog.listener()
     async def on_message_delete(self, message):
         """Tracking deleted messages..."""
-        if not message.guild_id or message.author.bot:
+        if not message.guild.id or message.author.bot:
             pass
 
         else:
