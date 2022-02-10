@@ -19,7 +19,7 @@ def convert(thing):
     return res_dct
 
 
-class AnnouncementsDoc:
+class APHSDoc:
     """Class for accessing info about the announcements doc"""
     def __init__(self):
         """Initiates with all the info that we need"""
@@ -129,7 +129,7 @@ class AnnouncementsDoc:
             json.dump(organized_doc, file, indent=4)
 
 
-class AnnouncementsJson:
+class APHSJson:
     """Read from the announcements json document"""
     async def get_latest_day(self) -> list:
         """Get latest days list of announcements"""
@@ -161,14 +161,18 @@ class WOSSAnnounce:
     """
     Woss Announcements
     """
+    def __init__(self, bot) -> None:
+        self.bot = bot
+
+
 
 
 class School(commands.Cog):
     """School cog"""
     def __init__(self, bot):
         self.bot = bot
-        self.adoc = AnnouncementsDoc()
-        self.ajson = AnnouncementsJson()
+        self.APHSDoc = APHSDoc()
+        self.APHSJson = APHSJson()
         self.update_announcements.start()
 
     def cog_unload(self):
@@ -177,24 +181,24 @@ class School(commands.Cog):
     @tasks.loop(time=datetime.time(hour=13, minute=30))
     async def update_announcements(self):
         """Update our announcements documents every day at 8:30 est minutes"""
-        await self.adoc.save_doc()
-        await self.adoc.organize_doc()
+        await self.APHSDoc.save_doc()
+        await self.APHSDoc.organize_doc()
 
 
     @commands.Cog.listener()
     async def on_ready(self):
         """On ready save the doc to our text file"""
         print("Saving Doc")
-        await self.adoc.save_doc()
+        await self.APHSDoc.save_doc()
         print("Doc saved to school/APHS/announcements.txt")
-        await self.adoc.organize_doc()
+        await self.APHSDoc.organize_doc()
         print("Json saved to school/APHS/announcements.json")
 
     @commands.group()
     async def aphs(self, ctx):
         """Show todays announcements"""
         if not ctx.invoked_subcommand:
-            a_list = await self.ajson.get_latest_day()
+            a_list = await self.APHSJson.get_latest_day()
 
             a_formatted = ""
 
