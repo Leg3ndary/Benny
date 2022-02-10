@@ -68,7 +68,7 @@ class Snipe(commands.Cog):
                     if doc.get("added") < oldest_msg_added:
                         oldest_msg_added = doc.get("added")
                         oldest_msg_id = doc.get("_id")
-            if oldest_msg_added = 99999999999:
+            if oldest_msg_added == 99999999999:
                 pass
             else:
                 del_doc = {"_id": oldest_msg_id}
