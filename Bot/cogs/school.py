@@ -36,11 +36,11 @@ class AnnouncementsDoc:
         Returns:
             Credentials, the obtained credential.
         """
-        store = file.Storage('aphs_info/token.json')
+        store = file.Storage('school/token.json')
         credentials = store.get()
 
         if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets('aphs_info/credentials.json', self.SCOPES)
+            flow = client.flow_from_clientsecrets('school/credentials.json', self.SCOPES)
             credentials = tools.run_flow(flow, store)
         return credentials
 
@@ -96,7 +96,7 @@ class AnnouncementsDoc:
         doc = docs_service.documents().get(documentId=self.DOCUMENT_ID).execute()
         doc_content = doc.get("body").get("content")
 
-        with open("aphs_info/announcements.txt", "w", encoding="utf-8") as file:
+        with open("school/announcements.txt", "w", encoding="utf-8") as file:
             #json.dump(await self.read_strucutural_elements(doc_content), file, indent=4)
             text = await self.read_strucutural_elements(doc_content)
             file.write(text)
@@ -125,7 +125,7 @@ class AnnouncementsDoc:
             
             organized_doc[item] = new_a_list
 
-        with open("aphs_info/announcements.json", "w", encoding="utf-8") as file:
+        with open("school/announcements.json", "w", encoding="utf-8") as file:
             json.dump(organized_doc, file, indent=4)
 
 
@@ -133,7 +133,7 @@ class AnnouncementsJson:
     """Read from the announcements json document"""
     async def get_latest_day(self) -> list:
         """Get latest days list of announcements"""
-        with open("aphs_info/announcements.json", "r", encoding="utf-8") as file:
+        with open("school/announcements.json", "r", encoding="utf-8") as file:
             latest_json = json.loads(file.read())
 
         first_key = latest_json.keys()
@@ -144,7 +144,7 @@ class AnnouncementsJson:
 
     async def get_day(self, day:int) -> list:
         """Get a certain days announcement"""
-        with open("aphs_info/announcements.json", "r", encoding="utf-8") as file:
+        with open("school/announcements.json", "r", encoding="utf-8") as file:
             latest_json = json.loads(file.read())
         # Removing one from the index value
         day -= 1
@@ -180,9 +180,9 @@ class School(commands.Cog):
         """On ready save the doc to our text file"""
         print("Saving Doc")
         await self.adoc.save_doc()
-        print("Doc saved to aphs_info/announcements.txt")
+        print("Doc saved to school/announcements.txt")
         await self.adoc.organize_doc()
-        print("Json saved to aphs_info/announcements.json")
+        print("Json saved to school/announcements.json")
 
     @commands.group()
     async def aphs(self, ctx):
@@ -209,7 +209,7 @@ class School(commands.Cog):
     @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
     async def raw(self, ctx):
         """Get the raw files"""
-        await ctx.send(file=discord.File('aphs_info/announcements.json'))
+        await ctx.send(file=discord.File('school/announcements.json'))
 
 
 def setup(bot):
