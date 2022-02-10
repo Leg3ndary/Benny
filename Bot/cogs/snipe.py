@@ -55,7 +55,7 @@ class Snipe(commands.Cog):
             coll = self.snipe[str(message.guild.id)]
             patron = False  # Change this later to check the guild
             query_doc = {"_id": str(message.guild.id)}
-            channel_snipes = coll.count_documents(query_doc)
+            channel_snipes = await coll.count_documents(query_doc)
 
             if not patron:
                 max_snipes = 3
