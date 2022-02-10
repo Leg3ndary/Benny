@@ -68,10 +68,12 @@ class Snipe(commands.Cog):
                     if doc.get("added") < oldest_msg_added:
                         oldest_msg_added = doc.get("added")
                         oldest_msg_id = doc.get("_id")
-
-            del_doc = {"_id": oldest_msg_id}
-            # Deleting it
-            await coll.delete_one(del_doc)
+            if oldest_msg_added = 99999999999:
+                pass
+            else:
+                del_doc = {"_id": oldest_msg_id}
+                # Deleting it
+                await coll.delete_one(del_doc)
 
             # Store the message, passed all checks
             snipe_data = {
