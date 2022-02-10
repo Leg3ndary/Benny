@@ -96,7 +96,7 @@ class AnnouncementsDoc:
         doc = docs_service.documents().get(documentId=self.DOCUMENT_ID).execute()
         doc_content = doc.get("body").get("content")
 
-        with open("aphs_info/a_info.txt", "w", encoding="utf-8") as file:
+        with open("aphs_info/announcements.txt", "w", encoding="utf-8") as file:
             #json.dump(await self.read_strucutural_elements(doc_content), file, indent=4)
             text = await self.read_strucutural_elements(doc_content)
             file.write(text)
@@ -104,7 +104,7 @@ class AnnouncementsDoc:
 
 
     async def organize_doc(self):
-        """Organize the text into a json file (a_info.json)"""
+        """Organize the text into a json file (announcements.json)"""
         edited_text = self.text.replace("APHS DAILY ANNOUNCEMENTS\n\n\n\n", "")
         
         edited_text = re.split(r"((?:MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY) (?:JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER) \b(?:[1-9]|[12][0-9]|3[01])\b (?:2021|2022))", edited_text)
@@ -125,15 +125,15 @@ class AnnouncementsDoc:
             
             organized_doc[item] = new_a_list
 
-        with open("aphs_info/a_info.json", "w", encoding="utf-8") as file:
+        with open("aphs_info/announcements.json", "w", encoding="utf-8") as file:
             json.dump(organized_doc, file, indent=4)
 
 
 class AnnouncementsJson:
-    """Read from the a_info json document"""
+    """Read from the announcements json document"""
     async def get_latest_day(self) -> list:
         """Get latest days list of announcements"""
-        with open("aphs_info/a_info.json", "r", encoding="utf-8") as file:
+        with open("aphs_info/announcements.json", "r", encoding="utf-8") as file:
             latest_json = json.loads(file.read())
 
         first_key = latest_json.keys()
@@ -144,7 +144,7 @@ class AnnouncementsJson:
 
     async def get_day(self, day:int) -> list:
         """Get a certain days announcement"""
-        with open("aphs_info/a_info.json", "r", encoding="utf-8") as file:
+        with open("aphs_info/announcements.json", "r", encoding="utf-8") as file:
             latest_json = json.loads(file.read())
         # Removing one from the index value
         day -= 1
@@ -157,8 +157,8 @@ class AnnouncementsJson:
         pass
 
 
-class Announcements(commands.Cog):
-    """Announcements cog"""
+class APHS(commands.Cog):
+    """APHS cog"""
     def __init__(self, bot):
         self.bot = bot
         self.adoc = AnnouncementsDoc()
@@ -168,9 +168,9 @@ class Announcements(commands.Cog):
     def cog_unload(self):
         self.update_announcements.cancel()
 
-    @tasks.loop(minutes=10)
+    @tasks.loop(time=datetime.time(hour=13, minute=30))
     async def update_announcements(self):
-        """Update our announcements documents every 10 minutes"""
+        """Update our announcements documents every day at 8:30 est minutes"""
         await self.adoc.save_doc()
         await self.adoc.organize_doc()
 
@@ -180,9 +180,9 @@ class Announcements(commands.Cog):
         """On ready save the doc to our text file"""
         print("Saving Doc")
         await self.adoc.save_doc()
-        print("Doc saved to aphs_info/a_info.txt")
+        print("Doc saved to aphs_info/announcements.txt")
         await self.adoc.organize_doc()
-        print("Json saved to aphs_info/a_info.json")
+        print("Json saved to aphs_info/announcements.json")
 
     @commands.group()
     async def aphs(self, ctx):
@@ -205,6 +205,12 @@ class Announcements(commands.Cog):
             )
             await ctx.send(embed=embed)
 
+    @aphs.command()
+    @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
+    async def raw(self, ctx):
+        """Get the raw files"""
+        await ctx.send(file=discord.File('aphs_info/announcements.json'))
+
 
 def setup(bot):
-    bot.add_cog(Announcements(bot))
+    bot.add_cog(APHS(bot))
