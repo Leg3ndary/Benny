@@ -33,8 +33,8 @@ class BotUtil:
                 for i, l in enumerate(f):
                     pass
             return i + 1
-        except Exception as e:
-            print(e)
+        except:
+            # Sometimes we can't read so
             return 0
 
     async def get_files(self, directory: str = None) -> list:
