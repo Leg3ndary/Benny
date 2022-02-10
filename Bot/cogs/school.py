@@ -157,8 +157,8 @@ class AnnouncementsJson:
         pass
 
 
-class APHS(commands.Cog):
-    """APHS cog"""
+class School(commands.Cog):
+    """School cog"""
     def __init__(self, bot):
         self.bot = bot
         self.adoc = AnnouncementsDoc()
@@ -213,4 +213,4 @@ class APHS(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(APHS(bot))
+    bot.add_cog(School(bot))
