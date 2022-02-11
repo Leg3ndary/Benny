@@ -2,9 +2,7 @@ import aiofiles
 import json
 import googleapiclient.discovery
 from httplib2 import Http
-from oauth2client import client
-from oauth2client import file
-from oauth2client import tools
+from oauth2client import client, file, tools
 from discord.ext import commands, tasks
 import discord
 import datetime
@@ -20,6 +18,7 @@ def convert(thing):
 
 class APHSDoc:
     """Class for accessing info about the announcements doc"""
+
     def __init__(self):
         """Initiates with all the info that we need"""
         self.SCOPES = "https://www.googleapis.com/auth/documents.readonly"
@@ -35,14 +34,15 @@ class APHSDoc:
         Returns:
             Credentials, the obtained credential.
         """
-        store = file.Storage('school/APHS/token.json')
+        store = file.Storage("school/APHS/token.json")
         credentials = store.get()
 
         if not credentials or credentials.invalid:
-            flow = client.flow_from_clientsecrets('school/APHS/credentials.json', self.SCOPES)
+            flow = client.flow_from_clientsecrets(
+                "school/APHS/credentials.json", self.SCOPES
+            )
             credentials = tools.run_flow(flow, store)
         return credentials
-
 
     async def read_paragraph_element(self, element):
         """Returns the text in the given ParagraphElement.
@@ -51,11 +51,10 @@ class APHSDoc:
             element: a ParagraphElement from a Google Doc.
         """
         text_run = element.get("textRun")
-        
+
         if not text_run:
             return ""
         return text_run.get("content")
-
 
     async def read_strucutural_elements(self, elements):
         """Recurses through a list of Structural Elements to read a document's text where text may be
@@ -77,13 +76,14 @@ class APHSDoc:
                 for row in table.get("tableRows"):
                     cells = row.get("tableCells")
                     for cell in cells:
-                        text += await self.read_strucutural_elements(cell.get("content"))
+                        text += await self.read_strucutural_elements(
+                            cell.get("content")
+                        )
             elif "tableOfContents" in value:
                 # The text in the TOC is also in a Structural Element.
                 toc = value.get("tableOfContents")
                 text += await self.read_strucutural_elements(toc.get("content"))
         return text
-
 
     async def save_doc(self):
         """Uses the Docs API to save the document to a txt file"""
@@ -95,18 +95,22 @@ class APHSDoc:
         doc = docs_service.documents().get(documentId=self.DOCUMENT_ID).execute()
         doc_content = doc.get("body").get("content")
 
-        async with aiofiles.open("school/APHS/announcements.txt", "w", encoding="utf-8") as file:
-            #json.dump(await self.read_strucutural_elements(doc_content), file, indent=4)
+        async with aiofiles.open(
+            "school/APHS/announcements.txt", "w", encoding="utf-8"
+        ) as file:
+            # json.dump(await self.read_strucutural_elements(doc_content), file, indent=4)
             text = await self.read_strucutural_elements(doc_content)
             await file.write(text)
             self.text = text
 
-
     async def organize_doc(self):
         """Organize the text into a json file (announcements.json)"""
         edited_text = self.text.replace("APHS DAILY ANNOUNCEMENTS\n\n\n\n", "")
-        
-        edited_text = re.split(r"((?:MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY) (?:JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER) \b(?:[1-9]|[12][0-9]|3[01])\b (?:2021|2022))", edited_text)
+
+        edited_text = re.split(
+            r"((?:MONDAY|TUESDAY|WEDNESDAY|THURSDAY|FRIDAY) (?:JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER) \b(?:[1-9]|[12][0-9]|3[01])\b (?:2021|2022))",
+            edited_text,
+        )
 
         del edited_text[0]
 
@@ -121,18 +125,23 @@ class APHSDoc:
 
             for item_a in split_a:
                 new_a_list.append(item_a.replace("\n", ""))
-            
+
             organized_doc[item] = new_a_list
 
-        async with aiofiles.open("school/APHS/announcements.json", "w", encoding="utf-8") as file:
+        async with aiofiles.open(
+            "school/APHS/announcements.json", "w", encoding="utf-8"
+        ) as file:
             await file.write(json.dumps(organized_doc, indent=4))
 
 
 class APHSJson:
     """Read from the announcements json document"""
+
     async def get_latest_day(self) -> list:
         """Get latest days list of announcements"""
-        async with aiofiles.open("school/APHS/announcements.json", "r", encoding="utf-8") as file:
+        async with aiofiles.open(
+            "school/APHS/announcements.json", "r", encoding="utf-8"
+        ) as file:
             latest_json = json.loads(file.read())
 
         first_key = latest_json.keys()
@@ -141,16 +150,17 @@ class APHSJson:
 
         return a_list
 
-    async def get_day(self, day:int) -> list:
+    async def get_day(self, day: int) -> list:
         """Get a certain days announcement"""
-        async with aiofiles.open("school/APHS/announcements.json", "r", encoding="utf-8") as file:
+        async with aiofiles.open(
+            "school/APHS/announcements.json", "r", encoding="utf-8"
+        ) as file:
             latest_json = json.loads(file.read())
         # Removing one from the index value
         day -= 1
         keys = list(latest_json.keys)
         return keys[day]
 
-    
     async def get_all(self) -> dict:
         """Get all announcements possible"""
         pass
@@ -160,14 +170,43 @@ class WOSSAnnounce:
     """
     Woss Announcements
     """
+
     def __init__(self, bot) -> None:
         self.bot = bot
 
+    async def sanitize_announcements(self, announcement: str) -> str:
+        """Quickly sanitizing the bulk of the doc out."""
+        announcement = announcement.split("""<div class="title">""")[1].split(
+            """</div>
+
+</div>
+
+</body>
+
+</html>"""
+        )[0]
+
+        return announcement
+
+    async def retrieve_latest(self):
+        """Retrieve and save latest data"""
+        async with aiofiles.open("school/WOSS/latest.txt", "w") as file:
+            async with self.bot.aiosession.get(
+                "https://wosann.hdsb.ca/WOSSannouncements/"
+            ) as site:
+                await file.write(await self.sanitize_announcements(await site.text()))
+
+    async def add_announcement(self):
+        """Add an announcement to our json"""
+        async with aiofiles.open("school/WOSS/data.json", "w") as datafile:
+            async with aiofiles.open("school/WOSS/latest.txt", "r") as file:
+                pass
 
 
 
 class School(commands.Cog):
     """School cog"""
+
     def __init__(self, bot):
         self.bot = bot
         self.APHSDoc = APHSDoc()
@@ -183,14 +222,15 @@ class School(commands.Cog):
         await self.APHSDoc.save_doc()
         await self.APHSDoc.organize_doc()
 
-
     @commands.Cog.listener()
     async def on_ready(self):
         """On ready save the doc to our text file"""
         await self.APHSDoc.save_doc()
         await self.bot.printer.print_save("Text Saved to school/APHS/announcements.txt")
         await self.APHSDoc.organize_doc()
-        await self.bot.printer.print_save("Json saved to school/APHS/announcements.json")
+        await self.bot.printer.print_save(
+            "Json saved to school/APHS/announcements.json"
+        )
 
     @commands.group()
     async def aphs(self, ctx):
@@ -209,7 +249,7 @@ class School(commands.Cog):
 {announcements}
 ```""",
                 timestamp=datetime.datetime.utcnow(),
-                color=ctx.author.color
+                color=ctx.author.color,
             )
             await ctx.send(embed=embed)
 
@@ -217,7 +257,7 @@ class School(commands.Cog):
     @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
     async def raw(self, ctx):
         """Get the raw files"""
-        await ctx.send(file=discord.File('school/APHS/announcements.json'))
+        await ctx.send(file=discord.File("school/APHS/announcements.json"))
 
 
 def setup(bot):
