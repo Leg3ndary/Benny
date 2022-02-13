@@ -1,9 +1,10 @@
+import math
+
 import aiofiles
 import asqlite
 import asyncio
 import discord
 import lavalink
-import math
 import os
 import re
 import tekore

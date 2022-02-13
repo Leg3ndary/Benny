@@ -4,8 +4,7 @@ import discord
 import discord.utils
 import traceback
 from discord.ext import commands
-from gears import style
-from gears import util
+from gears import style, util
 
 
 class Errors(commands.Cog):

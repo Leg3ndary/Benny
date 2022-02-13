@@ -1,7 +1,8 @@
-from colorama import Fore
+import math
+
 import discord
 import discord.utils
-import math
+from colorama import Fore
 from discord.ext import commands
 from gears import style
 

@@ -1,11 +1,13 @@
+import time
+
 import asyncio
 import discord
 import discord.utils
-from motor.motor_asyncio import AsyncIOMotorClient
 import os
-import time
 from discord.ext import commands
 from gears import style
+from motor.motor_asyncio import AsyncIOMotorClient
+
 
 """
 Snipe Schema

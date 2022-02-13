@@ -1,12 +1,12 @@
 import aiofiles
-import json
+import datetime
+import discord
 import googleapiclient.discovery
+import json
+import re
+from discord.ext import commands, tasks
 from httplib2 import Http
 from oauth2client import client, file, tools
-from discord.ext import commands, tasks
-import discord
-import datetime
-import re
 
 
 def convert(thing):

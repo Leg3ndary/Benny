@@ -1,9 +1,9 @@
 import discord
 import discord.utils
+import unicodedata
 from discord.commands import Option, slash_command
 from discord.ext import commands
-from gears import style, cviews
-import unicodedata
+from gears import cviews, style
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)

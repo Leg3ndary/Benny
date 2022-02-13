@@ -1,7 +1,7 @@
-from ast import Str
 import asqlite
 import discord
 import discord.utils
+from ast import Str
 from discord.ext import commands
 from gears import style
 

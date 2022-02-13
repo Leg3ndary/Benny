@@ -1,7 +1,7 @@
 import asqlite
-from colorama import Fore
 import discord
 import discord.utils
+from colorama import Fore
 from discord.ext import commands
 from gears import style
 

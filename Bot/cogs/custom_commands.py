@@ -3,7 +3,7 @@ import discord
 import discord.utils
 from discord import guild
 from discord.ext import commands
-from gears import style, cviews
+from gears import cviews, style
 
 
 def is_tong_guild():
