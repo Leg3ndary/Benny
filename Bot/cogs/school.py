@@ -203,7 +203,6 @@ class WOSSAnnounce:
                 pass
 
 
-
 class School(commands.Cog):
     """School cog"""
 
