@@ -173,21 +173,23 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False
     )
-    @commands.cooldown(1.0, 5.0, commands.Bucketype.channel)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def pyc_cmd(self, ctx):
         """. Just wanna write stuff here"""
         embed = discord.Embed(
             title=f"Why Pycord?",
             description=f"""Gonna be completely honest, it seems very shitty so far.
-            After adding a few features and having many delayed releases and design choices I think are really shitty, pycord has almost* completely claimed all credit for this maintained fork.
+            After adding a few features and having delayed releases/betas and design choices I think are really shitty, pycord has almost* completely claimed all credit for this maintained fork.
             
-            All the old maintainer of the library needs apparently is a license mention and that's it. He's "famous enough", that being said, why don't I make a library then? or fork dpy for that matter?
+            All the old maintainer of the library needs, is apparently a license mention and that's it. He's "famous enough", that being said, why don't I make a library then? or fork dpy for that matter?
             
             Not only do I not have the time, I'm also not qualified enough nor do I have knowledge. So call me what you may but this library is only being used because it's the best among shitty forks.
-            
-            Thanks for reading :)""",
+            """,
             timestamp=discord.utils.utcnow(),
             color=style.get_color()
+        )
+        embed.set_image(
+            url="https://images-ext-2.discordapp.net/external/-yDDf7ja-wcL9Evd2bjEV-Q-Uyh5Jq9kYZgkKujc9yY/%3Fwidth%3D1226%26height%3D681/https/media.discordapp.net/attachments/381963689470984203/943907193370075206/isPycordgood.png?width=1103&height=613"
         )
         await ctx.send(embed=embed)
 
