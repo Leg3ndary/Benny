@@ -96,7 +96,6 @@ class BotUtil:
                 if (
                     file.endswith(".py")
                     and not file.endswith("cog_template.py")
-                    and not file.endswith("redis.py")
                     and not file.endswith("pastebin.py")
                 ):
                     self.bot.load_extension(f"cogs.{file[:-3]}")
