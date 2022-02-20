@@ -44,6 +44,7 @@ intents = discord.Intents(
     typing=False,
     voice_states=True,
     webhooks=True,
+    message_content=True
 )
 
 prefix = config.get("Bot").get("Prefix")
@@ -108,6 +109,7 @@ async def start_bot():
         bot.dispatch("load_spotify")
         bot.dispatch("load_profiles")
         bot.dispatch("load_users")
+        bot.dispatch("load_redis")
         await bot.printer.print_bot_update("LOGGED IN")
 
     @bot.check
@@ -137,3 +139,4 @@ async def start_bot():
 
 
 asyncio.run(start_bot())
+    
