@@ -171,7 +171,7 @@ class Base(commands.Cog):
         brief="Why pycord bad",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=True
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def pyc_cmd(self, ctx):
@@ -183,13 +183,16 @@ class Base(commands.Cog):
             
             All the old maintainer of the library needs, is apparently a license mention and that's it. He's "famous enough", that being said, why don't I make a library then? or fork dpy for that matter?
             
-            Not only do I not have the time, I'm also not qualified enough nor do I have knowledge. So call me what you may but this library is only being used because it's the best among shitty forks.
-            """,
+            Not only do I not have the time, I would also say I'm not experienced enough to maintain such a massive library. So call me what you may but this library is only being used because it's the best among shitty forks.
+            
+            You can join pycords support server and take a snoop around if you want to learn more, it's up to you to judge, though if you're looking for a new library I would recommend not using python at all and moving onto another better language which with it could come with a much better library.
+            
+            - Ben""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color()
         )
         embed.set_image(
-            url="https://images-ext-2.discordapp.net/external/-yDDf7ja-wcL9Evd2bjEV-Q-Uyh5Jq9kYZgkKujc9yY/%3Fwidth%3D1226%26height%3D681/https/media.discordapp.net/attachments/381963689470984203/943907193370075206/isPycordgood.png?width=1103&height=613"
+            url="https://i.imgur.com/oca7K5s.png"
         )
         await ctx.send(embed=embed)
 
