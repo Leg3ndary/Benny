@@ -8,6 +8,8 @@ from gears import cviews, style
 
 def is_tong_guild():
     def guild_check(ctx):
+        if ctx.guild.unavailable:
+            return False
         return ctx.guild.id == 773026012631269406
 
     return commands.check(guild_check)
@@ -15,6 +17,8 @@ def is_tong_guild():
 
 def is_development():
     def guild_check(ctx):
+        if ctx.guild.unavailable:
+            return False
         return ctx.guild.id == 839605885700669441
 
     return commands.check(guild_check)
