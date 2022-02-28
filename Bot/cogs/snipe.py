@@ -97,7 +97,7 @@ class Snipe(commands.Cog):
     async def snipe_group(self, ctx, choice=1):
         """Snipe command"""
         if not ctx.invoked_subcommand:
-            pass
+            coll = await self.snipe[str(ctx.guild.id)]
 
 
 def setup(bot):

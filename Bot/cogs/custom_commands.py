@@ -77,7 +77,7 @@ class CustomCommands(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx):
-        """Command description"""
+        """Random command tong wanted"""
         deleteview = cviews.DeleteView()
         deleteview.bctx = await ctx.send(
             "https://media.discordapp.net/attachments/839605885700669444/925219138572550144/IMG_2617.png?width=372&height=661",
