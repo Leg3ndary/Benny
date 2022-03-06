@@ -69,8 +69,6 @@ async def start_bot():
         intents=intents,
         description="Benny Bot, a cool bot obviously",
     )
-    bot.ac_tree = app_commands.CommandTree(bot)
-    await bot.printer.print_load("App Commands Tree")
 
     bot.printer = InfoPrinter(bot)
     await bot.printer.print_load("Printer")
