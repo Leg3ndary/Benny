@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 from gears import util
 from gears.info_printer import InfoPrinter
 import logging
+from discord import app_commands
+
 
 start = time.monotonic()
 
@@ -67,6 +69,8 @@ async def start_bot():
         intents=intents,
         description="Benny Bot, a cool bot obviously",
     )
+    bot.ac_tree = app_commands.CommandTree(bot)
+    await bot.printer.print_load("App Commands Tree")
 
     bot.printer = InfoPrinter(bot)
     await bot.printer.print_load("Printer")
