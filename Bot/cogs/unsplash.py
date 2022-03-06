@@ -125,6 +125,20 @@ class Photos(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(
+        name="photo",
+        description="""photo searching stuff""",
+        help="""Search for photos based on queries""",
+        brief="Search for photos",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def photo_cmd(self, ctx):
+        """Command description"""
+
+
 
 def setup(bot):
     bot.add_cog(Photos(bot))
