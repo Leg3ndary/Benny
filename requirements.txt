@@ -1,4 +1,4 @@
-git+https://github.com/Pycord-Development/pycord
+git+https://github.com/Rapptz/discord.py
 aiohttp==3.6.3
 git+https://github.com/Rapptz/asqlite
 aioredis==2.0.0a1
