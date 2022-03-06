@@ -1,7 +1,6 @@
 import math
 
 import aiofiles
-import asqlite
 import asyncio
 import discord
 import lavalink
