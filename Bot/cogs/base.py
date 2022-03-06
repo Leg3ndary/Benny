@@ -1,7 +1,6 @@
 import discord
 import discord.utils
 import unicodedata
-from discord.commands import Option, slash_command
 from discord.ext import commands
 from gears import cviews, style
 
@@ -67,22 +66,6 @@ class Base(commands.Cog):
         )
         embed.set_image(url=user.avatar.url)
         view.bctx = await ctx.send(embed=embed, view=view)
-
-    @slash_command()
-    async def avatar(
-        self, ctx, user: Option(str, "Enter someone's Name", required=False)
-    ):
-        """Show a users avatar"""
-        view = cviews.DeleteView(True)
-        if not user:
-            user = ctx.author
-        else:
-            user = await self.MemberConverter.convert(ctx, user)
-        embed = discord.Embed(
-            title=user.display_name, timestamp=discord.utils.utcnow(), color=user.color
-        )
-        embed.set_image(url=user.avatar.url)
-        view.bctx = await ctx.respond(embed=embed, view=view)
 
     @commands.command(
         name="info",
@@ -162,38 +145,6 @@ class Base(commands.Cog):
         dog_image = (await dog.json()).get("message")
         embed = discord.Embed(color=style.get_color())
         embed.set_image(url=dog_image)
-        await ctx.send(embed=embed)
-
-    @commands.command(
-        name="pycord",
-        description="""Stuff abt pycord""",
-        help="""Why pycord bad, but why we still use it""",
-        brief="Why pycord bad",
-        aliases=[],
-        enabled=True,
-        hidden=True
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
-    async def pyc_cmd(self, ctx):
-        """. Just wanna write stuff here"""
-        embed = discord.Embed(
-            title=f"Why Pycord?",
-            description=f"""Gonna be completely honest, it seems very shitty so far.
-            After adding a few features and having delayed releases/betas and design choices I think are really shitty, pycord has almost* completely claimed all credit for this maintained fork.
-            
-            All the old maintainer of the library needs, is apparently a license mention and that's it. He's "famous enough", that being said, why don't I make a library then? or fork dpy for that matter?
-            
-            Not only do I not have the time, I would also say I'm not experienced enough to maintain such a massive library. So call me what you may but this library is only being used because it's the best among shitty forks.
-            
-            You can join pycords support server and take a snoop around if you want to learn more, it's up to you to judge, though if you're looking for a new library I would recommend not using python at all and moving onto another better language which with it could come with a much better library.
-            
-            - Ben""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color()
-        )
-        embed.set_image(
-            url="https://i.imgur.com/oca7K5s.png"
-        )
         await ctx.send(embed=embed)
 
 
