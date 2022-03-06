@@ -247,7 +247,7 @@ class Music(commands.Cog):
         This check ensures that the client and command author are in the same voicechannel.
         """
         player = self.client.lavalink.player_manager.create(
-            ctx.guild.id, endpoint=str(ctx.guild.region)
+            ctx.guild.id, endpoint="na"
         )
 
         # Commands that require the client to join a voicechannel (i.e. initiating playback).
