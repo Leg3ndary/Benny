@@ -1,5 +1,4 @@
 import discord
-from discord.commands import SlashCommand
 from discord.ext import commands
 from gears import style, util
 
@@ -92,10 +91,7 @@ class BennyHelp(commands.HelpCommand):
             command_signatures = []
 
             for command in commands:
-                if isinstance(command, SlashCommand):
-                    pass
-                else:
-                    command_signatures.append(self.get_command_signature(command))
+                command_signatures.append(self.get_command_signature(command))
 
             if command_signatures:
                 cog_name = getattr(cog, "qualified_name", "ERROR")

@@ -76,7 +76,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def my_command(self, ctx, person: discord.Member = None):
+    async def info_cmd(self, ctx, person: discord.Member = None):
         """View an users info"""
         if not person:
             person = ctx.author
