@@ -19,6 +19,7 @@ COG_INFO = {
     "CustomCommands": {"color": style.get_color("white"), "emoji": ":confetti_ball:"},
     "Redis": {"color": style.get_color("red"), "emoji": ":red_square:"},
     "Reminders": {"color": style.get_color("aqua"), "emoji": ":page_facing_up:"},
+    "None": {"color": style.get_color("grey"), "emoji": ":warning:"}
 }
 
 HELP_FORMAT = f"{util.ansi('grey')}prefix{util.ansi('white', None, 'bold')}command_name {util.ansi('white', None, 'bold')}<{util.ansi('blue', None, 'underline')}Required{util.ansi('white', None, 'bold')}>{util.ansi('clear')} {util.ansi('white', None, 'bold')}[{util.ansi('pink', None, 'underline')}Optional{util.ansi('white', None, 'bold')}]"
@@ -99,7 +100,7 @@ class BennyHelp(commands.HelpCommand):
                     pass
                 else:
                     embed.add_field(
-                        name=f"{COG_INFO.get(cog_name).get('emoji')} {cog_name}",
+                        name=f"{COG_INFO.get(cog_name, COG_INFO.get('None')).get('emoji')} {cog_name}",
                         value="not done yet",
                         inline=True,
                     )
