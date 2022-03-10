@@ -96,6 +96,7 @@ class BotUtil:
                 if (
                     file.endswith(".py")
                     and not file.endswith("cog_template.py")
+                    and not file.endswith("music.py")
                     and not file.endswith("pastebin.py")
                 ):
                     self.bot.load_extension(f"cogs.{file[:-3]}")
@@ -204,6 +205,7 @@ def remove_zcs(text: str) -> str:
     -------
     str
     """
+    text = text.split(".")[0]
     split = ""
     for i in text:
         if i in ["0", ":"]:
