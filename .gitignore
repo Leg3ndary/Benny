@@ -132,3 +132,4 @@ dmypy.json
 application.yml
 Databases
 .vscode
+.gz
