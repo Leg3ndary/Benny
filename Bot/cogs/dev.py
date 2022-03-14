@@ -56,7 +56,7 @@ class Dev(commands.Cog):
     )
     async def load(self, ctx, *, cog: str):
         try:
-            self.bot.load_extension(cog)
+            await self.bot.load_extension(cog)
             await self.bot.printer.print_cog_update(cog, "LOAD")
         except Exception as e:
             embed_fail = discord.Embed(
@@ -89,7 +89,7 @@ class Dev(commands.Cog):
     )
     async def unload(self, ctx, *, cog: str):
         try:
-            self.bot.unload_extension(cog)
+            await self.bot.unload_extension(cog)
             await self.bot.printer.print_cog_update(cog, "UNLOAD")
         except Exception as e:
             embed_fail = discord.Embed(
@@ -122,8 +122,8 @@ class Dev(commands.Cog):
     )
     async def reload(self, ctx, *, cog: str):
         try:
-            self.bot.unload_extension(cog)
-            self.bot.load_extension(cog)
+            await self.bot.unload_extension(cog)
+            await self.bot.load_extension(cog)
             await self.bot.printer.print_cog_update(cog, "RELOAD")
         except Exception as e:
             embed_fail = discord.Embed(
@@ -182,8 +182,8 @@ class Dev(commands.Cog):
         success = 0
         for cog in self.bot.cog_list:
             try:
-                self.bot.unload_extension(cog)
-                self.bot.load_extension(cog)
+                await self.bot.unload_extension(cog)
+                await self.bot.load_extension(cog)
                 await self.bot.printer.print_cog_update(cog, "RELOAD")
 
             except Exception as e:

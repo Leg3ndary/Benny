@@ -99,7 +99,7 @@ class BotUtil:
                     and not file.endswith("music.py")
                     and not file.endswith("pastebin.py")
                 ):
-                    self.bot.load_extension(f"cogs.{file[:-3]}")
+                    await self.bot.load_extension(f"cogs.{file[:-3]}")
                     await self.bot.printer.print_cog_update(file[:-3], "LOAD")
                     cog_list.append(f"cogs.{file[:-3]}")
 
