@@ -25,5 +25,5 @@ class CogExample(commands.Cog):
         """Command description"""
 
 
-def setup(bot):
-    bot.add_cog(CogExample(bot))
+async def setup(bot):
+    await bot.add_cog(CogExample(bot))

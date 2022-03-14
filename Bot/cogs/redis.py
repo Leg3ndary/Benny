@@ -180,5 +180,5 @@ class Redis(commands.Cog):
         await msg.edit(embed=embed_done)
 
 
-def setup(bot):
-    bot.add_cog(Redis(bot))
+async def setup(bot):
+    await bot.add_cog(Redis(bot))

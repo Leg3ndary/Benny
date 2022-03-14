@@ -68,5 +68,5 @@ class Users(commands.Cog):
         await self.bot.printer.print_load("Users")
 
 
-def setup(bot):
-    bot.add_cog(Users(bot))
+async def setup(bot):
+    await bot.add_cog(Users(bot))

@@ -36,5 +36,5 @@ class Profile(commands.Cog):
         await self.bot.printer.print_load("Profiles")
 
 
-def setup(bot):
-    bot.add_cog(Profile(bot))
+async def setup(bot):
+    await bot.add_cog(Profile(bot))

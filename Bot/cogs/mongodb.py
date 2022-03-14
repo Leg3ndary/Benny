@@ -27,5 +27,5 @@ class MongoDB(commands.Cog):
         await self.bot.printer.print_connect("MONGODB")
 
 
-def setup(bot):
-    bot.add_cog(MongoDB(bot))
+async def setup(bot):
+    await bot.add_cog(MongoDB(bot))

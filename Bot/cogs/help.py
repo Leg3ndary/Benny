@@ -204,5 +204,5 @@ class Help(commands.Cog):
         await ctx.send_help(ctx.command.name)
 
 
-def setup(bot):
-    bot.add_cog(Help(bot))
+async def setup(bot):
+    await bot.add_cog(Help(bot))
