@@ -1,8 +1,10 @@
 git+https://github.com/Rapptz/discord.py
-aiohttp==3.6.3
 git+https://github.com/Rapptz/asqlite
+aiofiles==0.8.0
+aiohttp==3.6.3
 aioredis==2.0.0a1
 async_timeout==3.0.1
+lavalink==3.1.4
 motor==2.4.0
 pbwrap==1.3.1
 psutil==5.8.0
@@ -10,6 +12,4 @@ python-dotenv==0.19.2
 pymongo[srv]==3.11
 pynacl==1.4.0
 numpy==1.19.4
-lavalink==3.1.4
 tekore==4.1.0
-aiofiles==0.8.0
