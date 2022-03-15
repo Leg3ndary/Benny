@@ -276,7 +276,7 @@ class Music(commands.Cog):
 
                 embed = discord.Embed(
                     title=f"{style.get_emoji('regular', 'spotify')} Playing Album",
-                    url=track.uri,
+                    url="https://google.com",
                     description=f"""```asciidoc
 [ Album name here ]
 = Duration: full duration here please =
@@ -328,8 +328,11 @@ class Music(commands.Cog):
         visual = ""
         total_dur = player.track.length
         for count, track in enumerate(player.queue._queue, 1):
-            visual += f"\n{count}. {track.title} [{track.author}] ({util.remove_zcs(str(datetime.timedelta(seconds=track.length)))})"
-            total_dur += track.length
+            if isinstance(track, wavelink.PartialTrack):
+                visual += f"\n{count}. {track.title} [ N/A ] ( Added from Playlist. )"
+            else:
+                visual += f"\n{count}. {track.title} [{track.author}] ({util.remove_zcs(str(datetime.timedelta(seconds=track.length)))})"
+                total_dur += track.length
         
         total_dur = util.remove_zcs(str(datetime.timedelta(seconds=total_dur)))
 
