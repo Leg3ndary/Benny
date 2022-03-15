@@ -229,12 +229,11 @@ class Music(commands.Cog):
             view.play_embed = await ctx.send(embed=embed, view=view)
 
         else:
-            # Is a spotify url yay
             if decoded["type"] == spotify.SpotifySearchType.track:
                 track = await spotify.SpotifyTrack.search(query=decoded["id"], return_first=True)
 
                 if player.queue.is_empty and not player.track:
-                    await player.play(track)
+                    await player.request(track)
                 elif player.queue.is_full:
                     embed = discord.Embed(
                         title=f"Track Queued",
@@ -270,6 +269,29 @@ class Music(commands.Cog):
                     icon_url=ctx.author.display_avatar.url,
                 )
                 await ctx.send(embed=embed)
+
+            elif decoded["type"] == spotify.SpotifySearchType.playlist:
+                async for partial in spotify.SpotifyTrack.iterator(query=decoded["id"], partial_tracks=True):
+                    await player.request(partial)
+
+                embed = discord.Embed(
+                    title=f"{style.get_emoji('regular', 'spotify')} Playing Album",
+                    url=track.uri,
+                    description=f"""```asciidoc
+[ Album name here ]
+= Duration: full duration here please =
+```""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.get_color("green"),
+                )
+                embed.set_author(name=track.author)
+                embed.set_footer(
+                    text=ctx.author.display_name,
+                    icon_url=ctx.author.display_avatar.url,
+                )
+                await ctx.send(embed=embed)
+                await ctx.send(decoded)
+                
 
     @commands.command(
         name="queue",
