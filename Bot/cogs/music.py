@@ -1,655 +1,335 @@
-import math
-
 import aiofiles
-import asyncio
-import discord
-import lavalink
-import os
-import re
-import tekore
+import wavelink
+from wavelink.ext import spotify
 from discord.ext import commands
-from gears import cviews, style, util
+import discord
+import os
+from gears import style, util
+import datetime
 
 
-url_rx = re.compile(r"https?://(?:www\.)?.+")
+class Player(wavelink.Player):
+    """Our custom player with some attributes"""
 
-
-def get_size(bytes, suffix="B"):
-    """Return the correct data from bytes"""
-    factor = 1024
-    for unit in ["", "K", "M", "G", "T", "P"]:
-        if bytes < factor:
-            return f"{bytes:.2f}{unit}{suffix}"
-        bytes /= factor
-
-
-class LavalinkVoiceClient(discord.VoiceClient):
-    """
-    LavalinkVoiceClient that we use to stream music to a discord voice channel
-    """
-
-    def __init__(self, client: discord.Client, channel: discord.abc.Connectable):
-        """Initialize a LavalinkVoiceClient if we haven't already..."""
-        self.client = client
-        self.channel = channel
-        # Check if a client already exists
-        if hasattr(self.client, "lavalink"):
-            self.lavalink = self.client.lavalink
-        else:
-            self.client.lavalink = lavalink.Client(889672871620780082)
-            self.client.lavalink.add_node(
-                "localhost", 2333, "BennyBotRoot", "na", "default-node"
-            )
-            self.lavalink = self.client.lavalink
-
-    async def on_voice_server_update(self, data):
-        """The data needs to be transformed before being handed down to voice_update_handler"""
-        lavalink_data = {"t": "VOICE_SERVER_UPDATE", "d": data}
-        await self.lavalink.voice_update_handler(lavalink_data)
-
-    async def on_voice_state_update(self, data):
-        """The data needs to be transformed before being handed down to voice_update_handler"""
-        lavalink_data = {"t": "VOICE_STATE_UPDATE", "d": data}
-        await self.lavalink.voice_update_handler(lavalink_data)
-
-    async def connect(self, *, timeout: float, reconnect: bool) -> None:
-        """
-        Connect the client to the voice channel and create a player_manager
-        if it doesn't exist yet.
-        """
-        self.lavalink.player_manager.create(guild_id=self.channel.guild.id)
-        await self.channel.guild.change_voice_state(channel=self.channel)
-
-    async def disconnect(self, *, force: bool) -> None:
-        """
-        Handles the disconnect.
-        Cleans up running player and leaves the voice client.
-        """
-        player = self.lavalink.player_manager.get(self.channel.guild.id)
-
-        # Don't disconnect if we aren't even connected
-        if not force and not player.is_connected:
-            return
-
-        # None means disconnect
-        await self.channel.guild.change_voice_state(channel=None)
-
-        player.set_repeat(False)
-        player.set_shuffle(False)
-        player.queue.clear()
-        player.channel_id = None
-        await player.stop()
-        self.cleanup()
-
-
-class SpotifyClient:
-    """Convert music into song titles so we can search them accurately"""
-
-    def __init__(self, client):
-        """Init with a url that we can use"""
-        self.client = client
-        spotify_token = tekore.request_client_token(
-            os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret")
-        )
-        self.client.spotify = tekore.Spotify(spotify_token, asynchronous=True)
-        self.playlist_limit = 100
-
-    async def search_spotify(self, player, ctx, args: str) -> None:
-        """
-        Search a spotify link and return in the format `title artist`
-        Parameters
-        ------------
-        Player:
-            The actual player
-        Ctx:
-            Command context
-        Args:
-            The search
-
-        Returns
-        -------
-        None
-        """
-        # We already verified this is legit
-        from_url = tekore.from_url(args)
-
-        if from_url[0] == "track":
-            track = await self.client.spotify.track(from_url[1])
-            title = track.name
-            artist = track.artists[0].name
-
-            query = f"ytsearch:{title} {artist}"
-            results = await player.node.get_tracks(query)
-
-            if not results or not results["tracks"]:
-                nothing_found = discord.Embed(
-                    title=f"Error",
-                    description=f"""Sorry, but nothing was found for the search `{query}`""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
-                )
-                return await ctx.send(embed=nothing_found, delete_after=10)
-
-            ps_view = cviews.PlayerSelector(ctx, player, results["tracks"][:25])
-
-            embed = discord.Embed(
-                title=f"{style.get_emoji('regular', 'spotify')} Select a Song to Play",
-                description=f"""```asciidoc
-= Showing Song Results for: =
-[ {args} ]
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
-            )
-            ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
-
-        elif from_url[0] == "playlist":
-            # Not done
-            return ctx.send("Sorry playlists currently aren't supported")
-            playlistId = tekore.from_url(args)
-            try:
-                playlist = await self.bot.spotify.playlist(playlistId[1])
-            except:
-                await ctx.send(
-                    f"{self.bot.emojiList.false} {ctx.author.mention} The Spotify playlist is invalid!"
-                )
-                return None
-            trackLinks = []
-
-            if self.playlistLimit != 0 and playlist.tracks.total > self.playlistLimit:
-                playlistTL = discord.Embed(
-                    title=f"Error",
-                    description=f"""The playlist is too large!""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
-                )
-                return await ctx.send(embed=playlistTL, delete_after=10)
-
-            await ctx.send(
-                f"{self.bot.emojiList.spotifyLogo} Loading... (This process can take several seconds)",
-                delete_after=60,
-            )
-            for i in playlist.tracks.items:
-                title = i.track.name
-                artist = i.track.artists[0].name
-                # Search on youtube
-                track = await self.bot.wavelink.get_tracks(f"ytsearch:{title} {artist}")
-                if track is None:
-                    await ctx.send(
-                        f"{self.bot.emojiList.false} {ctx.author.mention} No song found to : `{title} - {artist}` !"
-                    )
-                else:
-                    trackLinks.append(track[0])
-            if not trackLinks:  # if len(trackLinks) == 0:
-                return None
-            return trackLinks
-
-        else:
-            not_supported = discord.Embed(
-                title=f"Error",
-                description=f"""Sorry but currently type `{from_url[0]}` is not supported""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
-            )
-            await ctx.send(embed=not_supported)
-
-
-class Music(commands.Cog):
-    """The music cog that plays all of our music"""
-
-    def __init__(self, client):
-        self.client = client
-        self.client.expiring_players = []
-        self.search_prefix = client.config.get("Lavalink").get("Search")
-        # When reloaded, doesn't terminate connection with client
-        if not hasattr(client, "lavalink"):
-            client.lavalink = lavalink.Client(889672871620780082)
-            # Host, Port, Password, Region, Name
-            client.lavalink.add_node(
-                "localhost", 2333, "BennyBotRoot", "na", "default-node"
-            )
-
-        lavalink.add_event_hook(self.track_hook)
-
-    def cog_unload(self):
-        """
-        Cog unload handler. This removes any event hooks that were registered
-        """
-        self.client.lavalink._event_hooks.clear()
-
-    async def cog_before_invoke(self, ctx):
-        """
-        A guild only check
-        """
-        guild_check = ctx.guild is not None
-        if guild_check:
-            await self.ensure_voice(ctx)
-        return guild_check
-
-    async def cog_command_error(self, ctx, error):
-        if isinstance(error, commands.CommandInvokeError):
-            embed = discord.Embed(
-                title=f"Error",
-                description=f"""```diff
-- {error.original} -
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
-            )
-            await ctx.send(embed=embed)
-            print(error)
-
-    async def ensure_voice(self, ctx):
-        """
-        Either creates or returns a player if one exists, to ensure we can actually have
-        a player at the ready.
-
-        This check ensures that the client and command author are in the same voicechannel.
-        """
-        player = self.client.lavalink.player_manager.create(
-            ctx.guild.id, endpoint="na"
+    def __init__(self, dj: discord.Member):
+        """Dj is the person who started this"""
+        super().__init__()
+        self.dj = dj
+        self.queue = wavelink.Queue(
+            max_size=250
         )
 
-        # Commands that require the client to join a voicechannel (i.e. initiating playback).
-        should_connect = ctx.command.name in ("play", "loop", "remove")
+    async def request(self, track):
+        """Request a song"""
+        if self.queue.is_empty and not self.track:
+            await self.play(track)
+        elif self.queue.is_full:
+            raise QueueFull
+        else:
+            self.queue.put(track)
 
-        if not ctx.author.voice or not ctx.author.voice.channel:
-            raise commands.CommandInvokeError("Join a voicechannel first.")
+    async def skip(self):
+        """Skip the currently playing track just an alias"""
+        await self.stop()
 
-        if not player.is_connected:
-            if not should_connect:
-                raise commands.CommandInvokeError("Not connected.")
+class MusicException(Exception):
+    """Music exception meh"""
+    pass
 
-            permissions = ctx.author.voice.channel.permissions_for(ctx.me)
+class QueueFull(MusicException):
+    """When the queue is full"""
+    pass
 
-            if (
-                not permissions.connect or not permissions.speak
-            ):  # Check user limit too?
-                raise commands.CommandInvokeError(
-                    "I need the CONNECT and SPEAK permissions for this to work."
+class NothingPlaying(MusicException):
+    """When nothings playing"""
+    pass
+
+
+class PlayerDropdown(discord.ui.Select):
+    """
+    Shows up to 25 songs in a Select so we can see it
+    """
+
+    def __init__(self, ctx, player, songs: list):
+        self.ctx = ctx
+        self.player = player
+        self.songs = songs
+        options = []
+        counter = 0
+        for song in songs:
+            options.append(
+                discord.SelectOption(
+                    emoji=style.get_emoji("regular", "youtube"),
+                    label=song.title,
+                    description=f"""{song.author} - Duration: {util.remove_zcs(str(datetime.timedelta(seconds=song.length)))}""",
+                    value=str(counter),
                 )
-
-            player.store("channel", ctx.channel.id)
-
-            await ctx.author.voice.channel.connect(cls=LavalinkVoiceClient)
-        else:
-            if int(player.channel_id) != ctx.author.voice.channel.id:
-                raise commands.CommandInvokeError("You need to be in my voicechannel.")
-
-    async def track_hook(self, event):
-        if isinstance(event, lavalink.events.QueueEndEvent):
-            # We check if its already in our expired things, then if not then we add it and start the dispatch
-            guild_id = int(event.player.guild_id)
-
-            if guild_id in self.client.expiring_players:
-                pass
-            else:
-                self.client.expiring_players.append(guild_id)
-                self.client.dispatch("expire_player", guild_id)
-
-    @commands.Cog.listener()
-    async def on_load_spotify(self):
-        """Load our spotify client"""
-        self.spotifyclient = SpotifyClient(self.client)
-        await self.client.printer.print_connect("Tekore Spotify")
-
-    @commands.Cog.listener()
-    async def on_expire_player(self, guild_id: int):
-        """Expire players when we dispatch it, we check after 180 seconds"""
-        await asyncio.sleep(180.0)
-        if guild_id in self.client.expiring_players:
-            guild = self.client.get_guild(guild_id)
-            await guild.voice_client.disconnect(force=True)
-
-    @commands.Cog.listener()
-    async def on_voice_state_update(self, member, before, after):
-        """When everyones left a voice channel, also leave in 3 minutes, also remove from expiring_players if someone rejoins"""
-        player = self.client.lavalink.player_manager.get(member.guild.id)
-        try:
-            if (
-                before.channel.id == int(player.channel_id)
-                and not after.channel
-                and len(before.channel.members) == 0
-            ):
-                if int(member.guild.id) in self.client.expiring_players:
-                    pass
-                else:
-                    self.client.expiring_players.append(int(member.guild.id))
-                    self.client.dispatch("expire_player", int(member.guild.id))
-            elif int(after.channel.id) == int(player.channel_id):
-                try:
-                    self.client.expiring_players.remove(int(member.guild.id))
-                except:
-                    pass
-        except AttributeError:
-            pass
-        except TypeError:
-            pass
-
-    @commands.command(
-        name="play",
-        description="""Queue up a song""",
-        help="""Play a song!
-        You can use regular words or a spotify link!""",
-        brief="Play songs",
-        aliases=["p"],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 1.5, commands.BucketType.user)
-    async def play_cmd(self, ctx, *, song: str):
-        """Searches and plays a song from a given query."""
-        if ctx.guild.id in self.client.expiring_players:
-            self.client.expiring_players.remove(ctx.guild.id)
-
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        query = song.strip("<>")
-
-        try:
-            if not url_rx.match(query):
-                query = f"{self.search_prefix}:{query}"
-
-            elif tekore.from_url(query):
-                await self.spotifyclient.search_spotify(player, ctx, query)
-                return
-        except tekore.ConversionError:
-            pass
-
-        results = await player.node.get_tracks(query)
-
-        # Results could be None if Lavalink returns an invalid response results["tracks"] could be an empty array if the query yielded no tracks
-        if not results or not results["tracks"]:
-            nothing_found = discord.Embed(
-                title=f"Error",
-                description=f"""Sorry, but nothing was found for the search `{query}`""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
             )
-            return await ctx.send(embed=nothing_found, delete_after=10)
+            counter += 1
 
-        embed = discord.Embed(color=style.get_color())
+        super().__init__(
+            placeholder="Select a Song", 
+            min_values=1, 
+            max_values=1, 
+            options=options, 
+            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=music"
+        )
 
-        # Valid loadTypes are:
-        #   TRACK_LOADED    - single video/direct URL)
-        #   PLAYLIST_LOADED - direct URL to playlist)
-        #   SEARCH_RESULT   - query prefixed with either ytsearch: or scsearch:.
-        #   NO_MATCHES      - query yielded no results
-        #   LOAD_FAILED     - most likely, the video encountered an exception during loading.
-        if results["loadType"] == "PLAYLIST_LOADED":
-            return await ctx.send(
-                "Sorry, currently regular playlists aren't supported."
-            )
-            tracks = results["tracks"]
-
-            for track in tracks:
-                # Add all of the tracks from the playlist to the queue.
-                player.add(requester=ctx.author.id, track=track)
-
-            embed.title = "Playlist Queued!"
-            embed.description = (
-                f"""{results["playlistInfo"]["name"]} - {len(tracks)} tracks"""
-            )
-
-            await ctx.send(embed=embed)
-
-        else:
-            ps_view = cviews.PlayerSelector(ctx, player, results["tracks"][:25])
-            embed = discord.Embed(
-                title=f"Select a Song to Play",
-                description=f"""```asciidoc
-= Showing Song Results for: =
-[ {song} ]
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("grey"),
-            )
-            ps_view.play_embed = await ctx.send(embed=embed, view=ps_view)
-
-    @commands.command(
-        name="remove",
-        description="""Remove a song from the queue""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=["r"],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def remove_cmd(self, ctx, index: int):
-        """Remove command"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
-        if not player.queue:
-            nothing_playing = discord.Embed(
-                title=f"Nothing is queued!",
-                description=f"""Use `play` to queue a song!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
-            )
-            return await ctx.send(embed=nothing_playing)
-
-        track = player.queue[index - 1]
-
-        del player.queue[index - 1]
+    async def callback(self, interaction: discord.Interaction):
+        track = self.songs[int(self.values[0])]
 
         embed = discord.Embed(
-            title=f"Removed {index}.",
+            title=f"Track Queued",
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
-= Duration: {util.remove_zcs(lavalink.format_time(track.duration))} =
-```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
-        )
-        embed.set_author(name=track.author)
-
-        requester = self.client.get_user(track.requester)
-
-        if not requester:
-            requester = await self.client.fetch_user(track.requester)
-
-        embed.set_footer(
-            text=requester.display_name, icon_url=requester.display_avatar.url
-        )
-        await ctx.send(embed=embed)
-
-    @commands.command(
-        name="clear",
-        description="""clear the queue""",
-        help="""Clear the entire queue, requires confirmation""",
-        brief="Clear the queue",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def clear_command(self, ctx):
-        """Clear the queue"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
-
-        if not player.is_playing:
-            nothing_playing = discord.Embed(
-                title=f"Nothing is playing!",
-                description=f"""Use `play` to queue a song!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
-            )
-            return await ctx.send(embed=nothing_playing)
-        queue = player.queue
-        if not queue:
-            embed = discord.Embed(
-                title=f"Nothing's been Queued!",
-                description=f"""Use the play command to queue more songs!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
-            )
-            return await ctx.send(embed=embed)
-        else:
-            songs = len(queue)
-
-            view = cviews.QueueClear(ctx, queue)
-            embed = discord.Embed(
-                title=f"Confirm",
-                description=f"""Are you sure you want to clear the queue?
-                This will remove **{songs}** songs.""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("grey"),
-            )
-            embed.set_footer(text="This action is irreversible")
-            view.embed = await ctx.send(embed=embed, view=view)
-
-    @commands.command(
-        name="skip",
-        description="""skip the song""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=["s"],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 3.0, commands.BucketType.user)
-    async def skip_cmd(self, ctx):
-        """Skip the song and move onto the next one"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
-
-        if not player.is_playing:
-            nothing_playing = discord.Embed(
-                title=f"Nothing is playing!",
-                description=f"""Use `play` to queue a song!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
-            )
-            return await ctx.send(embed=nothing_playing)
-
-        else:
-            current = player.current
-
-            embed = discord.Embed(
-                title=f"Skipping",
-                url=current.uri,
-                description=f"""```asciidoc
-[ {current.title} ]
-= Duration: {util.remove_zcs(lavalink.format_time(current.duration))} =
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color(),
-            )
-            embed.set_author(name=current.author)
-
-            requester = self.client.get_user(current.requester)
-
-            if not requester:
-                requester = await self.client.fetch_user(current.requester)
-
-            embed.set_footer(
-                text=requester.display_name, icon_url=requester.display_avatar.url
-            )
-            await player.skip()
-            await ctx.send(embed=embed)
-
-    @commands.command(
-        name="loop",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def loop_cmd(self, ctx):
-        """Loop the song or unloop it... The bot will tell you"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
-
-        loop = player.repeat
-
-        if not loop:
-            player.set_repeat(not loop)
-            title = "Looping"
-            description = "Looping the current queue"
-        elif loop:
-            player.set_repeat(not loop)
-            title = "Unlooping"
-            description = "Unlooping the current queue"
-
-        view = cviews.LoopButton(False, player.repeat, player)
-
-        embed = discord.Embed(
-            title=f"""{style.get_emoji("regular", "loop")} {title}""",
-            description=f"""{description}""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua"),
-        )
-        view.bctx = await ctx.send(embed=embed, view=view)
-
-    @commands.command(
-        name="queue",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=["q"],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def queue_cmd(self, ctx):
-        """Show the command queue"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
-
-        queue = player.queue
-
-        if not queue:
-            # Queue is empty
-            embed = discord.Embed(
-                title=f"Nothing's been Queued!",
-                description=f"""Use the play command to queue more songs!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
-            )
-            return await ctx.send(embed=embed)
-
-        view = cviews.QueueView(player)
-
-        queue_visual = ""
-
-        total_duration = 0
-        total_duration += player.current.duration
-
-        for count, track in enumerate(queue, 1):
-            queue_visual = f"{queue_visual}\n{count}. {track.title} [{track.author}] ({util.remove_zcs(lavalink.format_time(track.duration))})"
-            total_duration += track.duration
-
-        embed = discord.Embed(
-            title=f"Queue - {len(queue)} Tracks",
-            description=f"""```md
-{queue_visual}
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=track.length)))} =
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("green"),
         )
-        if player.repeat:
-            lemoji = style.get_emoji("regular", "check")
+        embed.set_author(name=track.author)
+        embed.set_footer(
+            text=self.ctx.author.display_name,
+            icon_url=self.ctx.author.display_avatar.url,
+        )
+
+        await self.player.request(track)
+        await interaction.response.edit_message(embed=embed, view=None)
+        self.view.stop()
+
+
+class PlayerSelector(discord.ui.View):
+    """Select a song based on what we show from track results."""
+
+    def __init__(self, ctx, player, songs: list):
+        self.ctx = ctx
+        self.play_embed = None
+        super().__init__(timeout=60)
+
+        self.add_item(PlayerDropdown(ctx, player, songs))
+
+    async def interaction_check(self, interaction):
+        """If the interaction isn't by the user, return a fail."""
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    async def on_timeout(self):
+        """On timeout make this look cool"""
+        for item in self.children:
+            item.disabled = True
+
+        embed = discord.Embed(
+            title=f"Select a Song to Play",
+            description=f"""Timed out""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("red"),
+        )
+        await self.play_embed.edit(embed=embed, view=self)
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "cancel"),
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+        row=2,
+    )
+    async def button_callback(self, button, interaction):
+        """Delete the message if clicked"""
+        await self.play_embed.delete()
+        await interaction.response.send_message("Cancelled", ephemeral=True)
+
+
+
+class Music(commands.Cog):
+    """Music cog to hold Wavelink related commands and listeners."""
+
+    def __init__(self, bot):
+        self.bot = bot
+        bot.loop.create_task(self.connect_nodes())
+
+    async def connect_nodes(self):
+        """Connect to our Lavalink nodes."""
+        await self.bot.wait_until_ready()
+        # Making sure cog loads and unloads don't stop this
+        if hasattr(self.bot, "wavelink"):
+            self.wavelink = self.bot.wavelink
         else:
-            lemoji = style.get_emoji("regular", "cancel")
-        if player.shuffle:
-            semoji = style.get_emoji("regular", "check")
+            self.bot.wavelink = await wavelink.NodePool.create_node(
+                bot=self.bot,
+                host="localhost",
+                port=2333,
+                region="na",
+                password="BennyBotRoot",
+                identifier="Benny1",
+                spotify_client=spotify.SpotifyClient(
+                    client_id=os.getenv("Spotify_ClientID"), 
+                    client_secret=os.getenv("Spotify_CLIENTSecret")
+                )
+            )
+            self.wavelink = self.bot.wavelink
+
+    async def get_player(self, ctx) -> wavelink.Player:
+        """Create a player and connect cls"""
+        if not ctx.voice_client:
+            player: wavelink.Player = await ctx.author.voice.channel.connect(cls=Player(dj=ctx.author))
         else:
-            semoji = style.get_emoji("regular", "cancel")
-        embed.add_field(
-            name="Other Info",
-            value=f"""Loop {lemoji}
-            Shuffle {semoji}""",
-            inline=False,
+            player: wavelink.Player = ctx.voice_client
+        await ctx.guild.change_voice_state(channel=ctx.message.author.voice.channel, self_mute=False, self_deaf=True)
+        return player
+
+    @commands.Cog.listener()
+    async def on_wavelink_node_ready(self, node):
+        """Event fired when a node has finished connecting."""
+        await self.bot.printer.print_connect(f"{node.identifier} is ready.")
+
+    @commands.Cog.listener()
+    async def on_wavelink_track_end(self, player, track, reason):
+        """On end, check if the queue has another song to play if not disconnect after 5 min"""
+        if player.queue.is_empty:
+            pass # add the thing later
+        else:
+            await player.play(player.queue.get())
+
+    @commands.command(
+        name="play",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["p"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def play(self, ctx, *, search):
+        """Play a song with the given search query.
+
+        If not connected, connect to our voice channel.
+        """
+        player = await self.get_player(ctx)
+        
+        decoded = spotify.decode_url(search)
+        if not decoded:
+            node = wavelink.NodePool.get_node()
+            search = "ytsearch:" + search
+            tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=search)
+
+            view = PlayerSelector(ctx, player, tracks[:25])
+
+            embed = discord.Embed(
+                title=f"{style.get_emoji('regular', 'youtube')} Select a Song to Play",
+                description=f"""```asciidoc
+= Showing Song Results for: =
+[ {search} ]
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("green"),
+            )
+            view.play_embed = await ctx.send(embed=embed, view=view)
+
+        else:
+            # Is a spotify url yay
+            if decoded["type"] == spotify.SpotifySearchType.track:
+                track = await spotify.SpotifyTrack.search(query=decoded["id"], return_first=True)
+
+                if player.queue.is_empty and not player.track:
+                    print("play")
+                    await player.play(track)
+                elif player.queue.is_full:
+                    embed = discord.Embed(
+                        title=f"Track Queued",
+                        url=track.uri,
+                        description=f"""```[ Max Queue Size Reacher ]
+= Sorry but you only may have 250 songs queued at a time =
+```""",
+                        timestamp=discord.utils.utcnow(),
+                        color=style.get_color("red"),
+                    )
+                    embed.set_author(name=track.author)
+                    embed.set_footer(
+                        text=self.ctx.author.display_name,
+                        icon_url=self.ctx.author.display_avatar.url
+                    )
+                    return await ctx.send(embed)
+                else:
+                    print("queue")
+                    player.queue.put(track)
+
+                embed = discord.Embed(
+                    title=f"{style.get_emoji('regular', 'spotify')} Playing Track",
+                    url=track.uri,
+                    description=f"""```asciidoc
+[ {track.title} ]
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=track.length)))} =
+```""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.get_color("green"),
+                )
+                embed.set_author(name=track.author)
+                embed.set_footer(
+                    text=ctx.author.display_name,
+                    icon_url=ctx.author.display_avatar.url,
+                )
+                await ctx.send(embed=embed)
+
+    @commands.command(
+        name="queue",
+        description="""queue viewer""",
+        help="""Show what's currently in the players queue!""",
+        brief="View Player Queue",
+        aliases=["q"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def queue_cmd(self, ctx):
+        """Command description"""
+        player = await self.get_player(ctx)
+
+        if not player.track:
+            nothing_playing = discord.Embed(
+                title=f"Nothing Playing",
+                description=f"""Nothing's currently playing!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red")
+            )
+            return await ctx.send(embed=nothing_playing)
+
+        elif player.queue.is_empty:
+            emptyqueue = discord.Embed(
+                title=f"Empty Queue",
+                description=f"""Nothing's currently queued!""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red")
+            )
+            return await ctx.send(embed=emptyqueue)
+
+        visual = ""
+        total_dur = player.track.length
+        for count, track in enumerate(player.queue._queue, 1):
+            visual += f"\n{count}. {track.title} [{track.author}] ({util.remove_zcs(str(datetime.timedelta(seconds=track.length)))})"
+            total_dur += track.length
+        
+        total_dur = util.remove_zcs(str(datetime.timedelta(seconds=total_dur)))
+
+        embed = discord.Embed(
+            title=f"Queue - {len(player.queue._queue)} Tracks",
+            description=f"""```md
+{visual}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("aqua"),
         )
         embed.set_footer(
-            text=f"""Total Duration: {util.remove_zcs(lavalink.format_time(total_duration))}"""
+            text=f"""Total Duration: {total_dur}"""
         )
-        view.embed = await ctx.send(embed=embed, view=view)
+        await ctx.send(embed=embed)
 
     @commands.command(
         name="np",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
+        description="""Display what's playing rn""",
+        help="""Show what's currently being played by Benny""",
+        brief="""Now Playing""",
         aliases=["now"],
         enabled=True,
         hidden=False,
@@ -657,7 +337,7 @@ class Music(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def np_cmd(self, ctx):
         """Showing whats now playing"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+        player = await self.get_player(ctx)
 
         if not player.is_playing:
             nothing_playing = discord.Embed(
@@ -669,119 +349,102 @@ class Music(commands.Cog):
             return await ctx.send(embed=nothing_playing)
 
         else:
-            current = player.current
+            current = player.track
 
             embed = discord.Embed(
                 title=f"Now Playing",
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
-= Duration: {util.remove_zcs(lavalink.format_time(current.duration))} =
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=current.length)))} =
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color(),
             )
             embed.set_author(name=current.author)
 
-            requester = self.client.get_user(current.requester)
+    @commands.command(
+        name="skip",
+        description="""Skip command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["s"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
+    async def skip_cmd(self, ctx):
+        """Skip command"""
+        player = await self.get_player(ctx)
 
-            if not requester:
-                requester = await self.client.fetch_user(current.requester)
-
-            embed.set_footer(
-                text=requester.display_name, icon_url=requester.display_avatar.url
+        try:
+            await player.skip()
+        except NothingPlaying:
+            embed = discord.Embed(
+                title=f"Skipped",
+                description=f"""blah""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color()
             )
             await ctx.send(embed=embed)
-
+    
     @commands.command(
         name="disconnect",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
+        description="""Disconnect the bot from the channel and remove the player""",
+        help="""Disconnect the bot, removing all songs in queue""",
+        brief="Disconnect the bot from the voice channel",
         aliases=["dc"],
         enabled=True,
-        hidden=False,
+        hidden=False
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def disconnect_cmd(self, ctx):
-        """Disconnects the player from the voice channel and clears its queue."""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+    async def dc_cmd(self, ctx):
+        """Disconnect"""
+        player = await self.get_player(ctx)
 
-        player.set_repeat(False)
-        player.set_shuffle(False)
-
-        if not player.is_connected:
-            nc = discord.Embed(
-                title=f"Error",
-                description=f"""Not connected, join a voice channel and use the `play` command to get started!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
-            )
-            return await ctx.send(embed=nc, delete_after=10)
-
-        if not ctx.author.voice or (
-            player.is_connected
-            and ctx.author.voice.channel.id != int(player.channel_id)
-        ):
-            embed = discord.Embed(
-                title=f"Error",
-                description=f""""You're not in my voicechannel!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
-            )
-            return await ctx.send(embed=embed, delete_after=10)
-
-        player.queue.clear()
-        player.channel_id = None
-        await player.stop()
-
-        await ctx.voice_client.disconnect(force=True)
-        dc = discord.Embed(
-            title=f"Disconnected",
-            description=f"""Disconnected successfully.""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
-        )
-        await ctx.send(embed=dc)
-
+        await player.disconnect()
+    
     @commands.command(
-        name="musicstats",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
-        aliases=[],
+        name="remove",
+        description="""remove song from queue""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["r"],
         enabled=True,
-        hidden=True,
+        hidden=False
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def musicstats_cmd(self, ctx):
-        """Show music stats"""
-        player = self.client.lavalink.player_manager.get(ctx.guild.id)
+    async def remove_cmd(self, ctx, *, remove_req: str):
+        """
+        Will support removing by song name / author soon.
+        """
+        player = await self.get_player(ctx)
 
-        stats = player.node.stats
-        embed = discord.Embed(
-            title=f"Lavalink Statistics",
-            description=f"""```yaml
-Uptime: {util.remove_zcs(lavalink.format_time(stats.uptime))}
-Players: {stats.players}
-
-Memory Free: {get_size(stats.memory_free)}
-Memory Used: {get_size(stats.memory_used)}
-Memory Allocated: {get_size(stats.memory_allocated)}
-Memory Reservable: {get_size(stats.memory_reservable)}
-
-CPU Cores: {stats.cpu_cores}
-Total System Load: {math.trunc(stats.system_load * 10000) / 100}%
-Lavalink System Load: {stats.lavalink_load}
-
-Frames Sent to Discord: {stats.frames_sent}
-Empty Frames: {stats.frames_nulled}
-Missing Frames: {stats.frames_deficit}
+        if remove_req.isnumeric():
+            try:
+                remove_req = int(remove_req)
+                index = remove_req - 1
+                
+                song = player.queue._queue[index]
+                
+                embed = discord.Embed(
+                    title=f"Removed",
+                    url=song.uri,
+                    description=f"""```asciidoc
+[ {song.title} ]
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=song.length)))} =
 ```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
-        )
-        await ctx.send(embed=embed)
+                    timestamp=discord.utils.utcnow(),
+                    color=style.get_color("red"),
+                )
+                embed.set_author(name=song.author)
+                await ctx.send(embed=embed)
+                del player.queue._queue[index]
+
+
+            except Exception as e:
+                print(e)
+                await ctx.send("An error has an occured... uh o")
 
     @commands.command(
         name="musiclogs",
@@ -809,6 +472,5 @@ Missing Frames: {stats.frames_deficit}
         for line in lines:
             await ctx.send(line)
 
-
-def setup(client):
-    client.add_cog(Music(client))
+async def setup(bot):
+    await bot.add_cog(Music(bot))
