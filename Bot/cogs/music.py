@@ -202,7 +202,8 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def play(self, ctx, *, search):
-        """Play a song with the given search query.
+        """
+        Play a song with the given search query.
 
         If not connected, connect to our voice channel.
         """
@@ -211,8 +212,8 @@ class Music(commands.Cog):
         decoded = spotify.decode_url(search)
         if not decoded:
             node = wavelink.NodePool.get_node()
-            search = "ytsearch:" + search
-            tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=search)
+            query = "ytsearch:" + search
+            tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=query)
 
             view = PlayerSelector(ctx, player, tracks[:25])
 
