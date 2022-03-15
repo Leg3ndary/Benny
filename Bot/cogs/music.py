@@ -284,7 +284,9 @@ class Music(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("green"),
                 )
-                embed.set_author(name=track.author)
+                embed.set_author(
+                    name="Add the author of the album"
+                )
                 embed.set_footer(
                     text=ctx.author.display_name,
                     icon_url=ctx.author.display_avatar.url,
