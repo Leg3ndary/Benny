@@ -46,7 +46,7 @@ intents = discord.Intents(
     typing=False,
     voice_states=True,
     webhooks=True,
-    message_content=True
+    message_content=True,
 )
 
 prefix = config.get("Bot").get("Prefix")
@@ -59,11 +59,13 @@ async def get_prefix(bot, msg):
     else:
         return bot.prefixes[str(msg.guild.id)]
 
+
 bot = commands.Bot(
     command_prefix=get_prefix,
     intents=intents,
     description="Benny Bot, a cool bot obviously",
 )
+
 
 async def start_bot():
     """
@@ -104,14 +106,7 @@ async def start_bot():
             On ready dispatch and print stuff
             """
             await bot.wait_until_ready()
-            bot.dispatch("load_musicdb")
-            bot.dispatch("load_playlists")
-            bot.dispatch("load_mongodb")
-            bot.dispatch("load_prefixes")
-            bot.dispatch("load_spotify")
-            bot.dispatch("load_profiles")
-            bot.dispatch("load_users")
-            bot.dispatch("load_redis")
+            await bot.tree.sync(guild=discord.Object(id=839605885700669441))
             await bot.printer.print_bot_update("LOGGED IN")
 
         @bot.check
@@ -141,4 +136,3 @@ async def start_bot():
 
 
 asyncio.run(start_bot())
-    

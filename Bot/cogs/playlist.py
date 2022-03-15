@@ -230,8 +230,7 @@ class Playlist(commands.Cog):
         self.bot = bot
         self.playlistmanager = PlaylistManager()
 
-    @commands.Cog.listener()
-    async def on_load_playlists(self):
+    async def cog_load(self):
         """Load up playlist related stuff"""
         async with asqlite.connect("Databases/music.db") as db:
             await db.execute(

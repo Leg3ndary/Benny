@@ -41,8 +41,7 @@ class Users(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_load_users(self):
+    async def cog_load(self):
         """Load up our users yay"""
         async with asqlite.connect("Databases/users.db") as db:
             await db.execute(

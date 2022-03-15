@@ -221,8 +221,7 @@ class Settings(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_load_prefixes(self):
+    async def cog_load(self):
         """
         Loading every prefix into a cache so we can quickly access it
         """

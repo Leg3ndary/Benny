@@ -18,8 +18,7 @@ class Profile(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_load_profiles(self):
+    async def cog_load(self):
         """Load profile db"""
         async with asqlite.connect("Databases/profile.db") as db:
             await db.execute(

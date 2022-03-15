@@ -12,8 +12,7 @@ class MongoDB(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_load_mongodb(self):
+    async def oog_load(self):
         """Load mongodb when dispatched"""
 
         mongo_uri = (

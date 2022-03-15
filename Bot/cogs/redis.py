@@ -22,8 +22,7 @@ class Redis(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_load_redis(self):
+    async def cog_load(self):
         """Connect to our Redis DB"""
         self.bot.redis = await aioredis.from_url(
             "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
@@ -86,6 +85,7 @@ class Redis(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
             )
+            await ctx.send(embed=unable)
 
     @redis.command()
     async def search(self, ctx, *, pattern: str = "*"):

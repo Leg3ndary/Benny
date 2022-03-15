@@ -1,4 +1,5 @@
 import discord
+from discord import app_commands
 import discord.utils
 import unicodedata
 from discord.ext import commands
@@ -8,7 +9,6 @@ from gears import cviews, style
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
 async def ping(ctx):
     await ctx.send("pong")"""
-
 
 class Base(commands.Cog):
     """Cog Example Description"""
@@ -146,6 +146,14 @@ class Base(commands.Cog):
         embed = discord.Embed(color=style.get_color())
         embed.set_image(url=dog_image)
         await ctx.send(embed=embed)
+
+    @app_commands.command(name="avatar")
+    @app_commands.guilds(discord.Object(id=839605885700669441))
+    async def avatar_cmd(self, interaction):
+        """
+        Slash Command
+        /avatar"""
+        await interaction.response.send_message("Hello from private command!", ephemeral=True)
 
 
 async def setup(bot):
