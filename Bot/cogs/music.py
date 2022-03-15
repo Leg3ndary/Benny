@@ -234,13 +234,12 @@ class Music(commands.Cog):
                 track = await spotify.SpotifyTrack.search(query=decoded["id"], return_first=True)
 
                 if player.queue.is_empty and not player.track:
-                    print("play")
                     await player.play(track)
                 elif player.queue.is_full:
                     embed = discord.Embed(
                         title=f"Track Queued",
                         url=track.uri,
-                        description=f"""```[ Max Queue Size Reacher ]
+                        description=f"""```[ Max Queue Size Reached ]
 = Sorry but you only may have 250 songs queued at a time =
 ```""",
                         timestamp=discord.utils.utcnow(),
@@ -253,7 +252,6 @@ class Music(commands.Cog):
                     )
                     return await ctx.send(embed)
                 else:
-                    print("queue")
                     player.queue.put(track)
 
                 embed = discord.Embed(
