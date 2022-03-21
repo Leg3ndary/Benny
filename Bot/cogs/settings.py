@@ -225,6 +225,7 @@ class Settings(commands.Cog):
         """
         Loading every prefix into a cache so we can quickly access it
         """
+        await self.bot.wait_until_ready()
         self.bot.prefixes = {}
         async with asqlite.connect("Databases/server.db") as db:
             # Ha carl, this bot has 15 prefixes if you ever see this
