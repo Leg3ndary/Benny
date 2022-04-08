@@ -3,6 +3,7 @@ import aiohttp
 import asqlite
 import asyncio
 import discord
+import datetime
 import json
 import os
 from discord.ext import commands
@@ -10,7 +11,6 @@ from dotenv import load_dotenv
 from gears import util
 from gears.info_printer import InfoPrinter
 import logging
-from discord import app_commands
 
 
 start = time.monotonic()
@@ -37,7 +37,7 @@ intents = discord.Intents(
     guild_reactions=True,
     guild_typing=False,
     guilds=True,
-    integrations=True,
+    integrations=False,
     invites=True,
     members=True,
     messages=True,
@@ -57,7 +57,7 @@ async def get_prefix(bot, msg):
     if msg.guild is None:
         return bot.prefix
     else:
-        return bot.prefixes[str(msg.guild.id)]
+        return bot.prefixes.get(str(msg.guild.id))
 
 
 bot = commands.Bot(
@@ -65,6 +65,7 @@ bot = commands.Bot(
     intents=intents,
     description="Benny Bot, a cool bot obviously",
 )
+bot.start_time = datetime.datetime.now(datetime.timezone.utc)
 
 
 async def start_bot():
@@ -72,6 +73,9 @@ async def start_bot():
     Start the bot with everything it needs
     """
     async with bot:
+        # development purposes
+        bot.MUSIC_ON = False
+
         bot.printer = InfoPrinter(bot)
         await bot.printer.print_load("Printer")
 
@@ -105,7 +109,6 @@ async def start_bot():
             """
             On ready dispatch and print stuff
             """
-            await bot.wait_until_ready()
             await bot.tree.sync(guild=discord.Object(id=839605885700669441))
             await bot.printer.print_bot_update("LOGGED IN")
 
