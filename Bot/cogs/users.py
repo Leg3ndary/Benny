@@ -43,7 +43,7 @@ class Users(commands.Cog):
 
     async def cog_load(self):
         """Load up our users yay"""
-        await self.bot.wait_until_ready()
+        
         async with asqlite.connect("Databases/users.db") as db:
             await db.execute(
                 """

@@ -35,7 +35,7 @@ class Snipe(commands.Cog):
 
     async def cog_load(self):
         """Load mongodb for snipe when called"""
-        await self.bot.wait_until_ready()
+        
         mongo_uri = (
             self.bot.config.get("Mongo")
             .get("URL")
