@@ -17,12 +17,6 @@ class Base(commands.Cog):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
 
-    async def cog_load(self) -> None:
-        """
-        On Cog load wait until ready so we don't screw other cogs
-        """
-        await self.bot.wait_until_ready()
-
     @commands.command(
         name="about",
         description="""tells you some stuff about the bot""",
