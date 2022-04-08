@@ -212,6 +212,22 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.command(
+        name="syncs",
+        description="""Syncs slash commands""",
+        help="""Syncs slash commands""",
+        brief="Syncs slash commands",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
+    async def syncs_cmd(self, ctx):
+        """
+        Syncs the bots command tree
+        """
+        await self.bot.tree.sync()
+        await ctx.send("Synced, fix this stupid message later please")
+
     @dev.command(
         help="Clears Terminal",
         brief="Terminal Cleared",
