@@ -188,12 +188,12 @@ class Base(commands.Cog):
         """
         resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
         resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
-        fmt = f"I started at `{resolved_full}`, and have been up since: `{resolved_rel}`"
+        fmt = f"I started at {resolved_full}, and have been up since: {resolved_rel}"
         embed = discord.Embed(
             title=f"Benny Uptime",
             description=f"""{fmt}""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color()
+            color=style.get_color("green")
         )
         await interaction.response.send_message(embed=embed)
 
