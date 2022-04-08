@@ -139,3 +139,4 @@ Databases
 
 # Log files 
 *.gz
+logs
