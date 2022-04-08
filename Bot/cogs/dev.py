@@ -176,7 +176,16 @@ class Dev(commands.Cog):
         hidden=True,
     )
     async def sync(self, ctx):
-        os.system("git pull")
+        cmd = os.popen("git pull").read()
+        embed = discord.Embed(
+            title=f"Git Pull",
+            description=f"""```diff
+{cmd}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("aqua")
+        )
+        await ctx.send(embed=embed)
         cog_statuslist = []
         fails = 0
         success = 0
@@ -387,27 +396,6 @@ Add stuff here later..
         )
         await ctx.send(embed=embed)
         await self.bot.close()
-
-    @dev.command(
-        name="restart",
-        description="""Restart the bot by running an sh script""",
-        help="""Restart the bot using a sh script""",
-        brief="""Restart the bot""",
-        aliases=["r"],
-        enabled=True,
-        hidden=True,
-    )
-    async def dev_restart(self, ctx):
-        """Restart Bot"""
-        embed = discord.Embed(
-            title=f"Restarting...",
-            description=f"""Restarting the bot. Running `Bot/start_bot.sh`""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
-        )
-        await ctx.send(embed=embed)
-        await self.bot.close()
-        os.system("bash Bot/start_bot.sh")
 
 
 async def setup(bot):
