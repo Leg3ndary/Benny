@@ -128,8 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Others
+# Lavalink
 application.yml
+
+# Databases for obvious reasons
 Databases
+
+# Vscode files
 .vscode
-.gz
+
+# Log files 
+*.gz
