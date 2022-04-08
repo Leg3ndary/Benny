@@ -221,14 +221,15 @@ class Settings(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_load(self):
+    @commands.Cog.listener()
+    async def on_load_prefixes(self):
         """
         Loading every prefix into a cache so we can quickly access it
         """
         
         self.bot.prefixes = {}
         async with asqlite.connect("Databases/server.db") as db:
-            # Ha carl, this bot has 15 prefixes if you ever see this
+            # Ha carl, this bot has 15 prefixes if you ever see this i forget how much ur bot has
             await db.execute(
                 """CREATE TABLE IF NOT EXISTS prefixes (
                     guild_id TEXT PRIMARY KEY,

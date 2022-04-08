@@ -112,7 +112,7 @@ Type: {error.converter}
         elif isinstance(error, commands.CommandOnCooldown):
             embed = discord.Embed(
                 title=f"{ctx.command} is on Cooldown",
-                description=f"""Please retry this command after {int(error.retry_after)}""",
+                description=f"""Please retry this command after {int(error.retry_after)} seconds""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
             )

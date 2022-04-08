@@ -110,6 +110,7 @@ async def start_bot():
             On ready dispatch and print stuff
             """
             await bot.wait_until_ready()
+            bot.dispatch("load_prefixes")
             await bot.tree.sync(guild=discord.Object(id=839605885700669441))
             await bot.printer.print_bot_update("LOGGED IN")
 
