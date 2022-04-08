@@ -93,11 +93,8 @@ class BotUtil:
         cog_list = []
         for file in cogs:
             try:
-                if (
-                    file.endswith(".py")
-                    and not file.endswith("cog_template.py")
-                    and not file.endswith("pastebin.py")
-                ):
+                filename = file.split("/")[-1][:-3]
+                if file.endswith(".py") and (filename not in ["cog_template", "discordstatus", "stripe"]):
                     await self.bot.load_extension(f"cogs.{file[:-3]}")
                     await self.bot.printer.print_cog_update(file[:-3], "LOAD")
                     cog_list.append(f"cogs.{file[:-3]}")
@@ -128,39 +125,6 @@ class BotUtil:
         )
         embed.set_thumbnail(url=style.get_emoji("image", "cancel"))
         await ben.send(embed=embed)
-
-
-def default_cooldown_manager(msg):
-    """
-    Cooldown manager for commands
-
-    def custom_cooldown(message):
-        if message.author.permissions.manage_messages:
-            return None  # no cooldown
-        elif utils.get(message.author.roles, name="Nitro Booster"):
-            return commands.Cooldown(2, 60)  # 2 per minute
-        return commands.Cooldown(1, 60)  # 1 per minute
-
-    @bot.command()
-    @commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
-    async def ping(ctx):
-        await ctx.send("pong")
-    """
-    user = ""  # global_db.find_one({"_id": msg.author.id})
-
-    # Checking if the user is a patron and his/her level
-
-    if user.get("PatronLevel") == 3:
-        return commands.Cooldown(3.0, 5.0)
-    elif user.get("PatronLevel") == 2:
-        return commands.Cooldown(3.0, 6.0)
-
-    # if msg.author.permissions.manage_messages:
-    # return None
-    # elif discord.utils.get(msg.author.roles, name="Nitro Booster"):
-    # return commands.Cooldown(2, 60)  # 2 per minute
-    # 3 Commands per 8 seconds if nothings been set
-    return commands.Cooldown(3.0, 8.0)
 
 
 def match_calc(string1, string2):
