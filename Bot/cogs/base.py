@@ -17,6 +17,12 @@ class Base(commands.Cog):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
 
+    async def cog_load(self) -> None:
+        """
+        On Cog load wait until ready so we don't screw other cogs
+        """
+        await self.bot.wait_until_ready()
+
     @commands.command(
         name="about",
         description="""tells you some stuff about the bot""",
@@ -154,6 +160,48 @@ class Base(commands.Cog):
         Slash Command
         /avatar"""
         await interaction.response.send_message("Hello from private command!", ephemeral=True)
+    
+    @commands.command(
+        name="uptime",
+        description="""Shows the bots uptime""",
+        help="""Shows you the bots uptime""",
+        brief="Shows you the bots uptime",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 30.0, commands.BucketType.channel)
+    async def uptime_cmd(self, ctx):
+        """
+        Uptime Slash
+        """
+        resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
+        resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
+        fmt = f"I started at `{resolved_full}`, and have been up since: `{resolved_rel}`"
+        embed = discord.Embed(
+            title=f"Benny Uptime",
+            description=f"""{fmt}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color()
+        )
+        await ctx.send(embed=embed)
+
+    @app_commands.command(name="uptime")
+    @app_commands.guilds(discord.Object(id=839605885700669441))
+    async def uptime_slash(self, interaction):
+        """
+        Uptime Slash
+        """
+        resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
+        resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
+        fmt = f"I started at `{resolved_full}`, and have been up since: `{resolved_rel}`"
+        embed = discord.Embed(
+            title=f"Benny Uptime",
+            description=f"""{fmt}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color()
+        )
+        await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot):
