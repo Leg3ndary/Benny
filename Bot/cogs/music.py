@@ -146,11 +146,12 @@ class Music(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        bot.loop.create_task(self.connect_nodes())
 
     async def connect_nodes(self):
         """Connect to our Lavalink nodes."""
-        await self.bot.wait_until_ready()
+        if not self.bot.MUSIC_ON:
+            return
+        
         # Making sure cog loads and unloads don't stop this
         if hasattr(self.bot, "wavelink"):
             self.wavelink = self.bot.wavelink
@@ -177,6 +178,10 @@ class Music(commands.Cog):
             player: wavelink.Player = ctx.voice_client
         await ctx.guild.change_voice_state(channel=ctx.message.author.voice.channel, self_mute=False, self_deaf=True)
         return player
+
+    async def cog_load(self):
+        """On cog load do stuff"""
+        await self.connect_nodes()
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node):
