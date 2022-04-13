@@ -73,8 +73,7 @@ async def start_bot():
     Start the bot with everything it needs
     """
     async with bot:
-        # development purposes
-        bot.MUSIC_ON = False
+        bot.MUSIC_ON = True
 
         bot.printer = InfoPrinter(bot)
         await bot.printer.print_load("Printer")
