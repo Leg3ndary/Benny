@@ -1,4 +1,5 @@
 import aiofiles
+import asqlite
 import wavelink
 from wavelink.ext import spotify
 from discord.ext import commands
@@ -182,6 +183,42 @@ class Music(commands.Cog):
     async def cog_load(self):
         """On cog load do stuff"""
         await self.connect_nodes()
+        async with asqlite.connect("Databases/music.db") as db:
+            await db.execute(
+                """
+                CREATE TABLE IF NOT EXISTS recently_played (
+                    id TEXT NOT NULL
+                            PRIMARY KEY,
+                    s1 TEXT,
+                    s2 TEXT,
+                    s3 TEXT,
+                    s4 TEXT,
+                    s5 TEXT,
+                    s6 TEXT,
+                    s7 TEXT,
+                    s8 TEXT,
+                    s9 TEXT,
+                    s10 TEXT,
+                    s11 TEXT,
+                    s12 TEXT,
+                    s13 TEXT,
+                    s14 TEXT,
+                    s15 TEXT,
+                    s16 TEXT,
+                    s17 TEXT,
+                    s18 TEXT,
+                    s19 TEXT,
+                    s20 TEXT,
+                    s21 TEXT,
+                    s22 TEXT,
+                    s23 TEXT,
+                    s24 TEXT,
+                    s25 TEXT
+                );
+                """
+            )
+        await self.bot.printer.print_load("Recently Played")
+
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node):
@@ -276,8 +313,14 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                async for partial in spotify.SpotifyTrack.iterator(query=decoded["id"], partial_tracks=True):
-                    await player.request(partial)
+                return await ctx.send("Not supported because I don't wanna fuck the bot")
+                counter = 0
+                async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
+                    if counter == 50:
+                        pass
+                    else:
+                        await player.request(song)
+                        counter += 1
 
                 embed = discord.Embed(
                     title=f"{style.get_emoji('regular', 'spotify')} Playing Album",
