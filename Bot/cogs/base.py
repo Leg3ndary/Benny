@@ -32,17 +32,13 @@ class Base(commands.Cog):
         """About command"""
         embed = discord.Embed(
             title=f"About the Bot",
-            description=f"""I first started making bots in 2020, these were mainly small community bots for me and my online/offline friends
-            As I learned more and more I saw some popular bots and decided to learn more about them too.
-            However as the time went on many of my favorite bots died for different reasons, Pokecord, Rythm, and other ones I will not be mentioning for reasons.
-            
-            This inspired me in a sense to create my first public bot, one that had features that were useful and up to date, things that users would actually want.
-            You will always be able to suggest things to add, things to remove, and ways to optimise the bot for the smoothest interactions with users.
-            
-            I hope you've enjoyed using this bot thus far and I hope you'll enjoy the bot to come.
-            - Ben""",
+            description=f"""A Bot I've made for fun, friends and learning python.""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("aqua"),
+        )
+        embed.set_footer(
+            text="_Leg3ndary#5759",
+            icon_url="https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024"
         )
         await ctx.send(embed=embed)
 
