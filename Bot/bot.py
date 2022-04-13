@@ -117,14 +117,11 @@ async def start_bot():
         async def global_check(ctx):
             """
             Global check that applies to all commands
-            | Check if prefixes are actually loaded
-            ├─ Check if its me, so I bypass everything
+            ├─ Check if prefixes are actually loaded
             ├── Check if the user is blacklisted from the bot
             ├─── Check if command is disabled
             ├──── Check if channel/thread is being ignored
-            ├─────
-            ├──────
-            └───────
+            └────────
             """
             if not bot.loaded_prefixes:
                 return False
