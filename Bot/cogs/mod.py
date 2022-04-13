@@ -72,7 +72,7 @@ class Mod(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(2.0, 7.0, commands.BucketType.user)
+    @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     async def warn_cmd(
         self, ctx, member: commands.Greedy[discord.Member], *, reason="None"
     ):
