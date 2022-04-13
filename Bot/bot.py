@@ -57,7 +57,7 @@ async def get_prefix(bot, msg):
     if msg.guild is None:
         return bot.prefix
     else:
-        return bot.prefixes.get(str(msg.guild.id))
+        return bot.prefixes.get(str(msg.guild.id), "") # yes we need an empty prefix if not found
 
 
 bot = commands.Bot(
@@ -66,6 +66,8 @@ bot = commands.Bot(
     description="Benny Bot, a cool bot obviously",
 )
 bot.start_time = datetime.datetime.now(datetime.timezone.utc)
+bot.loaded_prefixes = False
+bot.MUSIC_ON = True
 
 
 async def start_bot():
@@ -73,8 +75,6 @@ async def start_bot():
     Start the bot with everything it needs
     """
     async with bot:
-        bot.MUSIC_ON = True
-
         bot.printer = InfoPrinter(bot)
         await bot.printer.print_load("Printer")
 
@@ -117,6 +117,7 @@ async def start_bot():
         async def global_check(ctx):
             """
             Global check that applies to all commands
+            | Check if prefixes are actually loaded
             ├─ Check if its me, so I bypass everything
             ├── Check if the user is blacklisted from the bot
             ├─── Check if command is disabled
@@ -125,6 +126,8 @@ async def start_bot():
             ├──────
             └───────
             """
+            if not bot.loaded_prefixes:
+                return False
             return True
 
         async with aiohttp.ClientSession() as session:
