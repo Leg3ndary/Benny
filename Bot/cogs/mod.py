@@ -13,16 +13,6 @@ class Mod(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-        '''
-        name="command",
-        description="""Description of command, complete overview with all neccessary info""",
-        help="""More help""",
-        brief="Brief one liner about the command",
-        aliases=[],
-        enabled=True,
-        hidden=False
-        '''
-
     async def cog_load(self) -> None:
         """
         Load our sqlite db yay
@@ -36,7 +26,32 @@ class Mod(commands.Cog):
                             PRIMARY KEY,
                 mod  TEXT    NOT NULL,
                 reason  TEXT,
-                time  DATE    NOT NULL
+                time  DATE    NOT NULL,
+                finish  DATE
+            );
+            """
+        )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS bans (
+                id    TEXT    NOT NULL
+                            PRIMARY KEY,
+                mod  TEXT    NOT NULL,
+                reason  TEXT,
+                time  DATE    NOT NULL,
+                finish  DATE
+            );
+            """
+        )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mutes (
+                id    TEXT    NOT NULL
+                            PRIMARY KEY,
+                mod  TEXT    NOT NULL,
+                reason  TEXT,
+                time  DATE    NOT NULL,
+                finish  DATE
             );
             """
         )
