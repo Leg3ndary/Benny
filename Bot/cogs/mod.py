@@ -1,4 +1,5 @@
 import asqlite
+import datetime
 import discord
 import discord.utils
 import re
@@ -26,20 +27,53 @@ class Mod(commands.Cog):
         """
         Load our sqlite db yay
         """
-        pass
-        #async with asqlite.connect("Databases/mod.db") as db:
-            #await db.execute(
-                #"""
-                #CREATE TABLE IF NOT EXISTS playlists (
-                #    id    TEXT    NOT NULL
-                #                PRIMARY KEY,
-                #    name  TEXT    NOT NULL,
-                #    plays INTEGER NOT NULL,
-                #    songs TEXT
-                #);
-                #"""
-            #)
-        #await self.bot.printer.print_load("Playlist")
+        # Warns
+        self.db = await asqlite.connect("Databases/mod.db")
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS warns (
+                id    TEXT    NOT NULL
+                            PRIMARY KEY,
+                mod  TEXT    NOT NULL,
+                reason  TEXT,
+                time  DATE    NOT NULL
+            );
+            """
+        )
+        await self.bot.printer.print_load("Mod")
+
+    async def cog_unload(self) -> None:
+        """
+        Unload our sqlite db
+        """
+        await self.db.close()
+
+    @commands.command(
+        name="warn",
+        description="""Warn a user""",
+        help="""Warn a user, optional reason""",
+        brief="Warn a user",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 7.0, commands.BucketType.user)
+    async def warn_cmd(self, ctx, member: commands.Greedy[discord.Member], *, reason = "None"):
+        """
+        Warn cmd
+        """
+        await self.db.execute(
+            f"""INSERT INTO warns VALUES(?, ?, ?, ?);""",
+            (member.id, ctx.author.id, reason, datetime.datetime.now()),
+        )
+        await self.db.commit()
+        embed = discord.Embed(
+            title=f"Warned",
+            description=f"""""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("yellow")
+        )
+        await ctx.send(embed=embed)
 
     @commands.command(
         name="ban",
