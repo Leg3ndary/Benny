@@ -55,9 +55,9 @@ prefix = config.get("Bot").get("Prefix")
 async def get_prefix(bot, msg):
     """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
     if msg.guild is None:
-        return bot.prefix
+        return commands.when_mentioned_or(bot.prefix)
     else:
-        return bot.prefixes.get(str(msg.guild.id), "") # yes we need an empty prefix if not found
+        return commands.when_mentioned_or(bot.prefixes.get(str(msg.guild.id), ""))
 
 
 bot = commands.Bot(
