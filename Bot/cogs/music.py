@@ -16,9 +16,7 @@ class Player(wavelink.Player):
         """Dj is the person who started this"""
         super().__init__()
         self.dj = dj
-        self.queue = wavelink.Queue(
-            max_size=250
-        )
+        self.queue = wavelink.Queue(max_size=250)
 
     async def request(self, track):
         """Request a song"""
@@ -33,16 +31,22 @@ class Player(wavelink.Player):
         """Skip the currently playing track just an alias"""
         await self.stop()
 
+
 class MusicException(Exception):
     """Music exception meh"""
+
     pass
+
 
 class QueueFull(MusicException):
     """When the queue is full"""
+
     pass
+
 
 class NothingPlaying(MusicException):
     """When nothings playing"""
+
     pass
 
 
@@ -69,11 +73,11 @@ class PlayerDropdown(discord.ui.Select):
             counter += 1
 
         super().__init__(
-            placeholder="Select a Song", 
-            min_values=1, 
-            max_values=1, 
-            options=options, 
-            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=music"
+            placeholder="Select a Song",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=music",
         )
 
     async def callback(self, interaction: discord.Interaction):
@@ -141,7 +145,6 @@ class PlayerSelector(discord.ui.View):
         await interaction.response.send_message("Cancelled", ephemeral=True)
 
 
-
 class Music(commands.Cog):
     """Music cog to hold Wavelink related commands and listeners."""
 
@@ -152,7 +155,7 @@ class Music(commands.Cog):
         """Connect to our Lavalink nodes."""
         if not self.bot.MUSIC_ON:
             return
-        
+
         # Making sure cog loads and unloads don't stop this
         if hasattr(self.bot, "wavelink"):
             self.wavelink = self.bot.wavelink
@@ -165,19 +168,23 @@ class Music(commands.Cog):
                 password="BennyBotRoot",
                 identifier="Benny1",
                 spotify_client=spotify.SpotifyClient(
-                    client_id=os.getenv("Spotify_ClientID"), 
-                    client_secret=os.getenv("Spotify_CLIENTSecret")
-                )
+                    client_id=os.getenv("Spotify_ClientID"),
+                    client_secret=os.getenv("Spotify_CLIENTSecret"),
+                ),
             )
             self.wavelink = self.bot.wavelink
 
     async def get_player(self, ctx) -> wavelink.Player:
         """Create a player and connect cls"""
         if not ctx.voice_client:
-            player: wavelink.Player = await ctx.author.voice.channel.connect(cls=Player(dj=ctx.author))
+            player: wavelink.Player = await ctx.author.voice.channel.connect(
+                cls=Player(dj=ctx.author)
+            )
         else:
             player: wavelink.Player = ctx.voice_client
-        await ctx.guild.change_voice_state(channel=ctx.message.author.voice.channel, self_mute=False, self_deaf=True)
+        await ctx.guild.change_voice_state(
+            channel=ctx.message.author.voice.channel, self_mute=False, self_deaf=True
+        )
         return player
 
     async def cog_load(self):
@@ -219,7 +226,6 @@ class Music(commands.Cog):
             )
         await self.bot.printer.print_load("Recently Played")
 
-
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node):
         """Event fired when a node has finished connecting."""
@@ -229,7 +235,7 @@ class Music(commands.Cog):
     async def on_wavelink_track_end(self, player, track, reason):
         """On end, check if the queue has another song to play if not disconnect after 5 min"""
         if player.queue.is_empty:
-            pass # add the thing later
+            pass  # add the thing later
         else:
             await player.play(player.queue.get())
 
@@ -240,7 +246,7 @@ class Music(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["p"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def play(self, ctx, *, search):
@@ -250,7 +256,7 @@ class Music(commands.Cog):
         If not connected, connect to our voice channel.
         """
         player = await self.get_player(ctx)
-        
+
         decoded = spotify.decode_url(search)
         if not decoded:
             node = wavelink.NodePool.get_node()
@@ -272,7 +278,9 @@ class Music(commands.Cog):
 
         else:
             if decoded["type"] == spotify.SpotifySearchType.track:
-                track = await spotify.SpotifyTrack.search(query=decoded["id"], return_first=True)
+                track = await spotify.SpotifyTrack.search(
+                    query=decoded["id"], return_first=True
+                )
 
                 if player.queue.is_empty and not player.track:
                     await player.request(track)
@@ -289,7 +297,7 @@ class Music(commands.Cog):
                     embed.set_author(name=track.author)
                     embed.set_footer(
                         text=self.ctx.author.display_name,
-                        icon_url=self.ctx.author.display_avatar.url
+                        icon_url=self.ctx.author.display_avatar.url,
                     )
                     return await ctx.send(embed)
                 else:
@@ -313,7 +321,9 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                return await ctx.send("Not supported because I don't wanna fuck the bot")
+                return await ctx.send(
+                    "Not supported because I don't wanna fuck the bot"
+                )
                 counter = 0
                 async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
                     if counter == 50:
@@ -332,16 +342,13 @@ class Music(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("green"),
                 )
-                embed.set_author(
-                    name="Add the author of the album"
-                )
+                embed.set_author(name="Add the author of the album")
                 embed.set_footer(
                     text=ctx.author.display_name,
                     icon_url=ctx.author.display_avatar.url,
                 )
                 await ctx.send(embed=embed)
                 await ctx.send(decoded)
-                
 
     @commands.command(
         name="queue",
@@ -350,7 +357,7 @@ class Music(commands.Cog):
         brief="View Player Queue",
         aliases=["q"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def queue_cmd(self, ctx):
@@ -362,7 +369,7 @@ class Music(commands.Cog):
                 title=f"Nothing Playing",
                 description=f"""Nothing's currently playing!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red")
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=nothing_playing)
 
@@ -371,7 +378,7 @@ class Music(commands.Cog):
                 title=f"Empty Queue",
                 description=f"""Nothing's currently queued!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red")
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=emptyqueue)
 
@@ -383,7 +390,7 @@ class Music(commands.Cog):
             else:
                 visual += f"\n{count}. {track.title} [{track.author}] ({util.remove_zcs(str(datetime.timedelta(seconds=track.length)))})"
                 total_dur += track.length
-        
+
         total_dur = util.remove_zcs(str(datetime.timedelta(seconds=total_dur)))
 
         embed = discord.Embed(
@@ -394,9 +401,7 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=style.get_color("aqua"),
         )
-        embed.set_footer(
-            text=f"""Total Duration: {total_dur}"""
-        )
+        embed.set_footer(text=f"""Total Duration: {total_dur}""")
         await ctx.send(embed=embed)
 
     @commands.command(
@@ -444,7 +449,7 @@ class Music(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["s"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def skip_cmd(self, ctx):
@@ -458,10 +463,10 @@ class Music(commands.Cog):
                 title=f"Skipped",
                 description=f"""blah""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color()
+                color=style.get_color(),
             )
             await ctx.send(embed=embed)
-    
+
     @commands.command(
         name="disconnect",
         description="""Disconnect the bot from the channel and remove the player""",
@@ -469,7 +474,7 @@ class Music(commands.Cog):
         brief="Disconnect the bot from the voice channel",
         aliases=["dc"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def dc_cmd(self, ctx):
@@ -477,7 +482,7 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         await player.disconnect()
-    
+
     @commands.command(
         name="remove",
         description="""remove song from queue""",
@@ -485,7 +490,7 @@ class Music(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["r"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def remove_cmd(self, ctx, *, remove_req: str):
@@ -498,9 +503,9 @@ class Music(commands.Cog):
             try:
                 remove_req = int(remove_req)
                 index = remove_req - 1
-                
+
                 song = player.queue._queue[index]
-                
+
                 embed = discord.Embed(
                     title=f"Removed",
                     url=song.uri,
@@ -514,7 +519,6 @@ class Music(commands.Cog):
                 embed.set_author(name=song.author)
                 await ctx.send(embed=embed)
                 del player.queue._queue[index]
-
 
             except Exception as e:
                 print(e)
@@ -545,6 +549,7 @@ class Music(commands.Cog):
 
         for line in lines:
             await ctx.send(line)
+
 
 async def setup(bot):
     await bot.add_cog(Music(bot))

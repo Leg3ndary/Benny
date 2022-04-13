@@ -183,7 +183,7 @@ class Dev(commands.Cog):
 {cmd}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua")
+            color=style.get_color("aqua"),
         )
         await ctx.send(embed=embed)
         cog_statuslist = []
@@ -228,7 +228,7 @@ class Dev(commands.Cog):
         brief="Syncs slash commands",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def syncs_cmd(self, ctx):
         """

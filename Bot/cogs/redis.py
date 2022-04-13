@@ -15,7 +15,7 @@ value = await self.bot.redis.get("Key")
 class Redis(commands.Cog):
     """
     Our redis db related things, mainly used for config, not used as a cache
-    
+
     Current cogs that use Redis:
     - Reminders Config"""
 
@@ -31,7 +31,6 @@ class Redis(commands.Cog):
             decode_responses=True,
         )
         await self.bot.printer.print_load("Redis")
-
 
     @commands.group()
     @commands.is_owner()

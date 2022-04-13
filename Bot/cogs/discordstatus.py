@@ -16,7 +16,7 @@ class DiscordStatusClient:
     async def async_init(self) -> None:
         """
         Asynchronous Initialization
-        
+
         Base url not available in current version.
         """
         self.session = await aiohttp.ClientSession()
@@ -30,13 +30,14 @@ class DiscordStatusClient:
                 return await resp.json()
             raise DSException(f"{resp.status} {await resp.json()}")
 
-            
 
 class DSException(Exception):
     """
     Raised when we have an exception for DiscordStatusClass, shouldn't ever really happen
     """
+
     pass
+
 
 class DiscordStatus(commands.Cog):
     """Cog Example Description"""
@@ -57,12 +58,9 @@ class DiscordStatus(commands.Cog):
         """
         await self.DSClient.close()
 
-    @discord.app_commands.command(
-        guild=discord.Object(id=839605885700669441)
-    )
+    @discord.app_commands.command(guild=discord.Object(id=839605885700669441))
     async def slash(interaction: discord.Interaction, number: int, string: str):
-        await interaction.response.send_message(f'{number=} {string=}', ephemeral=True)
-
+        await interaction.response.send_message(f"{number=} {string=}", ephemeral=True)
 
 
 async def setup(bot):

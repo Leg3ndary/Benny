@@ -10,6 +10,7 @@ from gears import cviews, style
 async def ping(ctx):
     await ctx.send("pong")"""
 
+
 class Base(commands.Cog):
     """Cog Example Description"""
 
@@ -153,8 +154,10 @@ class Base(commands.Cog):
         """
         Slash Command
         /avatar"""
-        await interaction.response.send_message("Hello from private command!", ephemeral=True)
-    
+        await interaction.response.send_message(
+            "Hello from private command!", ephemeral=True
+        )
+
     @commands.command(
         name="uptime",
         description="""Shows the bots uptime""",
@@ -162,7 +165,7 @@ class Base(commands.Cog):
         brief="Shows you the bots uptime",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 30.0, commands.BucketType.channel)
     async def uptime_cmd(self, ctx):
@@ -171,12 +174,14 @@ class Base(commands.Cog):
         """
         resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
         resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
-        fmt = f"I started at `{resolved_full}`, and have been up since: `{resolved_rel}`"
+        fmt = (
+            f"I started at `{resolved_full}`, and have been up since: `{resolved_rel}`"
+        )
         embed = discord.Embed(
             title=f"Benny Uptime",
             description=f"""{fmt}""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color()
+            color=style.get_color(),
         )
         await ctx.send(embed=embed)
 
@@ -193,7 +198,7 @@ class Base(commands.Cog):
             title=f"Benny Uptime",
             description=f"""{fmt}""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green")
+            color=style.get_color("green"),
         )
         await interaction.response.send_message(embed=embed)
 

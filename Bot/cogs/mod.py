@@ -55,10 +55,12 @@ class Mod(commands.Cog):
         brief="Warn a user",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 7.0, commands.BucketType.user)
-    async def warn_cmd(self, ctx, member: commands.Greedy[discord.Member], *, reason = "None"):
+    async def warn_cmd(
+        self, ctx, member: commands.Greedy[discord.Member], *, reason="None"
+    ):
         """
         Warn cmd
         """
@@ -71,7 +73,7 @@ class Mod(commands.Cog):
             title=f"Warned",
             description=f"""""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("yellow")
+            color=style.get_color("yellow"),
         )
         await ctx.send(embed=embed)
 
@@ -158,7 +160,7 @@ class Mod(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
@@ -169,7 +171,7 @@ class Mod(commands.Cog):
                 title=f"Error",
                 description=f"""Sorry but `{member}` doesn't seem to be a valid id.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red")
+                color=style.get_color("red"),
             )
             return await ctx.send(embed=embed)
         try:
@@ -179,7 +181,7 @@ class Mod(commands.Cog):
                 title=f"Not Banned",
                 description=f"""This user doesn't seem to be banned...""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("yellow")
+                color=style.get_color("yellow"),
             )
             return await ctx.send(embed=embed)
 
@@ -242,6 +244,7 @@ class Mod(commands.Cog):
     async def on_send_modlog(self, type, modlog):
         """Send modlogs to the specified channel if not just return"""
         pass
+
 
 async def setup(bot):
     await bot.add_cog(Mod(bot))

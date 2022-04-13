@@ -17,10 +17,11 @@ datetime - The datetime to send this reminder at
 reminder - The actual reminder
 """
 
+
 class ReminderManager:
     """
     Reminder Task Manager
-    
+
     Attributes
     ----------
     REMINDER_LIMIT: const
@@ -31,17 +32,17 @@ class ReminderManager:
         Reminder ID
     active_reminders: dict
         A dict containing all active reminders formatted with the reminder id as a str
-        
+
     Methods
     -------
     async create_table -> None
         No Params
 
         Simply creates a table if I decide to delete it whoops
-    
+
     async load_config -> None
         No Params
-        
+
         Loads config from redis and if not found initiates it
 
     async load_timers -> None
@@ -92,14 +93,17 @@ class ReminderManager:
         for reminder in results:
             await self.create_timer(reminder[0], reminder[1])
 
-
     async def create_timer(self, rid: int, uid: str, time, reminder: str) -> None:
         """Create a timer and dispatch.
         Timer id in active_reminders is rid-uid"""
-        timer = asyncio.create_task(self.bot.dispatch("on_create_timer"), rid, id, time, reminder)
+        timer = asyncio.create_task(
+            self.bot.dispatch("on_create_timer"), rid, id, time, reminder
+        )
         async with asqlite.connect("Databases/reminders.db") as db:
             query = """INSERT INTO reminders VALUES(?, ?, 0, "");"""
-            await db.execute(query, )
+            await db.execute(
+                query,
+            )
             await db.commit()
         self.active_reminders.update(f"{rid}-{uid}", timer)
 
@@ -113,8 +117,8 @@ class Reminders(commands.Cog):
 
     async def cog_load(self):
         """Dispatch to start load reminders"""
-        
-        #await self.rm.load_timers()
+
+        # await self.rm.load_timers()
 
     @commands.Cog.listener()
     async def on_send_reminder(self, uid: int, reminder: str):
@@ -123,7 +127,6 @@ class Reminders(commands.Cog):
             self.bot.get_user(int(uid))
         except:
             pass
-        
 
     @commands.command(
         name="remind",

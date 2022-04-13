@@ -34,9 +34,10 @@ class DictionaryView(discord.ui.View):
             await self.ctx.delete_original_message()
         await interaction.response.send_message("Message Deleted", ephemeral=True)
 
+
 class Dictionary(commands.Cog):
     """
-    Dictionary Cache Manager, so we don't spam requests and can reduce bandwidth, not really that 
+    Dictionary Cache Manager, so we don't spam requests and can reduce bandwidth, not really that
     important in the end though.
     """
 
@@ -68,15 +69,13 @@ class Dictionary(commands.Cog):
         Parameters
         ----------
         word: str
-            The word to search up 
+            The word to search up
 
         Returns
         -------
         dict
         """
-        async with self.bot.aiosession.get(
-            f"{self.api_url}{word}"
-        ) as request:
+        async with self.bot.aiosession.get(f"{self.api_url}{word}") as request:
             if request.status != 200:
                 print(
                     f"[ ERROR ] [{datetime.datetime.utcnow()}]\nError Code: {request.status}\n{await request.json()}"
@@ -86,7 +85,7 @@ class Dictionary(commands.Cog):
     async def get_word(self, word: str) -> dict:
         """
         Will check if the built cache has the word.
-        
+
         If not will go fetch it because yes.
         """
 
@@ -94,9 +93,7 @@ class Dictionary(commands.Cog):
         """"""
         pass
 
-    @app_commands.command(
-        name="define"
-    )
+    @app_commands.command(name="define")
     async def define_slash(self, interaction: discord.Interaction, word: str) -> None:
         """
         Define slash command
@@ -110,7 +107,7 @@ class Dictionary(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["dict", "def"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def define_cmd(self, ctx):

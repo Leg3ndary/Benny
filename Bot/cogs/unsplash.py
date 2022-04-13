@@ -132,12 +132,11 @@ class Photos(commands.Cog):
         brief="Search for photos",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def photo_cmd(self, ctx):
         """Command description"""
-
 
 
 async def setup(bot):
