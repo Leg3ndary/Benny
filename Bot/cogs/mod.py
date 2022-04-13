@@ -1,3 +1,4 @@
+import asqlite
 import discord
 import discord.utils
 import re
@@ -21,6 +22,25 @@ class Mod(commands.Cog):
         hidden=False
         '''
 
+    async def cog_load(self) -> None:
+        """
+        Load our sqlite db yay
+        """
+        pass
+        #async with asqlite.connect("Databases/mod.db") as db:
+            #await db.execute(
+                #"""
+                #CREATE TABLE IF NOT EXISTS playlists (
+                #    id    TEXT    NOT NULL
+                #                PRIMARY KEY,
+                #    name  TEXT    NOT NULL,
+                #    plays INTEGER NOT NULL,
+                #    songs TEXT
+                #);
+                #"""
+            #)
+        #await self.bot.printer.print_load("Playlist")
+
     @commands.command(
         name="ban",
         description="""Ban a user from this guild""",
@@ -30,10 +50,12 @@ class Mod(commands.Cog):
         enabled=True,
         hidden=False,
     )
+    @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    @commands.cooldown(1.0, 3.0, commands.BucketType.user)
-    async def ban_user(self, ctx, user: discord.Member = None, *, reason: str = None):
-        """Ban a member because they were being mean"""
+    async def ban_cmd(self, ctx, user: discord.Member = None, *, reason: str = None):
+        """
+        Ban a member, requires ban member permissionw3w
+        """
         if user == ctx.author:
             same_user_embed = discord.Embed(
                 title=f"Error",
@@ -58,7 +80,7 @@ class Mod(commands.Cog):
             )
             return await ctx.send(embed=none_mentioned)
 
-        elif user.id == 889672871620780082:
+        elif user.id == self.bot.user.id:
             ban_bot = discord.Embed(
                 title=f"Rude",
                 description=f"""After all I've done for you, you try to ban me?""",
@@ -94,6 +116,42 @@ class Mod(commands.Cog):
                     color=style.get_color("red"),
                 )
                 await ctx.send(embed=error)
+
+    @commands.command(
+        name="unban",
+        description="""Unban a user using an id""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 6.0, commands.BucketType.user)
+    @commands.has_permissions(ban_members=True)
+    async def unban_cmd(self, ctx, member: int, reason: str = None):
+        """Command description"""
+        if not re.match(r"[0-9]{15,19}", str(member)):
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""Sorry but `{member}` doesn't seem to be a valid id.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red")
+            )
+            return await ctx.send(embed=embed)
+        try:
+            member = await ctx.guild.fetch_ban(discord.Object(id=member))
+        except discord.NotFound:
+            embed = discord.Embed(
+                title=f"Not Banned",
+                description=f"""This user doesn't seem to be banned...""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("yellow")
+            )
+            return await ctx.send(embed=embed)
+
+        reason = f"Unbanned by: "
+
+        await ctx.guild.unban(discord.Object(id=member), reason)
 
     @commands.group(name="modlogs")
     async def modlogs(self, ctx):
@@ -149,7 +207,7 @@ class Mod(commands.Cog):
     @commands.Cog.listener()
     async def on_send_modlog(self, type, modlog):
         """Send modlogs to the specified channel if not just return"""
-
+        pass
 
 async def setup(bot):
     await bot.add_cog(Mod(bot))
