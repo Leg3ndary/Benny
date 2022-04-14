@@ -148,6 +148,11 @@ class Mod(commands.Cog):
                 else:
                     reason = user_reason + reason
                 await user.ban(reason=reason)
+                await self.db.execute(
+                    f"""INSERT INTO bans VALUES(?, ?, ?, ?);""",
+                    (user.id, ctx.author.id, reason, datetime.datetime.now()),
+                )
+                await self.db.commit()
                 banned_embed = discord.Embed(
                     title=f"Banned {user}",
                     description=f"""```diff
