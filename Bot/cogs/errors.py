@@ -140,6 +140,9 @@ Type: {error.converter}
         elif isinstance(error, commands.BadInviteArgument):
             pass
 
+        elif isinstance(error, commands.CheckFailure):
+            print(error)
+
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
             print(

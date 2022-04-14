@@ -35,8 +35,10 @@ class Dev(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    async def cog_check(self, ctx):
+        return await self.bot.is_owner(ctx.author)
+
     @commands.group()
-    @commands.is_owner()
     async def dev(self, ctx):
         """Commands thats sole purpose is for me to experiment."""
         if not ctx.invoked_subcommand:
@@ -177,10 +179,11 @@ class Dev(commands.Cog):
     )
     async def sync(self, ctx):
         cmd = os.popen("git pull").read()
+
         embed = discord.Embed(
             title=f"Git Pull",
             description=f"""```diff
-{str(cmd).strip()}
+{cmd}
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("aqua"),
@@ -287,7 +290,6 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    @commands.is_owner()
     async def _eval(self, ctx, *, code: str):
         """Evaluates code given"""
 
