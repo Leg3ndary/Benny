@@ -54,10 +54,11 @@ prefix = config.get("Bot").get("Prefix")
 
 async def get_prefix(bot, msg):
     """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
+    prefixes = [f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "]
     if msg.guild is None:
-        return commands.when_mentioned_or(bot.prefix)
+        return prefixes.append(bot.prefix)
     else:
-        return commands.when_mentioned_or(bot.prefixes.get(str(msg.guild.id), ""))
+        return prefixes + bot.prefixes.get(str(msg.guild.id), "")
 
 
 bot = commands.Bot(
@@ -68,6 +69,7 @@ bot = commands.Bot(
 bot.start_time = datetime.datetime.now(datetime.timezone.utc)
 bot.loaded_prefixes = False
 bot.MUSIC_ON = True
+bot.prefix = prefix
 
 
 async def start_bot():
@@ -80,8 +82,6 @@ async def start_bot():
 
         bot.config = config
         await bot.printer.print_load("Config")
-
-        bot.prefix = prefix
 
         bot.util = util.BotUtil(bot)
         await bot.printer.print_load("Bot Util")
@@ -110,7 +110,6 @@ async def start_bot():
             """
             await bot.wait_until_ready()
             bot.dispatch("load_prefixes")
-            await bot.tree.sync(guild=discord.Object(id=839605885700669441))
             await bot.printer.print_bot_update("LOGGED IN")
 
         @bot.check
