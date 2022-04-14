@@ -180,7 +180,7 @@ class Dev(commands.Cog):
         embed = discord.Embed(
             title=f"Git Pull",
             description=f"""```diff
-{cmd}
+{str(cmd).strip()}
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("aqua"),
