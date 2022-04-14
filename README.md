@@ -16,6 +16,7 @@ Please note if somehow your seeing this, the bot is still in a "pre beta" stage,
 If you do think that this is an interesting project, come back to it later, and hopefully I've released v1 of the bot.
 
 # More Features
+
 Want another feature to be added?
 
 Open up an issue and please format the issue like so:
@@ -27,6 +28,7 @@ Description: Guild ID, User ID if applicable.
 Other relevant info, include images where possible.
 
 # License Info
+
 Under the Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0);
 
 You are free to copy and redistribute the material in any medium or format so long as the following conditions are met.
