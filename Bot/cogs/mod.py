@@ -92,7 +92,7 @@ class Mod(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="ban",
         description="""Ban a user from this guild""",
         help="""More help""",
@@ -118,14 +118,14 @@ class Mod(commands.Cog):
 
         elif not user and re.match(r"[0-9]{15,19}", str(user)):
             try:
-                user = await self.bot.fetch_user(int(user))
+                user = await self.bot.get_user(int(user))
             except:
-                pass
+                user = await self.bot.fetch_user(int(user))
 
         elif not user:
             none_mentioned = discord.Embed(
                 title=f"Error",
-                description=f"""The user {user} was not found""",
+                description=f"""The user {user} was not found.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
             )
@@ -139,6 +139,7 @@ class Mod(commands.Cog):
                 color=style.get_color("yellow"),
             )
             return await ctx.send(embed=ban_bot)
+
         else:
             try:
                 user_reason = f"Banned by {ctx.author}: "
