@@ -191,7 +191,7 @@ class Dev(commands.Cog):
         description="""Runs git pull and syncs cogs""",
         help="""What the help command displays""",
         brief="Brief one liner about the command",
-        aliases=["reload"],
+        aliases=[],
         enabled=True,
         hidden=True,
     )
