@@ -2,6 +2,7 @@ import discord
 import discord.utils
 import io
 import os
+import re
 import textwrap
 import traceback
 from contextlib import redirect_stdout
@@ -9,22 +10,27 @@ from discord.ext import commands
 from gears import style
 
 
-def cleanup_code(content: str) -> str:
+async def cleanup_code(content: str) -> str:
     """
-    Automatically removes code blocks from the code
-
-    Parameters
-    ----------
-    content: str
-        The message/content that we need to remove the code block from
-
-    Returns
-    -------
-    str
-        The cleaned content
+    Automatically removes code blocks from code
     """
     if content.startswith("```") and content.endswith("```"):
         return "\n".join(content.split("\n")[1:-1])
+
+
+async def format_git_msg(content: str) -> str:
+    """
+    Format a git message to have git messages and look pretty
+    """
+    temp = []
+    for line in content.split("\n"):
+        line_temp = re.sub("\+", f"[0;32m+", line, 1)
+        line_temp = re.sub("(\+)(?!.*\1)", f"+[0;0m", line_temp)
+        line_temp = re.sub("\-", f"[0;31m-", line_temp, 1)
+        line_temp = re.sub("(\-)(?!.*\1)", f"-[0;0m", line_temp)
+        temp.append(line_temp)
+
+    return "\n".join(temp)
 
 
 class Dev(commands.Cog):
@@ -36,6 +42,7 @@ class Dev(commands.Cog):
         self.bot = bot
 
     async def cog_check(self, ctx):
+        """Check if the user is the owner."""
         return await self.bot.is_owner(ctx.author)
 
     @commands.group()
@@ -172,18 +179,21 @@ class Dev(commands.Cog):
         await ctx.send(embed=embed)
 
     @dev.command(
-        help="Tries to reload every cog",
-        brief="Syncing Cogs",
-        description="None",
+        name="sync",
+        description="""Runs git pull and syncs cogs""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["reload"],
+        enabled=True,
         hidden=True,
     )
-    async def sync(self, ctx):
+    async def sync_cmd(self, ctx):
         cmd = os.popen("git pull").read()
 
         embed = discord.Embed(
             title=f"Git Pull",
-            description=f"""```diff
-{cmd}
+            description=f"""```ansi
+{await format_git_msg(cmd)}
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("aqua"),
@@ -241,12 +251,15 @@ class Dev(commands.Cog):
         await ctx.send("Synced, fix this stupid message later please")
 
     @dev.command(
-        help="Clears Terminal",
-        brief="Terminal Cleared",
-        description="None",
+        name="clear",
+        description="""Clear terminal""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["ct"],
+        enabled=True,
         hidden=True,
     )
-    async def ct(self, ctx):
+    async def clearterminal_cmd(self, ctx):
         os.system("clear")
         embed = discord.Embed(
             title="Terminal Cleared",
@@ -255,8 +268,16 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @dev.command()
-    async def leave(self, ctx, *, guild: discord.Guild):
+    @dev.command(
+        name="leave",
+        description="""Leave a guild""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=True,
+    )
+    async def leave_cmd(self, ctx, *, guild: discord.Guild):
         """Leave a guild."""
         try:
             await ctx.guild.leave()
@@ -283,16 +304,15 @@ class Dev(commands.Cog):
 
     @commands.command(
         name="eval",
+        description="""Eval command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
         aliases=["exec"],
-        description="""Evaluate code""",
-        help="""Evaluate some code, dev only.""",
-        brief="Eval some code",
         enabled=True,
         hidden=True,
     )
-    async def _eval(self, ctx, *, code: str):
+    async def eval_cmd(self, ctx, *, code: str):
         """Evaluates code given"""
-
         if "```py" not in code:
             # Didn"t find a code block
             no_cb = discord.Embed(
@@ -307,7 +327,7 @@ class Dev(commands.Cog):
 
         env.update(globals())
 
-        code = cleanup_code(code)
+        code = await cleanup_code(code)
         stdout = io.StringIO()
 
         to_compile = f"""async def func():\n{textwrap.indent(code, "  ")}"""
