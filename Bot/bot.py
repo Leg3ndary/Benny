@@ -110,6 +110,7 @@ async def start_bot():
             """
             await bot.wait_until_ready()
             bot.dispatch("load_prefixes")
+            bot.dispatch("connect_wavelink")
             await bot.printer.print_bot_update("LOGGED IN")
 
         @bot.check

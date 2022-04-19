@@ -187,7 +187,8 @@ class Music(commands.Cog):
         )
         return player
 
-    async def cog_load(self):
+    @commands.Cog.listener()
+    async def on_connect_wavelink(self):
         """On cog load do stuff"""
         await self.connect_nodes()
         async with asqlite.connect("Databases/music.db") as db:
