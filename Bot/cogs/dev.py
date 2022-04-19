@@ -28,7 +28,7 @@ async def format_git_msg(content: str) -> str:
             line_temp = line.replace("Update ", "")
             utemp = line.split("..")
             line_temp = f"[0;33m+Update [0;34m{utemp[0]}[0;37m..[0;34m{utemp[1]}"
-        if "Fast-forward" i== line:
+        if "Fast-forward" == line:
             line_temp = line.replace("Fast-foward", "[0;35mFast-forward[0;0m")
         else:
             line_temp = re.sub("\+", f"[0;32m+", line, 1)
