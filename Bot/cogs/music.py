@@ -322,9 +322,11 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                return await ctx.send(
-                    "Not supported because I don't wanna fuck the bot"
-                )
+                if ctx.author.id != 360061101477724170:
+                    return await ctx.send(
+                        "Not supported because I don't wanna fuck the bot"
+                    )
+
                 counter = 0
                 async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
                     if counter == 50:
