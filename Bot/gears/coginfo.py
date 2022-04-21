@@ -1,4 +1,4 @@
-from useful import len_file
+from gears.util import len_file
 
 
 class CogInfo:
