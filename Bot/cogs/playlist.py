@@ -7,7 +7,7 @@ from gears import style
 
 class PlaylistException(Exception):
     """
-    Raised when a playlist related function has an error
+    Raised when a playlist related method has failed
     """
     
     pass
@@ -16,6 +16,28 @@ class PlaylistException(Exception):
 class PlaylistLimitReached(PlaylistException):
     """
     Raised when the max amount of playlists has been made
+    """
+
+    pass
+
+
+class PlaylistNotFound(PlaylistException):
+    """
+    Raised when a playlist wasn't found when querying
+    """
+
+    pass
+
+class SongException(Exception):
+    """
+    Raised when a song related method has failed
+    """
+
+    pass
+
+class SongnameLimitReached(SongException):
+    """
+    Raised when a song name is too long
     """
 
     pass
@@ -30,7 +52,7 @@ class PlaylistManager:
         The max no of songs that a playlist may have
     PLAYLIST_LIMIT: int
         The max no of playlists that a user may have under an ID
-    SONG_NAME_LIMIT:
+    SONG_NAME_LIMIT: int
         The max length of a song name in chars
     """
 
@@ -40,7 +62,7 @@ class PlaylistManager:
         self.PLAYLIST_LIMIT = 5
         self.SONG_NAME_LIMIT = 50
 
-    async def create_playlist(self, user_id: str, playlist_name: str) -> str:
+    async def create_playlist(self, user_id: str, playlist_name: str) -> None:
         """
         Create a playlist in our database
 
@@ -53,12 +75,7 @@ class PlaylistManager:
 
         Returns
         -------
-        str
-
-        SUCCESS:
-            Succeeded
-        ERROR:
-            Errored, .split(":")[1] will get you the reason
+        None
         """
         async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
@@ -66,16 +83,15 @@ class PlaylistManager:
             ) as cursor:
                 length = len(await cursor.fetchall())
                 if length > self.PLAYLIST_LIMIT:
-                    raise PlaylistLimitReached()
+                    raise PlaylistLimitReached("Too many playlists have been created.")
 
             await db.execute(
                 """INSERT INTO playlists VALUES(?, ?, 0, "");""",
                 (user_id, playlist_name),
             )
             await db.commit()
-            return "SUCCESS"
 
-    async def delete_playlist(self, user_id: str, playlist_name: str) -> str:
+    async def delete_playlist(self, user_id: str, playlist_name: str) -> None:
         """
         Delete a playlist in our database
 
@@ -88,12 +104,7 @@ class PlaylistManager:
 
         Returns
         -------
-        str
-
-        SUCCESS:
-            Succeeded
-        ERROR:
-            Errored, .split(":")[1] will get you the reason
+        None
         """
         async with asqlite.connect("Databases/music.db") as db:
             async with db.execute(
@@ -101,16 +112,13 @@ class PlaylistManager:
                 (int(user_id), playlist_name),
             ) as cursor:
                 if not cursor.fetchall():
-                    return (
-                        f"ERROR:No playlist by the name of {playlist_name} was found!"
-                    )
+                    raise PlaylistNotFound(f"Playlist {playlist_name} was not found for deletion.")
             await db.execute(
                 """DELETE FROM playlists WHERE name = ?;""", (playlist_name,)
             )
             await db.commit()
-            return "SUCCESS"
 
-    async def add_song(self, user_id: str, playlist_name: str, song: str) -> str:
+    async def add_song(self, user_id: str, playlist_name: str, song: str) -> None:
         """
         Add a song to a playlist by ID
 
@@ -125,12 +133,7 @@ class PlaylistManager:
 
         Returns
         -------
-        str
-
-        SUCCESS:
-            Succeeded
-        ERROR:
-            Errored, .split(":")[1] will get you the reason
+        None
         """
         # Cleaning out commas in which we use as delimiters.
         song = song.replace(",", "")
@@ -292,10 +295,10 @@ class Playlist(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def create_playlist(self, ctx, *, playlist_name: str):
         """Create a playlist"""
-        c_status = await self.playlistmanager.create_playlist(
-            ctx.author.id, playlist_name
-        )
-        if c_status == "SUCCESS":
+        try:
+            c_status = await self.playlistmanager.create_playlist(
+                ctx.author.id, playlist_name
+            )
             embed = discord.Embed(
                 title=f"Created Playlist",
                 description=f"""Created a playlist with the name `{playlist_name}`""",
@@ -304,11 +307,11 @@ class Playlist(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-        else:
+        except PlaylistLimitReached as e:
             embed = discord.Embed(
                 title=f"Error",
                 description=f"""```diff
-- {c_status.split(":")[1]} -
+- {e} -
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
@@ -327,10 +330,10 @@ class Playlist(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def delete_playist(self, ctx, *, playlist_name: str):
         """Create a playlist"""
-        c_status = await self.playlistmanager.delete_playlist(
-            ctx.author.id, playlist_name
-        )
-        if c_status == "SUCCESS":
+        try:
+            c_status = await self.playlistmanager.delete_playlist(
+                ctx.author.id, playlist_name
+            )
             embed = discord.Embed(
                 title=f"Delete Playlist",
                 description=f"""Deleted playlist `{playlist_name}`""",
@@ -339,11 +342,11 @@ class Playlist(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-        else:
+        except PlaylistNotFound as e:
             embed = discord.Embed(
                 title=f"Error",
                 description=f"""```diff
-- {c_status.split(":")[1]} -
+- {e} -
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("red"),
