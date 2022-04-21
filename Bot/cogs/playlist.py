@@ -1,10 +1,24 @@
 import asqlite
 import discord
 import discord.utils
-from ast import Str
 from discord.ext import commands
 from gears import style
 
+
+class PlaylistException(Exception):
+    """
+    Raised when a playlist related function has an error
+    """
+    
+    pass
+
+
+class PlaylistLimitReached(PlaylistException):
+    """
+    Raised when the max amount of playlists has been made
+    """
+
+    pass
 
 class PlaylistManager:
     """
@@ -52,7 +66,7 @@ class PlaylistManager:
             ) as cursor:
                 length = len(await cursor.fetchall())
                 if length > self.PLAYLIST_LIMIT:
-                    return f"ERROR:You can only create {self.PLAYLIST_LIMIT} playlists!"
+                    raise PlaylistLimitReached()
 
             await db.execute(
                 """INSERT INTO playlists VALUES(?, ?, 0, "");""",
