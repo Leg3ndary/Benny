@@ -182,12 +182,11 @@ class Music(commands.Cog):
             )
         else:
             player: wavelink.Player = ctx.voice_client
-        try:
+
             await ctx.guild.change_voice_state(
                 channel=ctx.message.author.voice.channel, self_mute=False, self_deaf=True
             )
-        except:
-            pass
+
         return player
 
     @commands.Cog.listener()
