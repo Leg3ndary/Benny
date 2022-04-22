@@ -243,7 +243,7 @@ class Music(commands.Cog):
         else:
             await player.play(player.queue.get())
 
-    @commands.command(
+    @commands.hybrid_command(
         name="play",
         description="""Description of command""",
         help="""What the help command displays""",
@@ -356,7 +356,7 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
                 await ctx.send(decoded)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="queue",
         description="""queue viewer""",
         help="""Show what's currently in the players queue!""",
@@ -410,7 +410,7 @@ class Music(commands.Cog):
         embed.set_footer(text=f"""Total Duration: {total_dur}""")
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="np",
         description="""Display what's playing rn""",
         help="""Show what's currently being played by Benny""",
@@ -448,7 +448,7 @@ class Music(commands.Cog):
             )
             embed.set_author(name=current.author)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="skip",
         description="""Skip command""",
         help="""What the help command displays""",
@@ -473,7 +473,7 @@ class Music(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="disconnect",
         description="""Disconnect the bot from the channel and remove the player""",
         help="""Disconnect the bot, removing all songs in queue""",
@@ -489,7 +489,7 @@ class Music(commands.Cog):
 
         await player.disconnect()
 
-    @commands.command(
+    @commands.hybrid_command(
         name="remove",
         description="""remove song from queue""",
         help="""What the help command displays""",
@@ -530,7 +530,7 @@ class Music(commands.Cog):
                 print(e)
                 await ctx.send("An error has an occured... uh o")
 
-    @commands.command(
+    @commands.hybrid_command(
         name="musiclogs",
         description="""Display logs""",
         help="""Command displays music logs from lavalink what else""",
