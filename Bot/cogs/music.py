@@ -3,6 +3,7 @@ import wavelink
 from wavelink.ext import spotify
 from discord.ext import commands
 import discord
+import random
 import os
 from gears import style, util
 import datetime
@@ -59,7 +60,7 @@ class Player(wavelink.Player):
         """Shuffle the queue"""
         if self.queue.is_empty:
             raise QueueEmpty("The queue is currently empty")
-        await self.queue.shuffle()
+        random.shuffle(self.queue)
 
 
 class PlayerDropdown(discord.ui.Select):
