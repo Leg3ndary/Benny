@@ -38,13 +38,13 @@ class Base(commands.Cog):
         )
         embed.set_footer(
             text="_Leg3ndary#5759",
-            icon_url="https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024"
+            icon_url="https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024",
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="avatar",
-        description="""Enlarge the avatar of an user""",
+        description="""Show a users avatar""",
         help="""Show a users avatar in a nice clean embed.""",
         brief="""Short help text""",
         aliases=["av", "pfp"],
@@ -125,9 +125,9 @@ class Base(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="dog",
-        description="""Dog command to give you a random image of a dog""",
+        description="""Get a random dog image!""",
         help="""What good bot doesn't have a dog command?""",
         brief="Get a random dog image",
         aliases=[],
@@ -144,17 +144,7 @@ class Base(commands.Cog):
         embed.set_image(url=dog_image)
         await ctx.send(embed=embed)
 
-    @app_commands.command(name="avatar")
-    @app_commands.guilds(discord.Object(id=839605885700669441))
-    async def avatar_cmd(self, interaction):
-        """
-        Slash Command
-        /avatar"""
-        await interaction.response.send_message(
-            "Hello from private command!", ephemeral=True
-        )
-
-    @commands.command(
+    @commands.hybrid_command(
         name="uptime",
         description="""Shows the bots uptime""",
         help="""Shows you the bots uptime""",
@@ -180,23 +170,6 @@ class Base(commands.Cog):
             color=style.get_color(),
         )
         await ctx.send(embed=embed)
-
-    @app_commands.command(name="uptime")
-    @app_commands.guilds(discord.Object(id=839605885700669441))
-    async def uptime_slash(self, interaction):
-        """
-        Uptime Slash
-        """
-        resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
-        resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
-        fmt = f"I started at {resolved_full}, and have been up since: {resolved_rel}"
-        embed = discord.Embed(
-            title=f"Benny Uptime",
-            description=f"""{fmt}""",
-            timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
-        )
-        await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot):

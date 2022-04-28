@@ -35,7 +35,7 @@ async def format_git_msg(content: str) -> str:
             line_temp = re.sub("(\+)(?!.*\+)", f"+[0;0m", line_temp)
             line_temp = re.sub("\-", f"[0;31m-", line_temp, 1)
             line_temp = re.sub("(\-)(?!.*\-)", f"-[0;0m", line_temp)
-        
+
         temp.append(line_temp)
 
     return "\n".join(temp)

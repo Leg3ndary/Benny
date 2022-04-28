@@ -9,7 +9,7 @@ class PlaylistException(Exception):
     """
     Raised when a playlist related method has failed
     """
-    
+
     pass
 
 
@@ -41,6 +41,7 @@ class SongException(Exception):
     """
 
     pass
+
 
 class SongnameLimitReached(SongException):
     """
@@ -120,7 +121,9 @@ class PlaylistManager:
                 (int(user_id), playlist_name),
             ) as cursor:
                 if not cursor.fetchall():
-                    raise PlaylistNotFound(f"Playlist {playlist_name} was not found for deletion.")
+                    raise PlaylistNotFound(
+                        f"Playlist {playlist_name} was not found for deletion."
+                    )
             await db.execute(
                 """DELETE FROM playlists WHERE name = ?;""", (playlist_name,)
             )

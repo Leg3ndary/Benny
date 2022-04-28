@@ -101,8 +101,16 @@ system {random.choice(options)}
         help="Display CPU information", brief="CPU Info", usage="", description="None"
     )
     async def cpu(self, ctx):
-        """Showing our cpu information"""
+        """Showing our cpu information
         cpufreq = psutil.cpu_freq()
+        [ Max Frequency ]
+        = {cpufreq.max:.2f}Mhz =
+        [ Min Frequency ]
+        = {cpufreq.min:.2f}Mhz =
+        [ Current Frequency ]
+        = {cpufreq.current:.2f}Mhz =
+        """
+
         cpu_core_data = ""
         for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
             cpu_core_data = f"""{cpu_core_data}[Core {i}]
@@ -115,12 +123,6 @@ system {random.choice(options)}
 = {psutil.cpu_count(logical=False)} =
 [ Total Cores ]
 = {psutil.cpu_count(logical=True)} =
-[ Max Frequency ]
-= {cpufreq.max:.2f}Mhz =
-[ Min Frequency ]
-= {cpufreq.min:.2f}Mhz =
-[ Current Frequency ]
-= {cpufreq.current:.2f}Mhz =
 [ CPU Usage Per Core ]
 {cpu_core_data}
 [ Total CPU Usage ]

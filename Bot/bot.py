@@ -17,7 +17,7 @@ start = time.monotonic()
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename="logs/discord.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename="Logs/discord.log", encoding="utf-8", mode="w")
 handler.setFormatter(
     logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 )
@@ -86,11 +86,11 @@ async def start_bot():
         bot.util = util.BotUtil(bot)
         await bot.printer.print_load("Bot Util")
 
-        #bot.settingsDB = await asqlite.connect("Databases/server.db")
-        #await bot.printer.print_connect("Settings Database")
+        # bot.settingsDB = await asqlite.connect("Databases/server.db")
+        # await bot.printer.print_connect("Settings Database")
 
-        #bot.musicDB = await asqlite.connect("Databases/music.db")
-        #await bot.printer.print_connect("Music Database")
+        # bot.musicDB = await asqlite.connect("Databases/music.db")
+        # await bot.printer.print_connect("Music Database")
 
         file_list = {}
         total = 0
