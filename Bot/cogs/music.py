@@ -73,7 +73,7 @@ class Player(wavelink.Player):
         """Loop the queue?"""
         if self.queue.is_empty:
             raise QueueEmpty("The queue is currently empty")
-        self.loop = not self.loop
+        self.looping = not self.looping
 
 
 class PlayerDropdown(discord.ui.Select):
@@ -281,7 +281,7 @@ class Music(commands.Cog):
         if player.queue.is_empty:
             self.bot.loop.create_task()
         else:
-            if player.loop:
+            if player.looping:
                 await player.request(track)
             await player.play(player.queue.get())
             
@@ -649,7 +649,7 @@ class Music(commands.Cog):
 
         try:
             current = player.track
-            await player.skip()
+            await player.shuffle()
             embed = discord.Embed(
                 title=f"{style.get_emoji('regular', 'shuffle')} Shuffling",
                 url=current.uri,
