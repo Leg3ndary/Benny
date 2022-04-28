@@ -20,6 +20,7 @@ class QueueFull(MusicException):
 
     pass
 
+
 class QueueEmpty(MusicException):
     """When the queue is empty"""
 
@@ -55,7 +56,6 @@ class Player(wavelink.Player):
         if self.queue.is_empty and not self.track:
             raise NothingPlaying("Nothing is currently playing")
         await self.stop()
-
 
 
 class PlayerDropdown(discord.ui.Select):
@@ -192,7 +192,9 @@ class Music(commands.Cog):
             player: wavelink.Player = ctx.voice_client
 
             await ctx.guild.change_voice_state(
-                channel=ctx.message.author.voice.channel, self_mute=False, self_deaf=True
+                channel=ctx.message.author.voice.channel,
+                self_mute=False,
+                self_deaf=True,
             )
 
         return player
@@ -252,15 +254,15 @@ class Music(commands.Cog):
 
     @commands.hybrid_command(
         name="play",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        description="""Play a song/Queue another song""",
+        help="""Play a song or request in the queue""",
+        brief="Play a song",
         aliases=["p"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def play(self, ctx, *, search):
+    async def play(self, ctx, *, song):
         """
         Play a song with the given search query.
 
@@ -268,10 +270,10 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        decoded = spotify.decode_url(search)
+        decoded = spotify.decode_url(song)
         if not decoded:
             node = wavelink.NodePool.get_node()
-            query = "ytsearch:" + search
+            query = "ytsearch:" + song
             tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=query)
 
             view = PlayerSelector(ctx, player, tracks[:25])
@@ -280,7 +282,7 @@ class Music(commands.Cog):
                 title=f"{style.get_emoji('regular', 'youtube')} Select a Song to Play",
                 description=f"""```asciidoc
 = Showing Song Results for: =
-[ {search} ]
+[ {song} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("green"),
@@ -354,7 +356,7 @@ class Music(commands.Cog):
 
     @commands.hybrid_command(
         name="queue",
-        description="""queue viewer""",
+        description="""View the current queue""",
         help="""Show what's currently in the players queue!""",
         brief="View Player Queue",
         aliases=["q"],
@@ -407,11 +409,11 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(
-        name="nowplaying",
+        name="now",
         description="""Show what songs currently being played""",
         help="""Show whats currently being played by Benny""",
         brief="""Now Playing""",
-        aliases=["now", "np"],
+        aliases=["nowplaying", "np"],
         enabled=True,
         hidden=False,
     )
@@ -488,7 +490,7 @@ class Music(commands.Cog):
 
     @commands.hybrid_command(
         name="disconnect",
-        description="""Disconnect the bot from the channel and remove the player""",
+        description="""Disconnect the bot from the voice channel""",
         help="""Disconnect the bot, removing all songs in queue""",
         brief="Disconnect the bot from the voice channel",
         aliases=["dc"],
@@ -504,24 +506,24 @@ class Music(commands.Cog):
 
     @commands.hybrid_command(
         name="remove",
-        description="""remove song from queue""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        description="""Remove a song from the Queue""",
+        help="""Remove a song from a certain index from the queue""",
+        brief="Remove a song from the queue",
         aliases=["r"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def remove_cmd(self, ctx, *, remove_req: str):
+    async def remove_cmd(self, ctx, *, number: str):
         """
         Will support removing by song name / author soon.
         """
         player = await self.get_player(ctx)
 
-        if remove_req.isnumeric():
+        if number.isnumeric():
             try:
-                remove_req = int(remove_req)
-                index = remove_req - 1
+                number = int(number)
+                index = number - 1
 
                 song = player.queue._queue[index]
 

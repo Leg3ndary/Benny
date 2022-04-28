@@ -110,7 +110,7 @@ system {random.choice(options)}
         [ Current Frequency ]
         = {cpufreq.current:.2f}Mhz =
         """
-        
+
         cpu_core_data = ""
         for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
             cpu_core_data = f"""{cpu_core_data}[Core {i}]

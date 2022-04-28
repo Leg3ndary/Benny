@@ -86,11 +86,11 @@ async def start_bot():
         bot.util = util.BotUtil(bot)
         await bot.printer.print_load("Bot Util")
 
-        #bot.settingsDB = await asqlite.connect("Databases/server.db")
-        #await bot.printer.print_connect("Settings Database")
+        # bot.settingsDB = await asqlite.connect("Databases/server.db")
+        # await bot.printer.print_connect("Settings Database")
 
-        #bot.musicDB = await asqlite.connect("Databases/music.db")
-        #await bot.printer.print_connect("Music Database")
+        # bot.musicDB = await asqlite.connect("Databases/music.db")
+        # await bot.printer.print_connect("Music Database")
 
         file_list = {}
         total = 0

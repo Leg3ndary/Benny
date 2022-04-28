@@ -38,7 +38,7 @@ class Base(commands.Cog):
         )
         embed.set_footer(
             text="_Leg3ndary#5759",
-            icon_url="https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024"
+            icon_url="https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024",
         )
         await ctx.send(embed=embed)
 
