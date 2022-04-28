@@ -60,7 +60,7 @@ class Player(wavelink.Player):
         """Shuffle the queue"""
         if self.queue.is_empty:
             raise QueueEmpty("The queue is currently empty")
-        random.shuffle(self.queue)
+        self.queue = random.shuffle(self.queue)
 
 
 class PlayerDropdown(discord.ui.Select):
