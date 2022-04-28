@@ -383,7 +383,7 @@ class Music(commands.Cog):
                     url=playlist.href,
                     description=f"""```asciidoc
 [ Added {length} Songs ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=track.length)))} =
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=total_dur)))} =
 ```""",
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("green"),
