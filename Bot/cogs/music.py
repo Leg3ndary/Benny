@@ -65,9 +65,9 @@ class Player(wavelink.Player):
             raise QueueEmpty("The queue is currently empty")
         lq = len(self.queue._queue)
         for i in range(lq):
-            ri = random.randint(0, lq-1)
-            song = self.queue._queue.pop(ri)
-            self.queue._queue.append(song)
+            ri = random.randint(0, lq - 1)
+            song = await self.queue.pop()
+            await self.queue.put_at_index(ri, song)
 
     async def loop(self) -> None:
         """Loop the queue?"""
@@ -686,9 +686,9 @@ class Music(commands.Cog):
             current = player.track
             await player.loop()
             if player.loop:
-                vis = "Loop"
-            else:
                 vis = "Unloop"
+            else:
+                vis = "Loop"
 
             embed = discord.Embed(
                 title=f"{style.get_emoji('regular', 'loop')} {vis}ing",
