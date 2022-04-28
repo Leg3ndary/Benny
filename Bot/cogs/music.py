@@ -56,11 +56,6 @@ class Player(wavelink.Player):
             raise NothingPlaying("Nothing is currently playing")
         await self.stop()
 
-    async def shuffle(self) -> None:
-        """Shuffle the queue"""
-        if self.queue.is_empty:
-            raise QueueEmpty("The queue is currently empty")
-        self.queue = random.shuffle(self.queue)
 
 
 class PlayerDropdown(discord.ui.Select):
@@ -337,21 +332,12 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                if ctx.author.id != 360061101477724170:
-                    return await ctx.send(
-                        "Not supported because I don't wanna fuck the bot"
-                    )
-
-                counter = 0
+                await ctx.send(decoded)
                 async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
-                    if counter == 50:
-                        pass
-                    else:
-                        await player.request(song)
-                        counter += 1
+                    await player.request(song)
 
                 embed = discord.Embed(
-                    title=f"{style.get_emoji('regular', 'spotify')} Playing Album",
+                    title=f"{style.get_emoji('regular', 'spotify')} Playing Playlist",
                     url="https://google.com",
                     description=f"""```asciidoc
 [ Album name here ]
@@ -366,7 +352,6 @@ class Music(commands.Cog):
                     icon_url=ctx.author.display_avatar.url,
                 )
                 await ctx.send(embed=embed)
-                await ctx.send(decoded)
 
     @commands.hybrid_command(
         name="queue",
@@ -432,7 +417,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def np_cmd(self, ctx):
+    async def nowplaying_cmd(self, ctx):
         """
         Showing whats now playing
         """
@@ -441,7 +426,7 @@ class Music(commands.Cog):
         if not player.is_playing:
             nothing_playing = discord.Embed(
                 title=f"Nothing is playing!",
-                description=f"""Use `play` to queue a song!""",
+                description=f"""Use the play command to queue a song!""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("aqua"),
             )
@@ -461,6 +446,7 @@ class Music(commands.Cog):
                 color=style.get_color(),
             )
             embed.set_author(name=current.author)
+            await ctx.send(embed)
 
     @commands.hybrid_command(
         name="skip",
@@ -544,38 +530,6 @@ class Music(commands.Cog):
                 print(e)
                 await ctx.send("An error has an occured... uh o")
 
-    @commands.hybrid_command(
-        name="shuffle",
-        description="""Shuffle the queue""",
-        help="""Randomly shuffles the queue""",
-        brief="Shuffle the queue",
-        aliases=[],
-        enabled=True,
-        hidden=False
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def shuffle_cmd(self, ctx):
-        """Literally just shuffle the queue"""
-        player = await self.get_player(ctx)
-        try:
-            await player.shuffle()
-
-            embed = discord.Embed(
-                title=f"Shuffling",
-                description=f"""The queue has been shuffled""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("green")
-            )
-            await ctx.send(embed=embed)
-
-        except QueueEmpty as e:
-            embed = discord.Embed(
-                title=f"Shuffling Error",
-                description=f"""{e}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.get_color("yellow")
-            )
-            await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
