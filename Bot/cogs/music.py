@@ -297,11 +297,9 @@ class Music(commands.Cog):
                     await player.request(track)
                 elif player.queue.is_full:
                     embed = discord.Embed(
-                        title=f"Track Queued",
+                        title=f"Max Queue Size Reached",
                         url=track.uri,
-                        description=f"""```[ Max Queue Size Reached ]
-= Sorry but you only may have 250 songs queued at a time =
-```""",
+                        description=f"""Sorry but you only may have 250 songs queued at a time""",
                         timestamp=discord.utils.utcnow(),
                         color=style.get_color("red"),
                     )
@@ -332,6 +330,7 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
+                return
                 await ctx.send(decoded)
                 async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
                     await player.request(song)
@@ -446,7 +445,7 @@ class Music(commands.Cog):
                 color=style.get_color(),
             )
             embed.set_author(name=current.author)
-            await ctx.send(embed)
+            await ctx.send(embed=embed)
 
     @commands.hybrid_command(
         name="skip",
@@ -463,13 +462,27 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         try:
+            current = player.track
             await player.skip()
-        except NothingPlaying:
             embed = discord.Embed(
                 title=f"Skipped",
-                description=f"""blah""",
+                url=current.uri,
+                description=f"""```asciidoc
+[ {current.title} ]
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=current.length)))} =
+```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color(),
+                color=style.get_color("orange"),
+            )
+            embed.set_author(name=current.author)
+            await ctx.send(embed=embed)
+
+        except NothingPlaying as e:
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""{e}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red"),
             )
             await ctx.send(embed=embed)
 
