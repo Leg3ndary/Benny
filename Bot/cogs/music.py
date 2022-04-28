@@ -3,7 +3,7 @@ import wavelink
 from wavelink.ext import spotify
 from discord.ext import commands
 import discord
-import random
+import tekore
 import os
 from gears import style, util
 import datetime
@@ -158,6 +158,12 @@ class Music(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        
+        app_token = tekore.request_client_token(os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret"))
+        self.spotify = tekore.Spotify(
+            token=app_token, 
+            asynchronous=True
+        )
 
     async def connect_nodes(self):
         """Connect to our Lavalink nodes."""
