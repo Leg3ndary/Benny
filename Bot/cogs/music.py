@@ -338,7 +338,10 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                length = len((await self.spotify.playlist(decoded["id"], as_tracks=True)).keys())
+                length = (await self.spotify.playlist(decoded["id"], as_tracks=True))
+
+                await ctx.send(length)
+
 
                 if length >= 100:
                     embed = discord.Embed(
