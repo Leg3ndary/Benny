@@ -89,9 +89,6 @@ async def start_bot():
         # bot.settingsDB = await asqlite.connect("Databases/server.db")
         # await bot.printer.print_connect("Settings Database")
 
-        # bot.musicDB = await asqlite.connect("Databases/music.db")
-        # await bot.printer.print_connect("Music Database")
-
         file_list = {}
         total = 0
 

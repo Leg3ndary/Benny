@@ -215,7 +215,8 @@ class Music(commands.Cog):
     async def on_connect_wavelink(self):
         """On cog load do stuff"""
         await self.connect_nodes()
-        async with asqlite.connect("Databases/music.db") as db:
+        self.musicDB = await asqlite.connect("Databases/music.db")
+        async with self.musicDB as db:
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS recently_played (
@@ -281,6 +282,18 @@ class Music(commands.Cog):
         If not connected, connect to our voice channel.
         """
         player = await self.get_player(ctx)
+
+        async with self.musicDB as db:
+            is_created = await db.execute(
+                """SELECT id FROM recently_played WHERE id = ?;""",
+                (str(ctx.author.id), )
+            )
+            if not is_created:
+                await db.execute(
+                    f"""INSERT INTO recently_played VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
+                    (str(ctx.author.id), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None),
+                )
+                await db.commit()
 
         decoded = spotify.decode_url(song)
         if not decoded:
