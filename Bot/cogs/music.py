@@ -74,7 +74,7 @@ class PlayerDropdown(discord.ui.Select):
                 discord.SelectOption(
                     emoji=style.get_emoji("regular", "youtube"),
                     label=song.title,
-                    description=f"""{song.author} - Duration: {util.remove_zcs(str(datetime.timedelta(seconds=song.length)))}""",
+                    description=f"""{song.author} - Duration: {duration(song.length)}""",
                     value=str(counter),
                 )
             )
@@ -96,7 +96,7 @@ class PlayerDropdown(discord.ui.Select):
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=track.length)))} =
+= Duration: {duration(track.length)} =
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("green"),
@@ -153,6 +153,11 @@ class PlayerSelector(discord.ui.View):
         await interaction.response.send_message("Cancelled", ephemeral=True)
 
 
+def duration(seconds: float) -> str:
+    """Return a human readable duration because"""
+    return util.remove_zcs(str(datetime.timedelta(seconds=seconds)))
+
+
 class Music(commands.Cog):
     """Music cog to hold Wavelink related commands and listeners."""
 
@@ -162,7 +167,8 @@ class Music(commands.Cog):
         app_token = tekore.request_client_token(os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret"))
         self.spotify = tekore.Spotify(
             token=app_token, 
-            asynchronous=True
+            asynchronous=True,
+            max_limits_on=True
         )
 
     async def connect_nodes(self):
@@ -325,7 +331,7 @@ class Music(commands.Cog):
                     url=track.uri,
                     description=f"""```asciidoc
 [ {track.title} ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=track.length)))} =
+= Duration: {duration(track.length)} =
 ```""",
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("green"),
@@ -338,10 +344,7 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                length = (await self.spotify.playlist(decoded["id"], as_tracks=True))
-
-                print(length)
-                return
+                length = int((await self.spotify.playlist(decoded["id"], fields="tracks(total)")).get("tracks").get("total"))
 
                 if length >= 100:
                     embed = discord.Embed(
@@ -386,7 +389,7 @@ class Music(commands.Cog):
                     url=playlist.href,
                     description=f"""```asciidoc
 [ Added {length} Songs ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=total_dur)))} =
+= Duration: {duration(total_dur)} =
 ```""",
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("green"),
@@ -441,10 +444,10 @@ class Music(commands.Cog):
             if isinstance(track, wavelink.PartialTrack):
                 visual += f"\n{count}. {track.title} [ N/A ] ( Added from Playlist. )"
             else:
-                visual += f"\n{count}. {track.title} [{track.author}] ({util.remove_zcs(str(datetime.timedelta(seconds=track.length)))})"
+                visual += f"\n{count}. {track.title} [{track.author}] ({duration(track.length)})"
                 total_dur += track.length
 
-        total_dur = util.remove_zcs(str(datetime.timedelta(seconds=total_dur)))
+        total_dur = duration(total_dur)
 
         embed = discord.Embed(
             title=f"Queue - {len(player.queue._queue)} Tracks",
@@ -490,7 +493,7 @@ class Music(commands.Cog):
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=current.length)))} =
+= Duration: {duration(current.length)} =
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color(),
@@ -520,7 +523,7 @@ class Music(commands.Cog):
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=current.length)))} =
+= Duration: {duration(current.length)} =
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("orange"),
@@ -581,7 +584,7 @@ class Music(commands.Cog):
                     url=song.uri,
                     description=f"""```asciidoc
 [ {song.title} ]
-= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=song.length)))} =
+= Duration: {duration(song.length)} =
 ```""",
                     timestamp=discord.utils.utcnow(),
                     color=style.get_color("red"),
