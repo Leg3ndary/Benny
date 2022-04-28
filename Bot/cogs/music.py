@@ -1,4 +1,3 @@
-import aiofiles
 import asqlite
 import wavelink
 from wavelink.ext import spotify
@@ -7,29 +6,6 @@ import discord
 import os
 from gears import style, util
 import datetime
-
-
-class Player(wavelink.Player):
-    """Our custom player with some attributes"""
-
-    def __init__(self, dj: discord.Member):
-        """Dj is the person who started this"""
-        super().__init__()
-        self.dj = dj
-        self.queue = wavelink.Queue(max_size=250)
-
-    async def request(self, track):
-        """Request a song"""
-        if self.queue.is_empty and not self.track:
-            await self.play(track)
-        elif self.queue.is_full:
-            raise QueueFull
-        else:
-            self.queue.put(track)
-
-    async def skip(self):
-        """Skip the currently playing track just an alias"""
-        await self.stop()
 
 
 class MusicException(Exception):
@@ -43,11 +19,47 @@ class QueueFull(MusicException):
 
     pass
 
+class QueueEmpty(MusicException):
+    """When the queue is empty"""
+
+    pass
+
 
 class NothingPlaying(MusicException):
     """When nothings playing"""
 
     pass
+
+
+class Player(wavelink.Player):
+    """Our custom player with some attributes"""
+
+    def __init__(self, dj: discord.Member) -> None:
+        """Dj is the person who started this"""
+        super().__init__()
+        self.dj = dj
+        self.queue = wavelink.Queue(max_size=250)
+
+    async def request(self, track) -> None:
+        """Request a song"""
+        if self.queue.is_empty and not self.track:
+            await self.play(track)
+        elif self.queue.is_full:
+            raise QueueFull("The queue is currently full")
+        else:
+            self.queue.put(track)
+
+    async def skip(self) -> None:
+        """Skip the currently playing track just an alias"""
+        if self.queue.is_empty and not self.track:
+            raise NothingPlaying("Nothing is currently playing")
+        await self.stop()
+
+    async def shuffle(self) -> None:
+        """Shuffle the queue"""
+        if self.queue.is_empty:
+            raise QueueEmpty("The queue is currently empty")
+        await self.queue.shuffle()
 
 
 class PlayerDropdown(discord.ui.Select):
@@ -410,17 +422,19 @@ class Music(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(
-        name="np",
-        description="""Display what's playing rn""",
-        help="""Show what's currently being played by Benny""",
+        name="nowplaying",
+        description="""Show what songs currently being played""",
+        help="""Show whats currently being played by Benny""",
         brief="""Now Playing""",
-        aliases=["now"],
+        aliases=["now", "np"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def np_cmd(self, ctx):
-        """Showing whats now playing"""
+        """
+        Showing whats now playing
+        """
         player = await self.get_player(ctx)
 
         if not player.is_playing:
@@ -530,31 +544,37 @@ class Music(commands.Cog):
                 await ctx.send("An error has an occured... uh o")
 
     @commands.hybrid_command(
-        name="musiclogs",
-        description="""Display logs""",
-        help="""Command displays music logs from lavalink what else""",
-        brief="Music Logs",
+        name="shuffle",
+        description="""Shuffle the queue""",
+        help="""Randomly shuffles the queue""",
+        brief="Shuffle the queue",
         aliases=[],
         enabled=True,
-        hidden=False,
+        hidden=False
     )
-    @commands.is_owner()
-    async def musiclogs(self, ctx):
-        """Command description"""
-        async with aiofiles.open("logs/spring.log") as logs:
-            lines = []
-            temp = ""
-            length = 0
-            async for line in logs:
-                if length > 4000:
-                    lines.append(temp)
-                    temp = ""
-                else:
-                    temp += f"\n{line}"
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def shuffle_cmd(self, ctx):
+        """Literally just shuffle the queue"""
+        player = await self.get_player(ctx)
+        try:
+            await player.shuffle()
 
-        for line in lines:
-            await ctx.send(line)
+            embed = discord.Embed(
+                title=f"Shuffling",
+                description=f"""The queue has been shuffled""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("green")
+            )
+            await ctx.send(embed=embed)
 
+        except QueueEmpty as e:
+            embed = discord.Embed(
+                title=f"Shuffling Error",
+                description=f"""{e}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("yellow")
+            )
+            await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Music(bot))
