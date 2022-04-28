@@ -1,6 +1,6 @@
 import discord
-from discord import app_commands
 import discord.utils
+import time
 import unicodedata
 from discord.ext import commands
 from gears import cviews, style
@@ -171,6 +171,49 @@ class Base(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    @commands.hybrid_command(
+        name="ping",
+        description="""Check the bots current ping""",
+        help="""Check the bots latency stats""",
+        brief="Check the ping",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 10.0, commands.BucketType.user)
+    async def ping_cmd(self, ctx):
+        """Ping command"""
+        start = time.monotonic()
+        embed = discord.Embed(
+            title=f"Pinging...",
+            description=f"""Checking Ping""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("grey")
+        )
+        msg = await ctx.send(embed=embed)
+        end = time.monotonic()
+        ping = round((end - start) * 1000, 2)
+        bot_ping = round(self.bot.latency * 1000, 2)
+        average_ping = (bot_ping + ping) / 2
+
+        if average_ping >= 500:
+            color = style.get_color("red")
+        elif average_ping >= 250:
+            color = style.get_color("orange")
+        elif average_ping >= 100:
+            color = style.get_color("yellow")
+        else:
+            color = style.get_color("green")
+
+        ping_embed = discord.Embed(
+            title="Pinging...", 
+            description=f"""Overall Latency: {ping} ms
+            Discord WebSocket Latency: {bot_ping}
+            """,
+            timestamp=discord.utils.utcnow(),
+            color=color
+        )
+        await msg.edit(embed=ping_embed)
 
 async def setup(bot):
     await bot.add_cog(Base(bot))
