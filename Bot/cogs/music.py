@@ -42,6 +42,7 @@ class Player(wavelink.Player):
         super().__init__()
         self.dj = dj
         self.queue = wavelink.Queue(max_size=250)
+        self.looping = False
 
     async def request(self, track) -> None:
         """Request a song"""
@@ -62,7 +63,18 @@ class Player(wavelink.Player):
         """Shuffle the queue"""
         if self.queue.is_empty:
             raise QueueEmpty("The queue is currently empty")
-        random.shuffle(self.queue._queue)
+        lq = len(self.queue._queue)
+        for i in range(lq):
+            ri = random.randint(0, lq-1)
+            song = self.queue._queue.pop(ri)
+            self.queue._queue.append(song)
+
+    async def loop(self) -> None:
+        """Loop the queue?"""
+        if self.queue.is_empty:
+            raise QueueEmpty("The queue is currently empty")
+        self.loop = not self.loop
+
 
 class PlayerDropdown(discord.ui.Select):
     """
@@ -267,9 +279,12 @@ class Music(commands.Cog):
     async def on_wavelink_track_end(self, player, track, reason):
         """On end, check if the queue has another song to play if not disconnect after 5 min"""
         if player.queue.is_empty:
-            pass  # add the thing later
+            self.bot.loop.create_task()
         else:
+            if player.loop:
+                await player.request(track)
             await player.play(player.queue.get())
+            
 
     @commands.hybrid_command(
         name="play",
@@ -636,11 +651,51 @@ class Music(commands.Cog):
             current = player.track
             await player.skip()
             embed = discord.Embed(
-                title=f"Shuffling",
+                title=f"{style.get_emoji('regular', 'shuffle')} Shuffling",
                 url=current.uri,
-                description=f"""Shuffled {player.queue.__len__}""",
+                description=f"""Shuffled {len(player.queue._queue)} songs""",
                 timestamp=discord.utils.utcnow(),
                 color=style.get_color("yellow"),
+            )
+            await ctx.send(embed=embed)
+
+        except QueueEmpty as e:
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""{e}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red"),
+            )
+            await ctx.send(embed=embed)
+
+    @commands.hybrid_command(
+        name="loop",
+        description="""Loop/Unloop the queue""",
+        help="""Either loop or unloop the queue""",
+        brief="Loop/Unloop the queue",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def loop_cmd(self, ctx):
+        """Looping command noice"""
+        player = await self.get_player(ctx)
+
+        try:
+            current = player.track
+            await player.loop()
+            if player.loop:
+                vis = "Loop"
+            else:
+                vis = "Unloop"
+
+            embed = discord.Embed(
+                title=f"{style.get_emoji('regular', 'loop')} {vis}ing",
+                url=current.uri,
+                description=f"""{vis}ed the queue""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("aqua"),
             )
             await ctx.send(embed=embed)
 
