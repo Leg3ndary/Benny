@@ -338,27 +338,69 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                return
-                await ctx.send(decoded)
-                async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
-                    await player.request(song)
+                length = len((await self.spotify.playlist(decoded["id"], as_tracks=True)).keys())
+
+                if length >= 100:
+                    embed = discord.Embed(
+                        title=f"Playlist Song Limit Reached",
+                        description=f"""You may only add up to 100 songs through spotify playlists at this time""",
+                        timestamp=discord.utils.utcnow(),
+                        color=style.get_color("red")
+                    )
+                    return await ctx.send(embed=embed)
+
+                playlist = await self.spotify.playlist(decoded["id"])
+
+                if playlist.owner:
+                    author = playlist.owner.display_name
+                else:
+                    author = "Featured Playlist"
 
                 embed = discord.Embed(
-                    title=f"{style.get_emoji('regular', 'spotify')} Playing Playlist",
-                    url="https://google.com",
+                    title=f"{style.get_emoji('regular', 'spotify')} Playing {playlist.name}",
+                    url=playlist.href,
                     description=f"""```asciidoc
-[ Album name here ]
-= Duration: full duration here please =
+[ Adding {length} Songs ]
+= Duration: Calculating =
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("green"),
+                    color=style.get_color("grey"),
                 )
-                embed.set_author(name="Add the author of the album")
+                embed.set_author(name=author)
                 embed.set_footer(
                     text=ctx.author.display_name,
                     icon_url=ctx.author.display_avatar.url,
                 )
-                await ctx.send(embed=embed)
+                msg = await ctx.send(embed=embed)
+
+                total_dur = 0
+                async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
+                    await player.request(song)
+                    total_dur += song.length
+
+                finished = discord.Embed(
+                    title=f"{style.get_emoji('regular', 'spotify')} Playing {playlist.name}",
+                    url=playlist.href,
+                    description=f"""```asciidoc
+[ Added {length} Songs ]
+= Duration: {util.remove_zcs(str(datetime.timedelta(seconds=track.length)))} =
+```""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.get_color("green"),
+                )
+                embed.set_author(name=author)
+                embed.set_footer(
+                    text=ctx.author.display_name,
+                    icon_url=ctx.author.display_avatar.url,
+                )
+
+                await ctx.send(playlist.primary_color) 
+                await msg.edit(embed=finished)
+
+
+                
+
+                
 
     @commands.hybrid_command(
         name="queue",
