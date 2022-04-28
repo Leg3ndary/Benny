@@ -112,7 +112,7 @@ class Dictionary(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def define_cmd(self, ctx):
         """Define a word"""
-
+        pass
 
 async def setup(bot):
     await bot.add_cog(Dictionary(bot))
