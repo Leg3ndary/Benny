@@ -283,6 +283,7 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
+        '''
         async with self.musicDB as db:
             is_created = await db.execute(
                 """SELECT id FROM recently_played WHERE id = ?;""",
@@ -294,6 +295,7 @@ class Music(commands.Cog):
                     (str(ctx.author.id), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None),
                 )
                 await db.commit()
+        '''
 
         decoded = spotify.decode_url(song)
         if not decoded:
