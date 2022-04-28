@@ -66,8 +66,8 @@ class Player(wavelink.Player):
         lq = len(self.queue._queue)
         for i in range(lq):
             ri = random.randint(0, lq - 1)
-            song = self.queue.pop()
-            self.queue.put_at_index(ri, song)
+            song = self.queue._queue.pop(ri)
+            self.queue._queue.append(song)
 
     async def loop(self) -> None:
         """Loop the queue?"""
@@ -686,9 +686,9 @@ class Music(commands.Cog):
             current = player.track
             await player.loop()
             if player.loop:
-                vis = "Unloop"
-            else:
                 vis = "Loop"
+            else:
+                vis = "Unloop"
 
             embed = discord.Embed(
                 title=f"{style.get_emoji('regular', 'loop')} {vis}ing",
