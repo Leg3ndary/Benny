@@ -1,3 +1,4 @@
+import random
 import asqlite
 import wavelink
 from wavelink.ext import spotify
@@ -57,6 +58,11 @@ class Player(wavelink.Player):
             raise NothingPlaying("Nothing is currently playing")
         await self.stop()
 
+    async def shuffle(self) -> None:
+        """Shuffle the queue"""
+        if self.queue.is_empty:
+            raise QueueEmpty("The queue is currently empty")
+        random.shuffle(self.queue._queue)
 
 class PlayerDropdown(discord.ui.Select):
     """
@@ -611,6 +617,41 @@ class Music(commands.Cog):
             except Exception as e:
                 print(e)
                 await ctx.send("An error has an occured... uh o")
+
+    @commands.hybrid_command(
+        name="shuffle",
+        description="""Shuffle the queue""",
+        help="""Shuffle the entire queue""",
+        brief="Shuffle the queue",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def shuffle_cmd(self, ctx):
+        """Shuffle the queue"""
+        player = await self.get_player(ctx)
+
+        try:
+            current = player.track
+            await player.skip()
+            embed = discord.Embed(
+                title=f"Shuffling",
+                url=current.uri,
+                description=f"""Shuffled {player.queue.__len__}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("yellow"),
+            )
+            await ctx.send(embed=embed)
+
+        except QueueEmpty as e:
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""{e}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color("red"),
+            )
+            await ctx.send(embed=embed)
 
 
 async def setup(bot):
