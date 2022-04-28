@@ -393,8 +393,6 @@ class Music(commands.Cog):
                     text=ctx.author.display_name,
                     icon_url=ctx.author.display_avatar.url,
                 )
-
-                await ctx.send(playlist.primary_color) 
                 await msg.edit(embed=finished)
 
 
