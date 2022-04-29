@@ -408,7 +408,6 @@ class Music(commands.Cog):
 
                 embed = discord.Embed(
                     title=f"{style.get_emoji('regular', 'spotify')} Queueing {playlist.name}",
-                    url=playlist.uri,
                     description=f"""```asciidoc
 [ Adding {length} Songs ]
 = Duration: Calculating =
