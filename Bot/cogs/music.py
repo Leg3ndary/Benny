@@ -72,9 +72,11 @@ class Player(wavelink.Player):
         for i in range(lq):
             self.queue._queue.pop()
 
+        index_list = list(range(lq))
         for i in range(lq):
-            ri = random.randint(0, lq - 1)
+            ri = random.choice(index_list)
             self.queue._queue.append(temp[ri])
+            index_list.pop(ri)
 
     async def loop(self) -> None:
         """Loop the queue?"""
