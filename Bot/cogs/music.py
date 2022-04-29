@@ -305,7 +305,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def play(self, ctx, *, song):
+    async def play(self, ctx, *, song: str):
         """
         Play a song with the given search query.
 
