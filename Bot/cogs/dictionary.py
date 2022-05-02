@@ -104,4 +104,5 @@ class Dictionary(commands.Cog):
         await ctx.send(data)
 
 async def setup(bot):
+    return
     await bot.add_cog(Dictionary(bot))
