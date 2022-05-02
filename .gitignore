@@ -144,3 +144,9 @@ logs
 # Config because I don't wanna use envs
 config.json
 lavalink.jar
+
+# Dashboard
+node_modules/
+package-lock.json
+.DS_Store
+.vscode
