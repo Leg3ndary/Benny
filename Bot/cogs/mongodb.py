@@ -12,16 +12,14 @@ class MongoDB(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def oog_load(self):
+    async def cog_load(self):
         """Load mongodb when dispatched"""
-
         mongo_uri = (
             self.bot.config.get("Mongo")
             .get("URL")
             .replace("<Username>", self.bot.config.get("Mongo").get("User"))
-            .replace("<Password>", os.getenv("Mongo_Pass"))
+            .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
         )
-
         self.bot.mongo = AsyncIOMotorClient(mongo_uri)
         await self.bot.printer.print_connect("MONGODB")
 

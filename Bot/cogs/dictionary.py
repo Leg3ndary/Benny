@@ -1,20 +1,12 @@
-import aioredis
-import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
 import datetime
-import os
 import discord
 from discord.ext import commands, tasks
 
 
-"""
-await self.cache.set("Key", "Data") Set a key
-value = await self.cache.get("Key")
-"""
-
-
 class DictionaryView(discord.ui.View):
     """
-    Class for managing dictionarie views
+    Class for managing dictionary views
     """
 
     def __init__(self, slash: bool):
@@ -48,26 +40,13 @@ class Dictionary(commands.Cog):
         """
         On Cog load do some stuff
         """
-        await self.ready_cache()
-        self.redis_updater.start()
-
-    async def cog_unload(self):
-        """
-        When the cogs unloaded
-        """
-        self.redis_updater.cancel()
-
-    async def ready_cache(self):
-        """
-        Initialize cache
-        """
-        self.cache = await aioredis.from_url(
-            "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
-            username="",
-            password=os.getenv("Dict_Pass"),
-            decode_responses=True,
+        mongo_uri = (
+            self.bot.config.get("Dictionary").get("URL")
+            .replace("<Username>", self.bot.config.get("Dictionary").get("User"))
+            .replace("<Password>", self.bot.config.get("Dictionary").get("Pass"))
         )
-        await self.bot.printer.print_load("Dictionary Cache")
+        self.bot.mongo = AsyncIOMotorClient(mongo_uri)
+        await self.bot.printer.print_connect("MONGODB")
 
     async def fetch_word(self, word: str) -> dict:
         """
@@ -83,11 +62,15 @@ class Dictionary(commands.Cog):
         dict
         """
         async with self.bot.aiosession.get(f"{self.api_url}{word}") as request:
+            new_data = await request.json()
+            print(new_data)
             if request.status != 200:
                 print(
                     f"[ ERROR ] [{datetime.datetime.utcnow()}]\nError Code: {request.status}\n{await request.json()}"
                 )
-            return await request.json()
+            else:
+                self.bot.loop.create_task(self.update_cache(word, new_data))
+            return new_data
 
     async def get_word(self, word: str) -> dict:
         """
@@ -101,27 +84,24 @@ class Dictionary(commands.Cog):
             await self.fetch_word(word)
 
     async def update_cache(self, word: str, data: dict) -> None:
-        """"""
-        pass
+        """
+        Update the cache with the correct data"""
+        await self.cache.set(word, str(data))
 
-    @tasks.loop(hours=1.0)
-    async def redis_updater(self):
-        await self.cache.set("updater", "0")
-        await self.cache.set("updater", "1")
-
-    @commands.command(
+    @commands.hybrid_command(
         name="define",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        description="""Get a words amazing definition""",
+        help="""Define a word""",
+        brief="Define a word",
         aliases=["dict", "def"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def define_cmd(self, ctx):
+    async def define_cmd(self, ctx, *, word: str):
         """Define a word"""
-        pass
+        data = await self.get_word(str(word))
+        await ctx.send(data)
 
 async def setup(bot):
     await bot.add_cog(Dictionary(bot))

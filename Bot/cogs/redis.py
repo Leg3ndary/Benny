@@ -2,7 +2,7 @@ import aioredis
 import asyncio
 import discord
 import os
-from discord.ext import commands
+from discord.ext import commands, tasks
 from gears import style
 
 
@@ -21,16 +21,23 @@ class Redis(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.redis_updater.start()
 
     async def cog_load(self):
         """Connect to our Redis DB"""
         self.bot.redis = await aioredis.from_url(
             "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
             username="",
-            password=os.getenv("Dict_Pass"),
+            password=self.bot.config.get("Redis").get("Pass"),
             decode_responses=True,
         )
         await self.bot.printer.print_load("Redis")
+
+    async def cog_unload(self):
+        """
+        Stop task loop if cog unloaded
+        """
+        self.redis_updater.cancel()
 
     @commands.group()
     @commands.is_owner()
@@ -177,6 +184,11 @@ class Redis(commands.Cog):
             color=style.get_color("green"),
         )
         await msg.edit(embed=embed_done)
+
+    @tasks.loop(hours=1.0)
+    async def redis_updater(self):
+        await self.cache.set("updater", "0")
+        await self.cache.set("updater", "1")
 
 
 async def setup(bot):

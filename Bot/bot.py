@@ -133,7 +133,7 @@ async def start_bot():
                 f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
             )
             bot.loop.create_task(when_bot_ready())
-            await bot.start(os.getenv("Bot_Token"))
+            await bot.start(bot.config.get("Bot").get("Token"))
 
 
 asyncio.run(start_bot())

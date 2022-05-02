@@ -5,7 +5,6 @@ from wavelink.ext import spotify
 from discord.ext import commands
 import discord
 import tekore
-import os
 from gears import style, util
 import datetime
 
@@ -191,7 +190,7 @@ class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         
-        app_token = tekore.request_client_token(os.getenv("Spotify_ClientID"), os.getenv("Spotify_CLIENTSecret"))
+        app_token = tekore.request_client_token(bot.config.get("Spotify").get("ID"), bot.config.get("Spotify").get("Secret"))
         self.spotify = tekore.Spotify(
             token=app_token, 
             asynchronous=True,
@@ -215,8 +214,8 @@ class Music(commands.Cog):
                 password="BennyBotRoot",
                 identifier="Benny1",
                 spotify_client=spotify.SpotifyClient(
-                    client_id=os.getenv("Spotify_ClientID"),
-                    client_secret=os.getenv("Spotify_CLIENTSecret"),
+                    client_id=self.bot.config.get("Spotify").get("ID"),
+                    client_secret=self.bot.config.get("Spotify").get("Secret"),
                 ),
             )
             self.wavelink = self.bot.wavelink
