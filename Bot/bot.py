@@ -6,7 +6,7 @@ import discord
 import datetime
 import json
 import os
-from discord.ext import commands
+from discord.ext import commands, ipc
 from dotenv import load_dotenv
 from gears import util
 from gears.info_printer import InfoPrinter
@@ -132,7 +132,10 @@ async def start_bot():
                 "",
                 f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
             )
+
             bot.loop.create_task(when_bot_ready())
+            bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+            bot.ipc.start()
             await bot.start(bot.config.get("Bot").get("Token"))
 
 
