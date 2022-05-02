@@ -2,9 +2,8 @@ import aioredis
 import asyncio
 import datetime
 import os
-from discord import app_commands
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 
 """
@@ -44,11 +43,19 @@ class Dictionary(commands.Cog):
     def __init__(self, bot):
         self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
+        self.redis_updater.start()
 
     async def cog_load(self):
         """
-        On Cog load do some stuff"""
+        On Cog load do some stuff
+        """
         await self.ready_cache()
+
+    async def cog_unload(self):
+        """
+        When the cogs unloaded
+        """
+        self.redis_updater.cancel()
 
     async def ready_cache(self):
         """
@@ -93,12 +100,10 @@ class Dictionary(commands.Cog):
         """"""
         pass
 
-    @app_commands.command(name="define")
-    async def define_slash(self, interaction: discord.Interaction, word: str) -> None:
-        """
-        Define slash command
-        """
-        await interaction.response.send_message("Hello from top level command!")
+    @tasks.loop(hours=1.0)
+    async def redis_updater(self):
+        await self.cache.set("updater", "0")
+        await self.cache.set("updater", "1")
 
     @commands.command(
         name="define",
