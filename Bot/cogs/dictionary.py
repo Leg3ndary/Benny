@@ -43,13 +43,13 @@ class Dictionary(commands.Cog):
     def __init__(self, bot):
         self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
-        self.redis_updater.start()
 
     async def cog_load(self):
         """
         On Cog load do some stuff
         """
         await self.ready_cache()
+        self.redis_updater.start()
 
     async def cog_unload(self):
         """
