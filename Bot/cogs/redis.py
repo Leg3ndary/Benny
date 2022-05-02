@@ -27,7 +27,7 @@ class Redis(commands.Cog):
         self.bot.redis = await aioredis.from_url(
             "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
             username="",
-            password=os.getenv("Redis_Pass"),
+            password=os.getenv("Dict_Pass"),
             decode_responses=True,
         )
         await self.bot.printer.print_load("Redis")

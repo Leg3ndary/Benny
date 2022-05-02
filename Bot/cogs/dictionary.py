@@ -95,8 +95,12 @@ class Dictionary(commands.Cog):
 
         If not will go fetch it because yes.
         """
+        result = await self.cache.get(word)
 
-    async def update_cache(self, word: str) -> dict:
+        if not result:
+            await self.fetch_word(word)
+
+    async def update_cache(self, word: str, data: dict) -> None:
         """"""
         pass
 
