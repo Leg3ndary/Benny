@@ -108,7 +108,7 @@ class Dictionary(commands.Cog):
     async def define_cmd(self, ctx, *, word: str):
         """Define a word"""
         data = await self.get_word(str(word))
-        await ctx.send(data)
+        await ctx.send("Sorry, this command doesn't actually do anything as of now")
 
 
 async def setup(bot):
