@@ -177,7 +177,7 @@ Total Uptime: {resolved_rel}"""
         brief="Check the ping",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 10.0, commands.BucketType.user)
     async def ping_cmd(self, ctx):
@@ -187,7 +187,7 @@ Total Uptime: {resolved_rel}"""
             title=f"Pinging...",
             description=f"""Checking Ping""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("grey")
+            color=style.get_color("grey"),
         )
         msg = await ctx.send(embed=embed)
         end = time.monotonic()
@@ -205,14 +205,15 @@ Total Uptime: {resolved_rel}"""
             color = style.get_color("green")
 
         ping_embed = discord.Embed(
-            title="Pinging...", 
+            title="Pinging...",
             description=f"""Overall Latency: {ping} ms
             Discord WebSocket Latency: {bot_ping}
             """,
             timestamp=discord.utils.utcnow(),
-            color=color
+            color=color,
         )
         await msg.edit(embed=ping_embed)
+
 
 async def setup(bot):
     await bot.add_cog(Base(bot))

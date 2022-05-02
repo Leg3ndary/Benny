@@ -260,7 +260,7 @@ class Dev(commands.Cog):
             title=f"Tree Sync",
             description=f"""Bot sync has been completed""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green")
+            color=style.get_color("green"),
         )
         await ctx.send(embed=embed)
 

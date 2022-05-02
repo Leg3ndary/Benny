@@ -41,7 +41,8 @@ class Dictionary(commands.Cog):
         On Cog load do some stuff
         """
         mongo_uri = (
-            self.bot.config.get("Dictionary").get("URL")
+            self.bot.config.get("Dictionary")
+            .get("URL")
             .replace("<Username>", self.bot.config.get("Dictionary").get("User"))
             .replace("<Password>", self.bot.config.get("Dictionary").get("Pass"))
         )
@@ -79,9 +80,7 @@ class Dictionary(commands.Cog):
 
         If not will go fetch it because yes.
         """
-        search = {
-            "_id": word
-        }
+        search = {"_id": word}
         result = await self.dict.find_one(search)
 
         if not result:
@@ -93,10 +92,7 @@ class Dictionary(commands.Cog):
         """
         Update the cache with the correct data
         """
-        entry = {
-            "_id": word,
-            "data": data
-        }
+        entry = {"_id": word, "data": data}
         await self.dict.insert_one(entry)
 
     @commands.hybrid_command(
@@ -113,6 +109,7 @@ class Dictionary(commands.Cog):
         """Define a word"""
         data = await self.get_word(str(word))
         await ctx.send(data)
+
 
 async def setup(bot):
     return

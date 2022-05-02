@@ -10,7 +10,9 @@ class UnsplashClient:
     """Accessing unsplash"""
 
     def __init__(self):
-        self.auth = {"Authorization": f"Client-ID {self.bot.config('Unsplash').get('ID')}"}
+        self.auth = {
+            "Authorization": f"Client-ID {self.bot.config('Unsplash').get('ID')}"
+        }
         self.session = aiohttp.ClientSession(
             base_url="https://api.unsplash.com", headers=self.auth
         )

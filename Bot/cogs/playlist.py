@@ -28,12 +28,14 @@ class PlaylistNotFound(PlaylistException):
 
     pass
 
+
 class PlaylistSongLimitReached(PlaylistException):
     """
     Raised when a playlist has reached the max amount of songs possible
     """
 
     pass
+
 
 class SongException(Exception):
     """
@@ -158,13 +160,17 @@ class PlaylistManager:
                 (str(user_id), playlist_name),
             ) as cursor:
                 if not await cursor.fetch():
-                    raise PlaylistNotFound(f"Playlist {playlist_name} was not found for song addition.")
+                    raise PlaylistNotFound(
+                        f"Playlist {playlist_name} was not found for song addition."
+                    )
                 else:
                     # Songs index is no 3
                     data = await cursor.fetch()
                     songs_length = data[3].count(", ")
                     if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
-                        raise PlaylistSongLimitReached(f"Playlist {playlist_name} has reached the max amount of songs. ({self.PLAYLIST_SONG_LIMIT})")
+                        raise PlaylistSongLimitReached(
+                            f"Playlist {playlist_name} has reached the max amount of songs. ({self.PLAYLIST_SONG_LIMIT})"
+                        )
                     elif songs_length == 0:
                         prefix = ""
                     else:

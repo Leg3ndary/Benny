@@ -189,12 +189,12 @@ class Music(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        
-        app_token = tekore.request_client_token(bot.config.get("Spotify").get("ID"), bot.config.get("Spotify").get("Secret"))
+
+        app_token = tekore.request_client_token(
+            bot.config.get("Spotify").get("ID"), bot.config.get("Spotify").get("Secret")
+        )
         self.spotify = tekore.Spotify(
-            token=app_token, 
-            asynchronous=True,
-            max_limits_on=True
+            token=app_token, asynchronous=True, max_limits_on=True
         )
 
     async def connect_nodes(self):
@@ -292,7 +292,6 @@ class Music(commands.Cog):
             if player.looping:
                 await player.request(track)
             await player.play(player.queue.get())
-            
 
     @commands.hybrid_command(
         name="play",
@@ -388,14 +387,18 @@ class Music(commands.Cog):
                 await ctx.send(embed=embed)
 
             elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                length = int((await self.spotify.playlist(decoded["id"], fields="tracks(total)")).get("tracks").get("total"))
+                length = int(
+                    (await self.spotify.playlist(decoded["id"], fields="tracks(total)"))
+                    .get("tracks")
+                    .get("total")
+                )
 
                 if length >= 100:
                     embed = discord.Embed(
                         title=f"Playlist Song Limit Reached",
                         description=f"""You may only add up to 100 songs through spotify playlists at this time""",
                         timestamp=discord.utils.utcnow(),
-                        color=style.get_color("red")
+                        color=style.get_color("red"),
                     )
                     return await ctx.send(embed=embed)
 
@@ -443,11 +446,6 @@ class Music(commands.Cog):
                     icon_url=ctx.author.display_avatar.url,
                 )
                 await msg.edit(embed=finished)
-
-
-                
-
-                
 
     @commands.hybrid_command(
         name="queue",
@@ -647,7 +645,7 @@ class Music(commands.Cog):
         brief="Shuffle the queue",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def shuffle_cmd(self, ctx):
@@ -682,7 +680,7 @@ class Music(commands.Cog):
         brief="Loop/Unloop the queue",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def loop_cmd(self, ctx):
