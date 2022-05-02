@@ -62,7 +62,7 @@ class Dictionary(commands.Cog):
         Initialize cache
         """
         self.cache = await aioredis.from_url(
-            "redis://redis-18564.c10.us-east-1-2.ec2.cloud.redislabs.com:18564",
+            "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
             username="",
             password=os.getenv("Dict_Pass"),
             decode_responses=True,
@@ -102,7 +102,6 @@ class Dictionary(commands.Cog):
 
     @tasks.loop(hours=1.0)
     async def redis_updater(self):
-        await asyncio.sleep(5)
         await self.cache.set("updater", "0")
         await self.cache.set("updater", "1")
 
