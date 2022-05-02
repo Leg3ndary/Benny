@@ -187,8 +187,8 @@ class Redis(commands.Cog):
 
     @tasks.loop(hours=1.0)
     async def redis_updater(self):
-        await self.cache.set("updater", "0")
-        await self.cache.set("updater", "1")
+        await self.bot.redis.set("updater", "0")
+        await self.bot.redis.set("updater", "1")
 
 
 async def setup(bot):
