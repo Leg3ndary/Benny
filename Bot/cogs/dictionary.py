@@ -112,5 +112,4 @@ class Dictionary(commands.Cog):
 
 
 async def setup(bot):
-    return
     await bot.add_cog(Dictionary(bot))
