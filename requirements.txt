@@ -1,5 +1,6 @@
 git+https://github.com/Rapptz/asqlite
 git+https://github.com/Rapptz/discord.py
+git+https://github.com/Leg3ndary/discord-ext-ipc
 aiofiles==0.8.0
 aiohttp==3.6.3
 aioredis==2.0.0a1
