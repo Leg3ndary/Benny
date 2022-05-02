@@ -140,3 +140,6 @@ Databases
 # Log files 
 *.gz
 logs
+
+# Config because I don't wanna use envs
+config.json
