@@ -102,6 +102,7 @@ class Dictionary(commands.Cog):
 
     @tasks.loop(hours=1.0)
     async def redis_updater(self):
+        await asyncio.sleep(5)
         await self.cache.set("updater", "0")
         await self.cache.set("updater", "1")
 
