@@ -43,7 +43,7 @@ async def format_git_msg(content: str) -> str:
 
 class Dev(commands.Cog):
     """
-    Commands that are for bot development
+    All commands in this cog are owner only, they are meant for bot development
     """
 
     def __init__(self, bot):
@@ -256,23 +256,11 @@ class Dev(commands.Cog):
         Syncs the bots command tree
         """
         await self.bot.tree.sync()
-        await ctx.send("Synced, fix this stupid message later please")
-
-    @dev.command(
-        name="clear",
-        description="""Clear terminal""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
-        aliases=["ct"],
-        enabled=True,
-        hidden=True,
-    )
-    async def clearterminal_cmd(self, ctx):
-        os.system("clear")
         embed = discord.Embed(
-            title="Terminal Cleared",
+            title=f"Tree Sync",
+            description=f"""Bot sync has been completed""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("black"),
+            color=style.get_color("green")
         )
         await ctx.send(embed=embed)
 
@@ -322,7 +310,6 @@ class Dev(commands.Cog):
     async def eval_cmd(self, ctx, *, code: str):
         """Evaluates code given"""
         if "```py" not in code:
-            # Didn"t find a code block
             no_cb = discord.Embed(
                 title="Error",
                 description="Include a code block dumb fuck",
@@ -419,7 +406,7 @@ class Dev(commands.Cog):
         embed = discord.Embed(
             title=f"Shutting Down Bot",
             description=f"""```diff
-Add stuff here later..
+Add stuff here later...
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.get_color("red"),
