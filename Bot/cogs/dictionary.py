@@ -45,8 +45,10 @@ class Dictionary(commands.Cog):
             .replace("<Username>", self.bot.config.get("Dictionary").get("User"))
             .replace("<Password>", self.bot.config.get("Dictionary").get("Pass"))
         )
-        self.bot.mongo = AsyncIOMotorClient(mongo_uri)
-        await self.bot.printer.print_connect("MONGODB")
+        self.con = AsyncIOMotorClient(mongo_uri)
+        self.db = self.con["Dictionary"]
+        self.dict = self.db["Dict"]
+        await self.bot.printer.print_connect("DICTIONARY MONGO")
 
     async def fetch_word(self, word: str) -> dict:
         """
@@ -63,30 +65,39 @@ class Dictionary(commands.Cog):
         """
         async with self.bot.aiosession.get(f"{self.api_url}{word}") as request:
             new_data = await request.json()
-            print(new_data)
             if request.status != 200:
                 print(
                     f"[ ERROR ] [{datetime.datetime.utcnow()}]\nError Code: {request.status}\n{await request.json()}"
                 )
             else:
-                self.bot.loop.create_task(self.update_cache(word, new_data))
+                self.bot.loop.create_task(self.update_dict(word, new_data))
             return new_data
 
     async def get_word(self, word: str) -> dict:
         """
-        Will check if the built cache has the word.
+        Will check if the db has the word.
 
         If not will go fetch it because yes.
         """
-        result = await self.cache.get(word)
+        search = {
+            "_id": word
+        }
+        result = await self.dict.find_one(search)
 
         if not result:
-            await self.fetch_word(word)
+            result = await self.fetch_word(word)
 
-    async def update_cache(self, word: str, data: dict) -> None:
+        return result
+
+    async def update_dict(self, word: str, data: dict) -> None:
         """
-        Update the cache with the correct data"""
-        await self.cache.set(word, str(data))
+        Update the cache with the correct data
+        """
+        entry = {
+            "_id": word,
+            "data": data
+        }
+        await self.dict.insert_one(entry)
 
     @commands.hybrid_command(
         name="define",
