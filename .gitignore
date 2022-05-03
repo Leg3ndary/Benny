@@ -146,8 +146,16 @@ config.json
 lavalink.jar
 
 # Dashboard
-node_modules/
-package-lock.json
-.DS_Store
-.vscode
-certificate.txt
+flask/
+*.pyc
+dev
+node_modules
+app/database.db
+app/build
+yarn.lock
+yarn-error.log
+*.psd
+env/
+env__/
+.vscode/symbols.json
+app/db.sqlite3
