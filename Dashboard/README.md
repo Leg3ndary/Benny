@@ -166,7 +166,7 @@ $ pip install gunicorn
 > Start the app using gunicorn binary
 
 ```bash
-gunicorn --keyfile=private.txt --certfile=bennybot_me.crt --ca-certs=bennybot_me.ca-bundle --bind 0.0.0.0:5000 run:app
+gunicorn --keyfile=private.txt --certfile=bennybot_me.crt --ca-certs=bennybot_me.ca-bundle --bind 0.0.0.0:443 run:app
 gunicorn --certfile=bennybot_me.crt --keyfile=private.txt --bind 0.0.0.0:5000 run:app
 gunicorn --keyfile=private.txt --bind 0.0.0.0:5000 run:app
 gunicorn --bind 0.0.0.0:5000 run:app
