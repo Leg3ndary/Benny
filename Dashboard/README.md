@@ -166,7 +166,7 @@ $ pip install gunicorn
 > Start the app using gunicorn binary
 
 ```bash
-$ gunicorn --bind 0.0.0.0:8001 run:app
+$ gunicorn --bind 0.0.0.0:5000 run:app
 Serving on http://localhost:8001
 ```
 

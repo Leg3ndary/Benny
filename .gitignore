@@ -161,3 +161,4 @@ env__/
 app/db.sqlite3
 
 bennybot_me.crt
+cert/
