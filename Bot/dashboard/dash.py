@@ -23,7 +23,7 @@ qdiscord = qd.DiscordOAuth2Session(app)
 @app.route("/")
 async def index():
     """Index"""
-    return("Hello world")
+    return(quart.render_template("site/template/index.html"))
 
 @app.route("/members")
 async def members():
