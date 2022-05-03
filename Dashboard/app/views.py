@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # Flask modules
-from quart import render_template, request
+from flask import render_template, request
 from jinja2 import TemplateNotFound
 
 # App modules
@@ -13,7 +13,7 @@ from app import app
 # App main route + generic routing
 @app.route('/', defaults={'path': 'index.html'})
 @app.route('/<path>')
-async def index(path):
+def index(path):
     """Index"""
     try:
         # Detect the current page
@@ -25,7 +25,7 @@ async def index(path):
     except TemplateNotFound:
         return render_template('home/page-404.html'), 404
 
-def get_segment( request ): 
+def get_segment(request): 
 
     try:
 
