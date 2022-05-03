@@ -4,10 +4,10 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # import Flask 
-from flask import Flask
+from quart import Quart
 
 # Inject Flask magic
-app = Flask(__name__)
+app = Quart(__name__)
 
 # App Config - the minimal footprint
 app.config['TESTING'   ] = True 

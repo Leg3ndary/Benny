@@ -13,7 +13,7 @@ from app import app
 # App main route + generic routing
 @app.route('/', defaults={'path': 'index.html'})
 @app.route('/<path>')
-def index(path):
+async def index(path):
     """Index"""
     try:
         # Detect the current page
