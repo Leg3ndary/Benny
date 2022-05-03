@@ -9,3 +9,6 @@ accesslog = '-'
 loglevel = 'debug'
 capture_output = True
 enable_stdio_inheritance = True
+
+certfile = 'bennybot_me.crt'
+keyfile = 'private.txt'
