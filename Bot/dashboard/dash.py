@@ -62,5 +62,8 @@ async def me():
         </body>
     </html>"""
 
+"""
+hypercorn --certfile Bot/dashboard/certificate.txt Bot/dashboard/dash.py
+"""
 
 app.run(host="0.0.0.0", port=5000)
