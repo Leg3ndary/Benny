@@ -31,7 +31,7 @@ async def members():
         "get_member_count", guild_id=839605885700669441
     )
 
-    return str(member_count)  # display member count
+    return str(member_count)
 
 @app.route("/login")
 async def login():
@@ -63,4 +63,4 @@ async def me():
     </html>"""
 
 
-app.run(host="0.0.0.0", port=5000)
+app.run(host="0.0.0.0", port=43)
