@@ -4,7 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # Flask modules
-from flask import render_template, request
+from quart import render_template, request
 from jinja2 import TemplateNotFound
 
 # App modules
@@ -17,7 +17,7 @@ def index(path):
     """Index"""
     try:
         # Detect the current page
-        segment = get_segment( request )
+        segment = get_segment(request)
 
         # Serve the file (if exists) from app/templates/home/FILE.html
         return render_template('home/' + path, segment=segment)
