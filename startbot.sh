@@ -1,10 +1,10 @@
 #!/bin/bash
 
-tmux new-session -d -s music -n lavalink
-tmux new-session -d -s bot -n benny
+tmux new-session -d -s bot
+tmux new-session -d -s lavalink
 
-tmux send-keys -t music:lavalink "cd/Benny" Enter
-tmux send-keys -t music:lavalink "java -jar lavalink.jar" Enter
+tmux send-keys -t lavalink "cd/Benny" Enter
+tmux send-keys -t lavalink "java -jar lavalink.jar" Enter
 
-tmux send-keys -t bot:benny "cd /Benny" Enter
-tmux send-keys -t bot:benny "python3 Bot/bot.py" Enter
+tmux send-keys -t bot "cd /Benny" Enter
+tmux send-keys -t bot "python3 Bot/bot.py" Enter
