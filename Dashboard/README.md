@@ -166,9 +166,9 @@ $ pip install gunicorn
 > Start the app using gunicorn binary
 
 ```bash
-sudo gunicorn --keyfile=private.txt --certfile=bennybot_me.crt --ca-certs=bennybot_me.ca-bundle --bind 0.0.0.0:443 run:app
-gunicorn --certfile=bennybot_me.crt --keyfile=private.key --bind 0.0.0.0:443 run:app
-gunicorn --keyfile=private.txt --bind 0.0.0.0:443 run:app
+sudo gunicorn --keyfile=private.key --certfile=bennybot_me.crt --ca-certs=bennybot_me.ca-bundle --bind 0.0.0.0:443 run:app
+sudo gunicorn --certfile=bennybot_me.crt --keyfile=private.key --bind 0.0.0.0:443 run:app
+sudo gunicorn --keyfile=private.key --bind 0.0.0.0:443 run:app
 sudo gunicorn --bind 0.0.0.0:443 run:app
 sudo flask run --host=0.0.0.0 --port=443
 ```
