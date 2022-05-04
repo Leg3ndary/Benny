@@ -5,7 +5,7 @@ echo "Starting bot session"
 tmux new-session -d -s lavalink
 echo "Starting lavalink session"
 
-tmux send-keys -t lavalink "cd/Benny" Enter
+tmux send-keys -t lavalink "cd /Benny" Enter
 tmux send-keys -t lavalink "java -jar lavalink.jar" Enter
 echo "Starting lavalink.jar"
 
