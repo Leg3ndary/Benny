@@ -1,14 +1,14 @@
-import random
 import asqlite
-import wavelink
-from wavelink.ext import spotify
-from discord.ext import commands
-import discord
-import tekore
-from gears import style, util
 import datetime
+import discord
 import discord.utils
+import random
+import tekore
+import wavelink
+from discord.ext import commands
+from gears import style, util
 from gears.music_exceptions import *
+from wavelink.ext import spotify
 
 
 class Player(wavelink.Player):
@@ -910,7 +910,6 @@ class Music(commands.Cog):
                 color=style.get_color("red"),
             )
             await ctx.send(embed=embed)
-
 
     @commands.group(
         name="playlist",

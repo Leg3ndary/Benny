@@ -4,15 +4,16 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # Flask modules
+from app import app
 from flask import render_template, request
 from jinja2 import TemplateNotFound
 
+
 # App modules
-from app import app
 
 # App main route + generic routing
-@app.route('/', defaults={'path': 'index.html'})
-@app.route('/<path>')
+@app.route("/", defaults={"path": "index.html"})
+@app.route("/<path>")
 def index(path):
     """Index"""
     try:
@@ -20,21 +21,22 @@ def index(path):
         segment = get_segment(request)
 
         # Serve the file (if exists) from app/templates/home/FILE.html
-        return render_template('home/' + path, segment=segment)
-    
-    except TemplateNotFound:
-        return render_template('home/page-404.html'), 404
+        return render_template("home/" + path, segment=segment)
 
-def get_segment(request): 
+    except TemplateNotFound:
+        return render_template("home/page-404.html"), 404
+
+
+def get_segment(request):
 
     try:
 
-        segment = request.path.split('/')[-1]
+        segment = request.path.split("/")[-1]
 
-        if segment == '':
-            segment = 'index'
+        if segment == "":
+            segment = "index"
 
-        return segment    
+        return segment
 
     except:
-        return None  
+        return None

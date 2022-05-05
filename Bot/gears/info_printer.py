@@ -1,4 +1,5 @@
-from colorama import Style, Fore, Back
+from colorama import Back, Fore, Style
+
 
 """
 Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.

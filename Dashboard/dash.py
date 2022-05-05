@@ -1,8 +1,8 @@
-from quart import Quart
+import json
 import quart
 import quart_discord as qd
 from discord.ext import ipc
-import json
+from quart import Quart
 
 
 app = Quart(__name__)
@@ -25,6 +25,7 @@ async def index():
     """Index"""
     return await quart.render_template("index.html")
 
+
 @app.route("/members")
 async def members():
     member_count = await ipc_client.request(
@@ -33,9 +34,11 @@ async def members():
 
     return str(member_count)
 
+
 @app.route("/login")
 async def login():
     return await qdiscord.create_session()
+
 
 @app.route("/callback/")
 async def callback():
@@ -47,7 +50,7 @@ async def callback():
 async def redirect_unauthorized(e):
     return quart.redirect(quart.url_for("login"))
 
-	
+
 @app.route("/me/")
 @qd.requires_authorization
 async def me():
@@ -61,6 +64,7 @@ async def me():
             <img src='{user.avatar_url}' />
         </body>
     </html>"""
+
 
 """
 hypercorn --certfile Bot/dashboard/certificate.txt Bot/dashboard/dash.py

@@ -1,13 +1,14 @@
+import time
+
 import discord
 import discord.utils
-import time
-import unicodedata
-from discord.ext import commands
-from gears import cviews, style
 import json
 import platform
 import psutil
 import random
+import unicodedata
+from discord.ext import commands
+from gears import cviews, style
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
@@ -259,7 +260,7 @@ system {random.choice(options)}
         brief="Show information",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def info_cmd(self, ctx):
@@ -293,7 +294,7 @@ system {random.choice(options)}
         brief="Show cpu information",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def cpu_cmd(self, ctx):
@@ -338,7 +339,7 @@ system {random.choice(options)}
         brief="Show memory information",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def memory_cmd(self, ctx):
@@ -370,7 +371,7 @@ system {random.choice(options)}
         brief="Show disk space",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def disk_cmd(self, ctx):
@@ -423,7 +424,7 @@ system {random.choice(options)}
         brief="View file lines",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 7.0, commands.BucketType.user)
     async def files_cmd(self, ctx):

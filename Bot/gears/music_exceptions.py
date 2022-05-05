@@ -21,6 +21,7 @@ class NothingPlaying(MusicException):
 
     pass
 
+
 class PlaylistException(Exception):
     """
     Raised when a playlist related method has failed

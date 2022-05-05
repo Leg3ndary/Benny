@@ -1,7 +1,7 @@
-from motor.motor_asyncio import AsyncIOMotorClient
 import datetime
 import discord
 from discord.ext import commands
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 class DictDropdown(discord.ui.Select):
@@ -15,9 +15,11 @@ class DictDropdown(discord.ui.Select):
         options = []
 
         for entry in entries:
-            options.append(discord.SelectOption(
-                label="Red", description="Your favourite colour is red"
-            ))
+            options.append(
+                discord.SelectOption(
+                    label="Red", description="Your favourite colour is red"
+                )
+            )
 
         super().__init__(
             placeholder="Choose a word to define",
