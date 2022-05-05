@@ -1,7 +1,7 @@
 import aioredis
 import asyncio
 import discord
-import os
+from motor.motor_asyncio import AsyncIOMotorClient
 from discord.ext import commands, tasks
 from gears import style
 
@@ -12,7 +12,7 @@ value = await self.bot.redis.get("Key")
 """
 
 
-class Redis(commands.Cog):
+class Databases(commands.Cog):
     """
     Our redis db related things, mainly used for config, not used as a cache
 
@@ -32,6 +32,14 @@ class Redis(commands.Cog):
             decode_responses=True,
         )
         await self.bot.printer.print_load("Redis")
+        mongo_uri = (
+            self.bot.config.get("Mongo")
+            .get("URL")
+            .replace("<Username>", self.bot.config.get("Mongo").get("User"))
+            .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
+        )
+        self.bot.mongo = AsyncIOMotorClient(mongo_uri)
+        await self.bot.printer.print_connect("MONGODB")
 
     async def cog_unload(self):
         """
@@ -192,4 +200,4 @@ class Redis(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(Redis(bot))
+    await bot.add_cog(Databases(bot))
