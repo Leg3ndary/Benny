@@ -4,6 +4,10 @@ import time
 import unicodedata
 from discord.ext import commands
 from gears import cviews, style
+import json
+import platform
+import psutil
+import random
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
@@ -11,8 +15,17 @@ async def ping(ctx):
     await ctx.send("pong")"""
 
 
+def get_size(bytes, suffix="B"):
+    """Return the correct data from bytes"""
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if bytes < factor:
+            return f"{bytes:.2f}{unit}{suffix}"
+        bytes /= factor
+
+
 class Base(commands.Cog):
-    """Cog Example Description"""
+    """Basic commands that you would use with no specific category"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -213,6 +226,219 @@ Total Uptime: {resolved_rel}"""
             color=color,
         )
         await msg.edit(embed=ping_embed)
+
+    @commands.group()
+    @commands.cooldown(3.0, 7.0, commands.BucketType.user)
+    async def system(self, ctx):
+        """Actual system info"""
+        if not ctx.invoked_subcommand:
+            options = ["info", "boot", "cpu", "memory", "disk"]
+            embed = discord.Embed(
+                title="Tenshi PC Info",
+                description=f"""**Options:**
+```asciidoc
+[ info ]
+[ boot ]
+[ cpu ]
+[ memory ]
+[ disk ]
+```
+                Example:
+```fix
+system {random.choice(options)}
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=style.get_color(),
+            )
+            return await ctx.send(embed=embed)
+
+    @system.command(
+        name="info",
+        description="""Show overall information about our vps""",
+        help="""Show information about vps""",
+        brief="Show information",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def info_cmd(self, ctx):
+        """Showing full system information"""
+        uname = platform.uname()
+        embed = discord.Embed(
+            title="================ System Information ================",
+            description=f"""```asciidoc
+[ System ]
+= {uname.system} =
+[ Node Name ]
+= {uname.node} =
+[ Release ]
+= {uname.release} =
+[ Version ]
+= {uname.version} =
+[ Machine ]
+= {uname.machine} =
+[ Processor ]
+= {uname.processor} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color(),
+        )
+        return await ctx.send(embed=embed)
+
+    @system.command(
+        name="cpu",
+        description="""Show overall cpu cores and related information""",
+        help="""Show cpu information""",
+        brief="Show cpu information",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def cpu_cmd(self, ctx):
+        """
+        Showing our cpu information
+
+        cpufreq = psutil.cpu_freq()
+        [ Max Frequency ]
+        = {cpufreq.max:.2f}Mhz =
+        [ Min Frequency ]
+        = {cpufreq.min:.2f}Mhz =
+        [ Current Frequency ]
+        = {cpufreq.current:.2f}Mhz =
+        """
+
+        cpu_core_data = ""
+        for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+            cpu_core_data = f"""{cpu_core_data}[Core {i}]
+= {percentage}% =\n"""
+
+        embed = discord.Embed(
+            title="================= CPU Information =================",
+            description=f"""```asciidoc
+[ Physical Cores]
+= {psutil.cpu_count(logical=False)} =
+[ Total Cores ]
+= {psutil.cpu_count(logical=True)} =
+[ CPU Usage Per Core ]
+{cpu_core_data}
+[ Total CPU Usage ]
+= {psutil.cpu_percent()}% =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color(),
+        )
+        return await ctx.send(embed=embed)
+
+    @system.command(
+        name="memory",
+        description="""Show total memory and free percentage""",
+        help="""Show total memory and percentages""",
+        brief="Show memory information",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def memory_cmd(self, ctx):
+        """
+        Showing our memory information
+        """
+        svmem = psutil.virtual_memory()
+        embed = discord.Embed(
+            title="================ Memory Information ================",
+            description=f"""```asciidoc
+[ Total ]
+= {get_size(svmem.total)} = 
+[ Available ]
+= {get_size(svmem.available)} =
+[ Used ]
+= {get_size(svmem.used)} =
+[ Percentage ]
+= {svmem.percent}% =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color(),
+        )
+        return await ctx.send(embed=embed)
+
+    @system.command(
+        name="disk",
+        description="""Show overall disk space and partitions""",
+        help="""Show disk space, hidden because eh""",
+        brief="Show disk space",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def disk_cmd(self, ctx):
+        """
+        Showing our disk information
+        """
+        partitions = psutil.disk_partitions()
+        disk_io = psutil.disk_io_counters()
+        embed = discord.Embed(
+            title="================= Disk Information =================",
+            description=f"""```asciidoc
+[ Total Read ]
+= {get_size(disk_io.read_bytes)} = 
+[ Total Write ]
+= {get_size(disk_io.write_bytes)} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color(),
+        )
+        for partition in partitions:
+            try:
+                partition_usage = psutil.disk_usage(partition.mountpoint)
+            except PermissionError:
+                # Will allow even if some disks aren't ready to be loaded
+                continue
+            embed.add_field(
+                name=f"{partition.device}",
+                value=f"""```asciidoc
+[ Mountpoint ]
+= {partition.mountpoint} = 
+[ File System Type ]
+= {partition.fstype} =
+[ Total Size ]
+= {get_size(partition_usage.total)} =
+[ Used ]
+= {get_size(partition_usage.used)} =
+[ Free ]
+= {get_size(partition_usage.free)} =
+[ Percentage ]
+= {partition_usage.percent}% =
+```""",
+                inline=False,
+            )
+        return await ctx.send(embed=embed)
+
+    @commands.hybrid_command(
+        name="files",
+        description="""View all our files and lines because I think it's cool""",
+        help="""Recursively looks for all files and how many lines they have""",
+        brief="View file lines",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 7.0, commands.BucketType.user)
+    async def files_cmd(self, ctx):
+        """
+        Send our stuff
+        """
+        embed = discord.Embed(
+            title=f"File Lines",
+            description=f"""```json
+{json.dumps(self.bot.file_list, indent=4, sort_keys=True)}
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.get_color("aqua"),
+        )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot):
