@@ -52,7 +52,13 @@ class BotUtil:
         """
         files = []
         if directory:
-            if directory in ["__pycache__", "Databases", "logs", ".vscode", "Dashboard"]:
+            if directory in [
+                "__pycache__",
+                "Databases",
+                "logs",
+                ".vscode",
+                "Dashboard",
+            ]:
                 directories = []
             else:
                 directories = os.listdir(directory)
