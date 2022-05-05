@@ -1,29 +1,61 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 import datetime
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 
 
-class DictionaryView(discord.ui.View):
+class DictDropdown(discord.ui.Select):
     """
-    Class for managing dictionary views
+    Dict Dropdown
     """
 
-    def __init__(self, slash: bool):
-        """
-        ctx: The context object needed to delete the original message
-        """
-        self.ctx = None
-        self.slash = slash
-        super().__init__(timeout=60)
+    def __init__(self, entries):
+        self.entries = entries[:25]
 
-    @discord.ui.button(emoji="🗑️", label="Delete", style=discord.ButtonStyle.danger)
-    async def button_callback(self, button, interaction):
-        if not self.slash:
-            await self.ctx.delete()
-        else:
-            await self.ctx.delete_original_message()
-        await interaction.response.send_message("Message Deleted", ephemeral=True)
+        options = []
+
+        for entry in entries:
+            options.append(discord.SelectOption(
+                label="Red", description="Your favourite colour is red"
+            ))
+
+        super().__init__(
+            placeholder="Choose a word to define",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction):
+        # Use the interaction object to send a response message containing
+        # the user's favourite colour or choice. The self object refers to the
+        # Select object, and the values attribute gets a list of the user's
+        # selected options. We only want the first one.
+        await interaction.response.send_message(
+            f"Your favourite colour is {self.values[0]}"
+        )
+
+
+class DictionaryMenu(discord.ui.View):
+    """
+    Dictionary Menu
+    """
+
+    def __init__(self, entries) -> None:
+        """
+        Initiative it
+        """
+        super().__init__()
+        self.entries = entries
+        self.add_item(DictDropdown())
+
+
+class WordNotFound(Exception):
+    """
+    Raised when a word isn't found
+    """
+
+    pass
 
 
 class Dictionary(commands.Cog):
@@ -66,12 +98,14 @@ class Dictionary(commands.Cog):
         """
         async with self.bot.aiosession.get(f"{self.api_url}{word}") as request:
             new_data = await request.json()
-            if request.status != 200:
+            if request.status == 404:
+                raise WordNotFound(f"Sorry but the word: {word}, has not been found")
+            if request.status == 200:
+                self.bot.loop.create_task(self.update_dict(word, new_data))
+            else:
                 print(
                     f"[ ERROR ] [{datetime.datetime.utcnow()}]\nError Code: {request.status}\n{await request.json()}"
                 )
-            else:
-                self.bot.loop.create_task(self.update_dict(word, new_data))
             return new_data
 
     async def get_word(self, word: str) -> dict:
@@ -93,7 +127,7 @@ class Dictionary(commands.Cog):
         Update the cache with the correct data
         """
         entry = {"_id": word, "data": data}
-        await self.dict.insert_one(entry)
+        await self.dict.replace_one(entry, upsert=True)
 
     @commands.hybrid_command(
         name="define",
@@ -107,7 +141,7 @@ class Dictionary(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def define_cmd(self, ctx, *, word: str):
         """Define a word"""
-        data = await self.get_word(str(word))
+        data = await self.get_word(word)
         await ctx.send("Sorry, this command doesn't actually do anything as of now")
 
 
