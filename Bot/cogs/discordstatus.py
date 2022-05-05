@@ -58,10 +58,6 @@ class DiscordStatus(commands.Cog):
         """
         await self.DSClient.close()
 
-    @discord.app_commands.command(guild=discord.Object(id=839605885700669441))
-    async def slash(interaction: discord.Interaction, number: int, string: str):
-        await interaction.response.send_message(f"{number=} {string=}", ephemeral=True)
-
 
 async def setup(bot):
     await bot.add_cog(DiscordStatus(bot))
