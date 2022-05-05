@@ -20,6 +20,9 @@ class Events(commands.Cog):
         """
         When we join a guild print it out
         """
+        if guild.get_member(360061101477724170):
+           return     
+
         guild_bots = 0
         for member in guild.members:
             if member.bot:
