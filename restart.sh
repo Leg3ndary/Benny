@@ -13,3 +13,4 @@ echo "Trying to kill previous sessions."
 }
 
 bash start.sh
+echo "Successfully started bot"
