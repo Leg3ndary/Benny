@@ -15,7 +15,7 @@ class IpcRoutes(commands.Cog):
         await self.bot.printer.print_connect("IPC")
 
     @ipc.server.route()
-    async def get_member_count(self, data):
+    async def test_endpoint(self, data):
         guild = self.bot.get_guild(data.guild_id)
 
         return guild.member_count
