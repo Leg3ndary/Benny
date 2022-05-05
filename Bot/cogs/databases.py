@@ -14,10 +14,10 @@ value = await self.bot.redis.get("Key")
 
 class Databases(commands.Cog):
     """
-    Our redis db related things, mainly used for config, not used as a cache
+    Database related things
 
-    Current cogs that use Redis:
-    - Reminders Config"""
+    Currently using redis and mongodb
+    """
 
     def __init__(self, bot):
         self.bot = bot
