@@ -46,8 +46,11 @@ class LoggingManager:
         )
         await self.bot.printer.p_load("Logging")
 
-    async def create_webhook(self, channel: discord.TextChannel, username: str = None, avatar: str = None) -> None:
+    async def create_webhook(
+        self, channel: discord.TextChannel, username: str = None, avatar: str = None
+    ) -> None:
         """Create a webhook"""
+
 
 class Logging(commands.Cog):
     """
@@ -71,7 +74,7 @@ class Logging(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["logging"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx):

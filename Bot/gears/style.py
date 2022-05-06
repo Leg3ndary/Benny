@@ -1,14 +1,6 @@
 import random
 
 
-def get_color(color=None):
-    """Return a color, return a random hex if none provided"""
-    if not color:
-        return colors[random.choice(color_list)]
-    else:
-        return colors.get(color, f"ERROR [{color}]")
-
-
 def get_emoji(kind: str, emoji: str):
     """Get an emoji from tenshis emoji dict..."""
     return emojis.get(kind, f"ERROR [Styles - TYPE: {kind}]").get(
@@ -16,26 +8,57 @@ def get_emoji(kind: str, emoji: str):
     )
 
 
-colors = {
-    "navy": 0x001F3F,
-    "blue": 0x0074D9,
-    "aqua": 0x7FDBFF,
-    "teal": 0x39CCCC,
-    "olive": 0x3D9970,
-    "green": 0x2ECC40,
-    "lime": 0x01FF70,
-    "yellow": 0xFFDC00,
-    "orange": 0xFF851B,
-    "red": 0xFF4136,
-    "maroon": 0x85144B,
-    "pink": 0xF012BE,
-    "purple": 0xB10DC9,
-    "black": 0x111111,
-    "gray": 0xAAAAAA,
-    "grey": 0xAAAAAA,
-    "silver": 0xDDDDDD,
-    "white": 0xFFFFFF,
-}
+class Color:
+    """
+    Our base colors
+    """
+
+    NAVY = 0x001F3F
+    BLUE = 0x0074D9
+    AQUA = 0x7FDBFF
+    TEAL = 0x39CCCC
+    OLIVE = 0x3D9970
+    GREEN = 0x2ECC40
+    LIME = 0x01FF70
+    YELLOW = 0xFFDC00
+    ORANGE = 0xFF851B
+    RED = 0xFF4136
+    MAROON = 0x85144B
+    PINK = 0xF012BE
+    PURPLE = 0xB10DC9
+    BLACK = 0x111111
+    GRAY = 0xAAAAAA
+    GREY = 0xAAAAAA
+    SILVER = 0xDDDDDD
+    WHITE = 0xFFFFFF
+
+    @classmethod
+    def random(self) -> hex:
+        """
+        Return a random hex
+        """
+        colors = {
+            "navy": 0x001F3F,
+            "blue": 0x0074D9,
+            "aqua": 0x7FDBFF,
+            "teal": 0x39CCCC,
+            "olive": 0x3D9970,
+            "green": 0x2ECC40,
+            "lime": 0x01FF70,
+            "yellow": 0xFFDC00,
+            "orange": 0xFF851B,
+            "red": 0xFF4136,
+            "maroon": 0x85144B,
+            "pink": 0xF012BE,
+            "purple": 0xB10DC9,
+            "black": 0x111111,
+            "gray": 0xAAAAAA,
+            "grey": 0xAAAAAA,
+            "silver": 0xDDDDDD,
+            "white": 0xFFFFFF,
+        }
+        return random.choice(list(colors.values()))
+
 
 reversed_colors = {
     7999: "navy",

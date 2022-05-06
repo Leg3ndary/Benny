@@ -366,7 +366,7 @@ class Settings(commands.Cog):
 {prefix_visual}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color(),
+                color=style.Color.random(),
             )
             await ctx.send(embed=embed)
 
@@ -390,7 +390,7 @@ class Settings(commands.Cog):
                 title=f"Success",
                 description=f"""{add_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
 
@@ -399,7 +399,7 @@ class Settings(commands.Cog):
                 title=f"Error",
                 description=f"""{add_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -422,7 +422,7 @@ class Settings(commands.Cog):
                 title=f"Success",
                 description=f"""{del_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
 
@@ -431,7 +431,7 @@ class Settings(commands.Cog):
                 title=f"Error",
                 description=f"""{del_prefix.split(":")[1]}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 

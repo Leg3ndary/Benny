@@ -103,7 +103,7 @@ class PlayerDropdown(discord.ui.Select):
 = Duration: {duration(track.length)} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
+            color=style.Color.GREEN,
         )
         embed.set_author(name=track.author)
         embed.set_footer(
@@ -141,7 +141,7 @@ class PlayerSelector(discord.ui.View):
             title=f"Select a Song to Play",
             description=f"""Timed out""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
+            color=style.Color.RED,
         )
         await self.play_embed.edit(embed=embed, view=self)
 
@@ -538,7 +538,7 @@ class Music(commands.Cog):
 [ {song} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             view.play_embed = await ctx.send(embed=embed, view=view)
 
@@ -556,7 +556,7 @@ class Music(commands.Cog):
                         url=track.uri,
                         description=f"""Sorry but you only may have 250 songs queued at a time""",
                         timestamp=discord.utils.utcnow(),
-                        color=style.get_color("red"),
+                        color=style.Color.RED,
                     )
                     embed.set_author(name=track.author)
                     embed.set_footer(
@@ -575,7 +575,7 @@ class Music(commands.Cog):
 = Duration: {duration(track.length)} =
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("green"),
+                    color=style.Color.GREEN,
                 )
                 embed.set_author(name=track.author)
                 embed.set_footer(
@@ -596,7 +596,7 @@ class Music(commands.Cog):
                         title=f"Playlist Song Limit Reached",
                         description=f"""You may only add up to 100 songs through spotify playlists at this time""",
                         timestamp=discord.utils.utcnow(),
-                        color=style.get_color("red"),
+                        color=style.Color.RED,
                     )
                     return await ctx.send(embed=embed)
 
@@ -614,7 +614,7 @@ class Music(commands.Cog):
 = Duration: Calculating =
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("grey"),
+                    color=style.Color.GREY,
                 )
                 embed.set_author(name=author)
                 embed.set_footer(
@@ -636,7 +636,7 @@ class Music(commands.Cog):
 = Duration: {duration(total_dur)} =
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("green"),
+                    color=style.Color.GREEN,
                 )
                 embed.set_author(name=author)
                 embed.set_footer(
@@ -664,7 +664,7 @@ class Music(commands.Cog):
                 title=f"Nothing Playing",
                 description=f"""Nothing's currently playing!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=nothing_playing)
 
@@ -673,7 +673,7 @@ class Music(commands.Cog):
                 title=f"Empty Queue",
                 description=f"""Nothing's currently queued!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=emptyqueue)
 
@@ -694,7 +694,7 @@ class Music(commands.Cog):
 {visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua"),
+            color=style.Color.AQUA,
         )
         embed.set_footer(text=f"""Total Duration: {total_dur}""")
         await ctx.send(embed=embed)
@@ -720,7 +720,7 @@ class Music(commands.Cog):
                 title=f"Nothing is playing!",
                 description=f"""Use the play command to queue a song!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
+                color=style.Color.AQUA,
             )
             return await ctx.send(embed=nothing_playing)
 
@@ -735,7 +735,7 @@ class Music(commands.Cog):
 = Duration: {duration(current.length)} =
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color(),
+                color=style.Color.random(),
             )
             embed.set_author(name=current.author)
             await ctx.send(embed=embed)
@@ -765,7 +765,7 @@ class Music(commands.Cog):
 = Duration: {duration(current.length)} =
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("orange"),
+                color=style.Color.ORANGE,
             )
             embed.set_author(name=current.author)
             await ctx.send(embed=embed)
@@ -775,7 +775,7 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -826,7 +826,7 @@ class Music(commands.Cog):
 = Duration: {duration(song.length)} =
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
+                    color=style.Color.RED,
                 )
                 embed.set_author(name=song.author)
                 await ctx.send(embed=embed)
@@ -858,7 +858,7 @@ class Music(commands.Cog):
                 url=current.uri,
                 description=f"""Shuffled {len(player.queue._queue)} songs""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("yellow"),
+                color=style.Color.YELLOW,
             )
             await ctx.send(embed=embed)
 
@@ -867,7 +867,7 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -898,7 +898,7 @@ class Music(commands.Cog):
                 url=current.uri,
                 description=f"""{vis}ed the queue""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
+                color=style.Color.AQUA,
             )
             await ctx.send(embed=embed)
 
@@ -907,7 +907,7 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -927,7 +927,7 @@ class Music(commands.Cog):
                 title=f"Playlists",
                 description=f"""add stuff here later idiot""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color(),
+                color=style.Color.random(),
             )
             await ctx.send(embed=embed)
 
@@ -951,7 +951,7 @@ class Music(commands.Cog):
                 title=f"Created Playlist",
                 description=f"""Created a playlist with the name `{playlist_name}`""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
 
@@ -962,7 +962,7 @@ class Music(commands.Cog):
 - {e} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -986,7 +986,7 @@ class Music(commands.Cog):
                 title=f"Delete Playlist",
                 description=f"""Deleted playlist `{playlist_name}`""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
 
@@ -997,7 +997,7 @@ class Music(commands.Cog):
 - {e} -
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -1026,7 +1026,7 @@ class Music(commands.Cog):
 {list_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
 

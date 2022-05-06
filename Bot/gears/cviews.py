@@ -58,7 +58,7 @@ class LoopButton(discord.ui.View):
             title=f"""{style.get_emoji("regular", "loop")} {repeat}ing""",
             description=f"""{repeat}ing the current queue""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua"),
+            color=style.Color.AQUA,
         )
         if not self.slash:
             await self.bctx.edit(embed=embed)
@@ -170,7 +170,7 @@ class PlayerDropdown(discord.ui.Select):
 = Duration: {util.remove_zcs(lavalink.format_time(track["info"]["length"]))} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
+            color=style.Color.GREEN,
         )
         embed.set_author(name=track["info"]["author"])
         embed.set_footer(
@@ -214,7 +214,7 @@ class PlayerSelector(discord.ui.View):
             title=f"Select a Song to Play",
             description=f"""Timed out""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
+            color=style.Color.RED,
         )
         await self.play_embed.edit(embed=embed, view=self)
 
@@ -256,7 +256,7 @@ class QueueClear(discord.ui.View):
             title=f"Confirmed",
             description=f"""The queue has been cleared""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
+            color=style.Color.GREEN,
         )
         for item in self.children:
             item.disabled = True
@@ -274,7 +274,7 @@ class QueueClear(discord.ui.View):
             title=f"Cancelled",
             description=f"""Action cancelled""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
+            color=style.Color.RED,
         )
         for item in self.children:
             item.disabled = True
@@ -309,7 +309,7 @@ class PlaylistViewer(discord.ui.View):
             title=f"Cancelled",
             description=f"""Action cancelled""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
+            color=style.Color.RED,
         )
         for item in self.children:
             item.disabled = True
@@ -335,7 +335,7 @@ class QueueView(discord.ui.View):
                 title=f"Nothing's been Queued!",
                 description=f"""Use the play command to queue more songs!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
+                color=style.Color.AQUA,
             )
             await self.embed.edit(embed=embed)
             self.stop()
@@ -355,7 +355,7 @@ class QueueView(discord.ui.View):
 {queue_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
+            color=style.Color.GREEN,
         )
         if self.player.repeat:
             lemoji = style.get_emoji("regular", "check")
@@ -387,7 +387,7 @@ class QueueView(discord.ui.View):
                 title=f"Nothing's been Queued!",
                 description=f"""Use the play command to queue more songs!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("aqua"),
+                color=style.Color.AQUA,
             )
             await self.embed.edit(embed=embed)
             self.stop()
@@ -407,7 +407,7 @@ class QueueView(discord.ui.View):
 {queue_visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
+            color=style.Color.GREEN,
         )
         if self.player.repeat:
             lemoji = style.get_emoji("regular", "check")

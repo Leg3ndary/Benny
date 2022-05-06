@@ -4,22 +4,22 @@ from gears import style, util
 
 
 COG_INFO = {
-    "Playlist": {"color": style.get_color("red"), "emoji": ":notepad_spiral:"},
-    "Settings": {"color": style.get_color("grey"), "emoji": ":gear:"},
-    "Exalia": {"color": style.get_color("black"), "emoji": ":crossed_swords:"},
-    "Help": {"color": style.get_color("aqua"), "emoji": ":question:"},
-    "MongoDB": {"color": style.get_color("green"), "emoji": ":leaves:"},
-    "Games": {"color": style.get_color("black"), "emoji": ":game_die:"},
-    "Base": {"color": style.get_color("blue"), "emoji": ":crystal_ball:"},
-    "Music": {"color": style.get_color("orange"), "emoji": ":musical_note:"},
-    "Errors": {"color": style.get_color("red"), "emoji": ":x:"},
-    "SystemInfo": {"color": style.get_color("orange"), "emoji": ":desktop:"},
-    "Dev": {"color": style.get_color("aqua"), "emoji": ":lock:"},
-    "Mod": {"color": style.get_color("purple"), "emoji": ":hammer:"},
-    "CustomCommands": {"color": style.get_color("white"), "emoji": ":confetti_ball:"},
-    "Redis": {"color": style.get_color("red"), "emoji": ":red_square:"},
-    "Reminders": {"color": style.get_color("aqua"), "emoji": ":page_facing_up:"},
-    "None": {"color": style.get_color("grey"), "emoji": ":warning:"},
+    "Playlist": {"color": style.Color.RED, "emoji": ":notepad_spiral:"},
+    "Settings": {"color": style.Color.GREY, "emoji": ":gear:"},
+    "Exalia": {"color": style.Color.BLACK, "emoji": ":crossed_swords:"},
+    "Help": {"color": style.Color.AQUA, "emoji": ":question:"},
+    "MongoDB": {"color": style.Color.GREEN, "emoji": ":leaves:"},
+    "Games": {"color": style.Color.BLACK, "emoji": ":game_die:"},
+    "Base": {"color": style.Color.BLUE, "emoji": ":crystal_ball:"},
+    "Music": {"color": style.Color.ORANGE, "emoji": ":musical_note:"},
+    "Errors": {"color": style.Color.RED, "emoji": ":x:"},
+    "SystemInfo": {"color": style.Color.ORANGE, "emoji": ":desktop:"},
+    "Dev": {"color": style.Color.AQUA, "emoji": ":lock:"},
+    "Mod": {"color": style.Color.PURPLE, "emoji": ":hammer:"},
+    "CustomCommands": {"color": style.Color.WHITE, "emoji": ":confetti_ball:"},
+    "Redis": {"color": style.Color.RED, "emoji": ":red_square:"},
+    "Reminders": {"color": style.Color.AQUA, "emoji": ":page_facing_up:"},
+    "None": {"color": style.Color.GREY, "emoji": ":warning:"},
 }
 
 HELP_FORMAT = f"{util.ansi('grey')}prefix{util.ansi('white', None, 'bold')}command_name {util.ansi('white', None, 'bold')}<{util.ansi('blue', None, 'underline')}Required{util.ansi('white', None, 'bold')}>{util.ansi('clear')} {util.ansi('white', None, 'bold')}[{util.ansi('pink', None, 'underline')}Optional{util.ansi('white', None, 'bold')}]"
@@ -87,7 +87,7 @@ class BennyHelp(commands.HelpCommand):
 
     async def send_bot_help(self, mapping):
         """When help is ran on its own no args"""
-        embed = discord.Embed(title="Help", color=style.get_color("aqua"))
+        embed = discord.Embed(title="Help", color=style.Color.AQUA)
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -183,9 +183,7 @@ class BennyHelp(commands.HelpCommand):
 
     async def send_error_message(self, error):
         """Error Messages that may appear"""
-        embed = discord.Embed(
-            title="Error", description=error, color=style.get_color("red")
-        )
+        embed = discord.Embed(title="Error", description=error, color=style.Color.RED)
         channel = self.get_destination()
         await channel.send(embed=embed)
 

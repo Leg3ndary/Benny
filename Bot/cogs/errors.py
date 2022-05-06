@@ -41,7 +41,7 @@ class Errors(commands.Cog):
                 title=f"Member Not Found",
                 description=f"""The member {error.argument} was not found""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=embed)
 
@@ -59,7 +59,7 @@ Error ID: {ctx.message.id}
 Type: {error.converter}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             conversion_error.set_thumbnail(url=style.get_emoji("image", "cancel"))
             await util.report_error(
@@ -82,7 +82,7 @@ Type: {error.converter}
 [{ctx.command}]({str(error.param).split(":")[0]})
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             missing_argument.set_thumbnail(url=style.get_emoji("image", "cancel"))
             await ctx.send(embed=missing_argument)
@@ -104,7 +104,7 @@ Type: {error.converter}
                     title=f"Error",
                     description=f"""Channel `{error.argument}` was not found""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
+                    color=style.Color.RED,
                 )
                 no_channel.set_thumbnail(url=style.get_emoji("image", "cancel"))
                 return await ctx.send(embed=no_channel)
@@ -114,7 +114,7 @@ Type: {error.converter}
                 title=f"{ctx.command} is on Cooldown",
                 description=f"""Please retry this command after {int(error.retry_after)} seconds""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=embed)
 
@@ -124,7 +124,7 @@ Type: {error.converter}
                     title=f"",
                     description=f"""""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color(),
+                    color=style.Color.random(),
                 )
                 return await ctx.send(embed=embed)
 
@@ -133,7 +133,7 @@ Type: {error.converter}
                     title=f"Not found",
                     description=f"""Conversion Error""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
+                    color=style.Color.RED,
                 )
                 return await ctx.send(embed=embed)
 

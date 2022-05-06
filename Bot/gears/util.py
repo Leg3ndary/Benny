@@ -121,7 +121,7 @@ class BotUtil:
             title=f"Error Report",
             description=f"""""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
+            color=style.Color.RED,
         )
         embed.set_thumbnail(url=style.get_emoji("image", "cancel"))
         await ben.send(embed=embed)

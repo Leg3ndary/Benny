@@ -88,7 +88,7 @@ class Mod(commands.Cog):
             title=f"Warned",
             description=f"""""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("yellow"),
+            color=style.Color.YELLOW,
         )
         await ctx.send(embed=embed)
 
@@ -112,7 +112,7 @@ class Mod(commands.Cog):
                 title=f"Error",
                 description=f"""You cannot ban yourself!""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=same_user_embed)
 
@@ -127,7 +127,7 @@ class Mod(commands.Cog):
                 title=f"Error",
                 description=f"""The user {user} was not found.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=none_mentioned)
 
@@ -136,7 +136,7 @@ class Mod(commands.Cog):
                 title=f"Rude",
                 description=f"""After all I've done for you, you try to ban me?""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("yellow"),
+                color=style.Color.YELLOW,
             )
             return await ctx.send(embed=ban_bot)
 
@@ -159,7 +159,7 @@ class Mod(commands.Cog):
 - {reason} -
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("green"),
+                    color=style.Color.GREEN,
                 )
                 return await ctx.send(embed=banned_embed)
 
@@ -170,7 +170,7 @@ class Mod(commands.Cog):
 - {e}
 ```""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.get_color("red"),
+                    color=style.Color.RED,
                 )
                 await ctx.send(embed=error)
 
@@ -192,7 +192,7 @@ class Mod(commands.Cog):
                 title=f"Error",
                 description=f"""Sorry but `{member}` doesn't seem to be a valid id.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             return await ctx.send(embed=embed)
         try:
@@ -202,7 +202,7 @@ class Mod(commands.Cog):
                 title=f"Not Banned",
                 description=f"""This user doesn't seem to be banned...""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("yellow"),
+                color=style.Color.YELLOW,
             )
             return await ctx.send(embed=embed)
 
@@ -233,7 +233,7 @@ class Mod(commands.Cog):
                 title=f"Success",
                 description=f"""Modlogs channel set to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             modlogs_set.set_thumbnail(url=style.get_emoji("image", "check"))
             await ctx.send(embed=modlogs_set)
@@ -243,7 +243,7 @@ class Mod(commands.Cog):
                 title=f"Error",
                 description=f"""Modlogs channel is already set to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("yellow"),
+                color=style.Color.YELLOW,
             )
             await ctx.send(embed=same_thing)
 
@@ -256,7 +256,7 @@ class Mod(commands.Cog):
                 title=f"Success",
                 description=f"""Modlogs channel changed to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("green"),
+                color=style.Color.GREEN,
             )
             modlogs_changed.set_thumbnail(url=style.get_emoji("image", "check"))
             await ctx.send(embed=modlogs_changed)

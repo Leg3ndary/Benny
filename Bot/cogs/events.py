@@ -21,7 +21,7 @@ class Events(commands.Cog):
         When we join a guild print it out
         """
         if guild.get_member(360061101477724170):
-           return     
+            return
 
         guild_bots = 0
         for member in guild.members:
@@ -48,7 +48,7 @@ class Events(commands.Cog):
                 - Lower your servers percentage of bots to under 20%
                 Currently **{bot_percentage}%** bots""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             for channel in guild.channels:
                 if "general" in channel.name:

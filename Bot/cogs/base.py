@@ -48,7 +48,7 @@ class Base(commands.Cog):
             title=f"About the Bot",
             description=f"""A Bot I've made for fun, friends and learning python.""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua"),
+            color=style.Color.AQUA,
         )
         embed.set_footer(
             text="_Leg3ndary#5759",
@@ -135,7 +135,7 @@ class Base(commands.Cog):
             title="Charinfo",
             description=msg,
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
 
@@ -154,7 +154,7 @@ class Base(commands.Cog):
         dog = await self.bot.aiosession.get("https://dog.ceo/api/breeds/image/random")
 
         dog_image = (await dog.json()).get("message")
-        embed = discord.Embed(color=style.get_color())
+        embed = discord.Embed(color=style.Color.random())
         embed.set_image(url=dog_image)
         await ctx.send(embed=embed)
 
@@ -180,7 +180,7 @@ Total Uptime: {resolved_rel}"""
             title=f"Benny Uptime",
             description=f"""{fmt}""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
 
@@ -201,7 +201,7 @@ Total Uptime: {resolved_rel}"""
             title=f"Pinging...",
             description=f"""Checking Ping""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("grey"),
+            color=style.Color.GREY,
         )
         msg = await ctx.send(embed=embed)
         end = time.monotonic()
@@ -210,13 +210,13 @@ Total Uptime: {resolved_rel}"""
         average_ping = (bot_ping + ping) / 2
 
         if average_ping >= 500:
-            color = style.get_color("red")
+            color = style.Color.RED
         elif average_ping >= 250:
-            color = style.get_color("orange")
+            color = style.Color.ORANGE
         elif average_ping >= 100:
-            color = style.get_color("yellow")
+            color = style.Color.YELLOW
         else:
-            color = style.get_color("green")
+            color = style.Color.GREEN
 
         ping_embed = discord.Embed(
             title="Pinging...",
@@ -249,7 +249,7 @@ Total Uptime: {resolved_rel}"""
 system {random.choice(options)}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color(),
+                color=style.Color.random(),
             )
             return await ctx.send(embed=embed)
 
@@ -283,7 +283,7 @@ system {random.choice(options)}
 = {uname.processor} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         return await ctx.send(embed=embed)
 
@@ -328,7 +328,7 @@ system {random.choice(options)}
 = {psutil.cpu_percent()}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         return await ctx.send(embed=embed)
 
@@ -360,7 +360,7 @@ system {random.choice(options)}
 = {svmem.percent}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         return await ctx.send(embed=embed)
 
@@ -389,7 +389,7 @@ system {random.choice(options)}
 = {get_size(disk_io.write_bytes)} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         for partition in partitions:
             try:
@@ -437,7 +437,7 @@ system {random.choice(options)}
 {json.dumps(self.bot.file_list, indent=4, sort_keys=True)}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("aqua"),
+            color=style.Color.AQUA,
         )
         await ctx.send(embed=embed)
 

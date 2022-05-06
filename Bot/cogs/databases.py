@@ -73,7 +73,7 @@ class Databases(commands.Cog):
 {data}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
 
@@ -97,7 +97,7 @@ class Databases(commands.Cog):
 - {e}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.get_color("red"),
+                color=style.Color.RED,
             )
             await ctx.send(embed=unable)
 
@@ -117,7 +117,7 @@ class Databases(commands.Cog):
 {keys}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
 
@@ -159,7 +159,7 @@ class Databases(commands.Cog):
 {visual}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color(),
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
 
@@ -170,7 +170,7 @@ class Databases(commands.Cog):
             title="Attempting to fetch all data",
             description=f"""ETA {await self.bot.redis.dbsize() * 0.1} seconds""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("red"),
+            color=style.Color.RED,
         )
         msg = await ctx.send(embed=embed)
 
@@ -189,7 +189,7 @@ class Databases(commands.Cog):
 {visualiser}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.get_color("green"),
+            color=style.Color.GREEN,
         )
         await msg.edit(embed=embed_done)
 
