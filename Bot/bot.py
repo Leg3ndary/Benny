@@ -1,6 +1,5 @@
 import time
 import aiohttp
-import asqlite
 import asyncio
 import discord
 import datetime
@@ -85,9 +84,6 @@ async def start_bot():
 
         bot.util = util.BotUtil(bot)
         await bot.printer.print_load("Bot Util")
-
-        # bot.settingsDB = await asqlite.connect("Databases/server.db")
-        # await bot.printer.print_connect("Settings Database")
 
         file_list = {}
         total = 0
