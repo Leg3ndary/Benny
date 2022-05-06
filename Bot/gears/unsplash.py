@@ -1,6 +1,4 @@
 import aiohttp
-import os
-from discord.ext import commands
 
 
 param_dict = {"images": ""}
@@ -119,27 +117,3 @@ class UnsplashClient:
     async def get_param(self, method: str):
         """Return possible parameters from methods"""
         return param_dict.get(method)
-
-
-class Photos(commands.Cog):
-    """Everything to do with photos!"""
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    @commands.command(
-        name="photo",
-        description="""photo searching stuff""",
-        help="""Search for photos based on queries""",
-        brief="Search for photos",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def photo_cmd(self, ctx):
-        """Command description"""
-
-
-async def setup(bot):
-    await bot.add_cog(Photos(bot))
