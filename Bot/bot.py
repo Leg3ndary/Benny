@@ -8,7 +8,7 @@ import os
 from discord.ext import commands, ipc
 from dotenv import load_dotenv
 from gears import util
-from gears.info_printer import InfoPrinter
+from gears.cprinter import InfoPrinter
 import logging
 
 
@@ -77,13 +77,13 @@ async def start_bot():
     """
     async with bot:
         bot.printer = InfoPrinter(bot)
-        await bot.printer.print_load("Printer")
+        await bot.printer.p_load("Printer")
 
         bot.config = config
-        await bot.printer.print_load("Config")
+        await bot.printer.p_load("Config")
 
         bot.util = util.BotUtil(bot)
-        await bot.printer.print_load("Bot Util")
+        await bot.printer.p_load("Bot Util")
 
         file_list = {}
         total = 0
@@ -104,7 +104,7 @@ async def start_bot():
             await bot.wait_until_ready()
             bot.dispatch("load_prefixes")
             bot.dispatch("connect_wavelink")
-            await bot.printer.print_bot_update("LOGGED IN")
+            await bot.printer.p_bot_update("LOGGED IN")
 
         @bot.check
         async def global_check(ctx):
@@ -122,9 +122,9 @@ async def start_bot():
 
         async with aiohttp.ClientSession() as session:
             bot.aiosession = session
-            await bot.printer.print_connect("AIOHTTP Session")
+            await bot.printer.p_connect("AIOHTTP Session")
             end = time.monotonic()
-            await bot.printer.print_bot(
+            await bot.printer.p_bot(
                 "",
                 f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
             )

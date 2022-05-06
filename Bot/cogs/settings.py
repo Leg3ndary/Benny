@@ -215,7 +215,7 @@ class Prefixes:
             await db.commit()
             # Since we already know that they should only one value, nice
             self.bot.prefixes[str(guild_id)] = ["?"]
-            await self.bot.printer.print_cog(
+            await self.bot.printer.p_cog(
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
                 f"Added {guild_id} to prefixes",
             )
@@ -239,7 +239,7 @@ class Prefixes:
             )
             await db.commit()
             del self.bot.prefixes[str(guild_id)]
-            await self.bot.printer.print_cog(
+            await self.bot.printer.p_cog(
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
                 f"Deleted {guild_id} from  prefixes",
             )
@@ -276,7 +276,7 @@ class Settings(commands.Cog):
                 
                 """
             )
-        await self.bot.printer.print_load("Users")
+        await self.bot.printer.p_load("Users")
 
     @commands.Cog.listener()
     async def on_load_prefixes(self):
@@ -320,7 +320,7 @@ class Settings(commands.Cog):
                 # We didn't find the prefix added to to the db, add and add to prefixes
                 await self.bot.prefix_manager.add_guild(guild.id)
         self.bot.loaded_prefixes = True
-        await self.bot.printer.print_load("Prefixes")
+        await self.bot.printer.p_load("Prefixes")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):

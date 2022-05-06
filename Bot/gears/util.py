@@ -97,11 +97,11 @@ class BotUtil:
                     filename not in ["cog_template", "discordstatus", "stripe"]
                 ):
                     await self.bot.load_extension(f"cogs.{file[:-3]}")
-                    await self.bot.printer.print_cog_update(file[:-3], "LOAD")
+                    await self.bot.printer.p_cog_update(file[:-3], "LOAD")
                     cog_list.append(f"cogs.{file[:-3]}")
 
             except Exception as e:
-                await self.bot.printer.print_cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
         self.bot.cog_list = cog_list
 
     async def report_error(self, error_descrip):

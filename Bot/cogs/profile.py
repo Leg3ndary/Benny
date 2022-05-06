@@ -33,7 +33,7 @@ class Profile(commands.Cog):
                 );
                 """
             )
-        await self.bot.printer.print_load("Profiles")
+        await self.bot.printer.p_load("Profiles")
 
 
 async def setup(bot):

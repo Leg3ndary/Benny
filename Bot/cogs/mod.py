@@ -55,7 +55,7 @@ class Mod(commands.Cog):
             );
             """
         )
-        await self.bot.printer.print_load("Mod")
+        await self.bot.printer.p_load("Mod")
 
     async def cog_unload(self) -> None:
         """

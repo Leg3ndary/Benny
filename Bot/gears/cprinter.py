@@ -32,7 +32,7 @@ class InfoPrinter:
         )
         return brackets
 
-    async def print_load(self, info: str):
+    async def p_load(self, info: str):
         """
         [LOAD] When something has loaded.
 
@@ -43,7 +43,7 @@ class InfoPrinter:
         """
         print(f"{await self.generate_category(f'{Fore.BLUE}LOADED')} {info}")
 
-    async def print_cog_update(self, cog: str, update: str):
+    async def p_cog_update(self, cog: str, update: str):
         """
         [COG LOAD|UNLOAD|RELOAD] When a cog is loaded or unloaded (ALSO ON SYNC)
 
@@ -64,7 +64,7 @@ class InfoPrinter:
             category = f"{Fore.RED}COG FAIL"
         print(f"{await self.generate_category(category)} {cog}")
 
-    async def print_bot_update(self, status: str):
+    async def p_bot_update(self, status: str):
         """
         [LOGGED IN|LOGGED OUT] When the bots logged in or logged out with relevant info
 
@@ -77,7 +77,7 @@ class InfoPrinter:
             f"{await self.generate_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}"
         )
 
-    async def print_connect(self, info: str) -> None:
+    async def p_connect(self, info: str) -> None:
         """
         [CONNECTED] When the bot has connected successfully to something
 
@@ -88,7 +88,7 @@ class InfoPrinter:
         """
         print(f"{await self.generate_category(f'{Fore.YELLOW}CONNECTED')} {info}")
 
-    async def print_bot(self, categories: str, info: str):
+    async def p_bot(self, categories: str, info: str):
         """
         [BOT] Bot related info that needs to be printed
 
@@ -101,7 +101,7 @@ class InfoPrinter:
         """
         print(f"{await self.generate_category(f'{Fore.CYAN}BOT')}{categories} {info}")
 
-    async def print_update_db(self, dbtype: str, name: str, info: str):
+    async def p_update_db(self, dbtype: str, name: str, info: str):
         """
         [DB] DB related info that needs to be printed
 
@@ -113,7 +113,7 @@ class InfoPrinter:
         """
         print(f"{await self.generate_category(f'{Fore.MAGENTA}DB')} {info}")
 
-    async def print_cog(self, categories: str, info: str):
+    async def p_cog(self, categories: str, info: str):
         """
         [COG] Cog related info that needs to be printed
 
@@ -126,7 +126,7 @@ class InfoPrinter:
         """
         print(f"{await self.generate_category(f'{Fore.RED}COG')}{categories} {info}")
 
-    async def print_save(self, info: str):
+    async def p_save(self, info: str):
         """
         [SAVE] Save info
 

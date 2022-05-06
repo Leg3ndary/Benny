@@ -32,7 +32,7 @@ class Events(commands.Cog):
 
         bot_percentage = math.trunc((guild_bots / len(guild.members)) * 10000) / 100
 
-        await self.bot.printer.print_bot(
+        await self.bot.printer.p_bot(
             await self.bot.printer.generate_category(f"{Fore.GREEN}JOINED"),
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
@@ -61,7 +61,7 @@ class Events(commands.Cog):
                 except:
                     pass
             await guild.leave()
-            await self.bot.printer.print_bot(
+            await self.bot.printer.p_bot(
                 await self.bot.printer.generate_category(f"{Fore.MAGENTA}AUTOLEFT"),
                 f" {guild.name} {guild.id}",
             )
@@ -71,7 +71,7 @@ class Events(commands.Cog):
         """
         When we leave a guild
         """
-        await self.bot.printer.print_bot(
+        await self.bot.printer.p_bot(
             await self.bot.printer.generate_category(f"{Fore.RED}LEFT"),
             f" {guild.name} {guild.id}",
         )

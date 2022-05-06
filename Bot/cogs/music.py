@@ -393,7 +393,7 @@ class Music(commands.Cog):
                 );
                 """
             )
-        await self.bot.printer.print_load("Playlist")
+        await self.bot.printer.p_load("Playlist")
 
     async def connect_nodes(self):
         """Connect to our Lavalink nodes."""
@@ -474,12 +474,12 @@ class Music(commands.Cog):
                 );
                 """
             )
-        await self.bot.printer.print_load("Recently Played")
+        await self.bot.printer.p_load("Recently Played")
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node):
         """Event fired when a node has finished connecting."""
-        await self.bot.printer.print_connect(f"{node.identifier} is ready.")
+        await self.bot.printer.p_connect(f"{node.identifier} is ready.")
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, player, track, reason):
