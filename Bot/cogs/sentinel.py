@@ -69,7 +69,7 @@ class Sentinel(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED
                 )
-                await msg.channel.send(embed=embed)
+                await msg.channel.send(embed=embed, delete_after=10)
 
 
 async def setup(bot):
