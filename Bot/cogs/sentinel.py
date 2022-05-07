@@ -27,7 +27,7 @@ class Toxicity:
         self.insult = round(prediction.get("insult"), 5)
         self.threat = round(prediction.get("threat"), 5)
         self.sexual_explicit = round(prediction.get("sexual_explicit"), 5)
-        self.average = self.toxicity + self.severe_toxicity + self.obscene + self.identity_attack + self.insult + self.threat + self.sexual_explicit
+        self.average = (self.toxicity + self.severe_toxicity + self.obscene + self.identity_attack + self.insult + self.threat + self.sexual_explicit) / 7
 
 
 class Sentinel(commands.Cog):
@@ -43,8 +43,7 @@ class Sentinel(commands.Cog):
         """
         Check for toxification
         """
-        prediction = await self.bot.loop.run_in_executor(None, self.sentinel.predict(msg))
-        return Toxicity(prediction)
+        return Toxicity(self.sentinel.predict(msg))
 
     @commands.Cog.listener()
     async def on_message(self, msg):
@@ -55,7 +54,7 @@ class Sentinel(commands.Cog):
             pass
         elif msg.guild.id == 839605885700669441:
             toxic = await self.sentinel_check(msg.clean_content)
-            if toxic.average > 60:
+            if toxic.toxicity > 0.6:
                 embed = discord.Embed(
                     title=f"Are you being toxic?",
                     description=f"""So rude.
@@ -70,7 +69,7 @@ class Sentinel(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED
                 )
-                await msg.send(embed=embed)
+                await msg.channel.send(embed=embed)
 
 
 async def setup(bot):
