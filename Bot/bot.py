@@ -1,4 +1,5 @@
 import time
+from unittest.mock import sentinel
 import aiohttp
 import asyncio
 import discord
@@ -76,63 +77,66 @@ async def start_bot():
     Start the bot with everything it needs
     """
     async with bot:
-        bot.printer = InfoPrinter(bot)
-        await bot.printer.p_load("Printer")
-
-        bot.config = config
-        await bot.printer.p_load("Config")
-
-        bot.util = util.BotUtil(bot)
-        await bot.printer.p_load("Bot Util")
-
-        file_list = {}
-        total = 0
-
-        for file in await bot.util.get_files():
-            file_len = await bot.util.len_file(file)
-            file_list[file] = file_len
-            total += file_len
-        file_list["total"] = total
-        bot.file_list = file_list
-
-        await bot.util.load_cogs(os.listdir("Bot/cogs"))
-
-        async def when_bot_ready():
-            """
-            On ready dispatch and print stuff
-            """
-            await bot.wait_until_ready()
-            bot.dispatch("load_prefixes")
-            bot.dispatch("connect_wavelink")
-            await bot.printer.p_bot_update("LOGGED IN")
-
-        @bot.check
-        async def global_check(ctx):
-            """
-            Global check that applies to all commands
-            ├─ Check if prefixes are actually loaded
-            ├── Check if the user is blacklisted from the bot
-            ├─── Check if command is disabled
-            ├──── Check if channel/thread is being ignored
-            └────────
-            """
-            if not bot.loaded_prefixes:
-                return False
-            return True
-
         async with aiohttp.ClientSession() as session:
-            bot.aiosession = session
-            await bot.printer.p_connect("AIOHTTP Session")
-            end = time.monotonic()
-            await bot.printer.p_bot(
-                "",
-                f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
-            )
+            async with aiohttp.ClientSession() as sentinel_session:
+                bot.aiosession = session
+                bot.sensession = sentinel_session
+                
+                bot.printer = InfoPrinter(bot)
+                await bot.printer.p_load("Printer")
 
-            bot.loop.create_task(when_bot_ready())
-            bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
-            bot.ipc.start()
-            await bot.start(bot.config.get("Bot").get("Token"))
+                bot.config = config
+                await bot.printer.p_load("Config")
+
+                bot.util = util.BotUtil(bot)
+                await bot.printer.p_load("Bot Util")
+
+                file_list = {}
+                total = 0
+
+                for file in await bot.util.get_files():
+                    file_len = await bot.util.len_file(file)
+                    file_list[file] = file_len
+                    total += file_len
+                file_list["total"] = total
+                bot.file_list = file_list
+
+                await bot.util.load_cogs(os.listdir("Bot/cogs"))
+
+                async def when_bot_ready():
+                    """
+                    On ready dispatch and print stuff
+                    """
+                    await bot.wait_until_ready()
+                    bot.dispatch("load_prefixes")
+                    bot.dispatch("connect_wavelink")
+                    await bot.printer.p_bot_update("LOGGED IN")
+
+                @bot.check
+                async def global_check(ctx):
+                    """
+                    Global check that applies to all commands
+                    ├─ Check if prefixes are actually loaded
+                    ├── Check if the user is blacklisted from the bot
+                    ├─── Check if command is disabled
+                    ├──── Check if channel/thread is being ignored
+                    └────────
+                    """
+                    if not bot.loaded_prefixes:
+                        return False
+                    return True
+
+                await bot.printer.p_connect("AIOHTTP Session")
+                end = time.monotonic()
+                await bot.printer.p_bot(
+                    "",
+                    f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+                )
+
+                bot.loop.create_task(when_bot_ready())
+                bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                bot.ipc.start()
+                await bot.start(bot.config.get("Bot").get("Token"))
 
 
 asyncio.run(start_bot())

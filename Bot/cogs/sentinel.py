@@ -138,13 +138,13 @@ class Sentinel(commands.Cog):
         self.bot = bot
         self.sentinel = Detoxify(model_type="unbiased")
         self.sentinels = {}
-        self.session = aiohttp.ClientSession(loop=bot.loop)
+        self.session = bot.sensession
 
     async def cog_load(self) -> None:
         """
         On cog load setup db
         """
-        self.db = asqlite.connect("Databases/sentinel.db")
+        self.db = await asqlite.connect("Databases/sentinel.db")
         async with self.db.cursor() as cur:
             await cur.execute(
                 """
@@ -168,12 +168,6 @@ class Sentinel(commands.Cog):
             )
         await self.bot.printer.p_load("Sentinel Config")
 
-    async def cog_unload(self) -> None:
-        """
-        On cog load destroy session
-        """
-        await self.session.close()
-
     async def load_sentinels(self) -> None:
         """
         Load all sentinels objects into a cache so we can retrieve it quickly
@@ -181,8 +175,6 @@ class Sentinel(commands.Cog):
         async with self.db.cursor() as cursor:
             query = """SELECT * FROM config;"""
             data = await cursor.execute(query)
-            
-
 
     async def sentinel_check(self, msg: str) -> Toxicity:
         """
