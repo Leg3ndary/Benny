@@ -19,7 +19,7 @@ class DiscordStatusClient:
 
         Base url not available in current version.
         """
-        self.session = await aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession()
 
     async def fetch_summary(self) -> str:
         """
