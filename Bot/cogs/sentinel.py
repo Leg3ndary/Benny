@@ -1,3 +1,4 @@
+from re import A
 import aiohttp
 import asyncio
 import asqlite
@@ -54,8 +55,13 @@ class Config:
 
     def __init__(
         self,
+        channels: str,
+        premium: bool,
         webhook: str,
+        username: str,
+        avatar: str,
         toxicity: int,
+        severe_toxicity: int,
         obscene: int,
         identity_attack: int,
         insult: int,
@@ -65,8 +71,13 @@ class Config:
         """
         Init for config
         """
+        self.channels = channels.split("-")
+        self.premium = premium
         self.webhook = webhook
+        self.username = username
+        self.avatar = avatar
         self.toxicity = toxicity
+        self.severe_toxicity = severe_toxicity
         self.obscene = obscene
         self.identity_attack = identity_attack
         self.insult = insult
@@ -110,10 +121,35 @@ class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
             title=f"",
             description=f"""""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.green(),
+            color=style.Color.GREEN,
         )
         await interaction.response.send_message(embed=embed)
 
+class SentinelWatcherView(discord.ui.View):
+    """
+    View for sentinel thingy
+    """
+    
+    def __init__(self):
+        """Init"""
+        super().__init__()
+
+    @discord.ui.button(
+        label="Ban", emoji=":hammer:", style=discord.ButtonStyle.danger
+    )
+    async def ban(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
+        await interaction.send("Add ban stuff idiot")
+
+    @discord.ui.button(
+        label="Mute", emoji=":mute:", style=discord.ButtonStyle.danger
+    )
+    async def mute(
+        self, interaction: discord.INteraction, button: discord.ui.Button
+    ):
+        await interaction.send("Add mute stuff here idiot")
+        
 
 class SentinelConfigView(discord.ui.View):
     """
@@ -124,8 +160,12 @@ class SentinelConfigView(discord.ui.View):
         """Init"""
         super().__init__()
 
-    @discord.ui.button(label="Update Config", emoji=":setting:", style=discord.ButtonStyle.grey)
-    async def update_config(self, interaction: discord.Interaction, button: discord.ui.Button):
+    @discord.ui.button(
+        label="Update Config", emoji=":setting:", style=discord.ButtonStyle.grey
+    )
+    async def update_config(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         await interaction.send_modal(SentinelConfigModal())
 
 
@@ -158,6 +198,7 @@ class Sentinel(commands.Cog):
                     avatar          TEXT,
                     webhook         INT NOT NULL,
                     toxicity        INT NOT NULL,
+                    severe_toxicity INT NOT NULL
                     obscene         INT NOT NULL,
                     identity_attack INT NOT NULL,
                     insult          INT NOT NULL,
@@ -175,7 +216,22 @@ class Sentinel(commands.Cog):
         async with self.db.cursor() as cursor:
             query = """SELECT * FROM config;"""
             data = await cursor.execute(query)
-            for guild in 
+            for config in data:
+                self.sentinels[config[0]] = Config(
+                    config[1],
+                    config[2],
+                    config[3],
+                    config[4],
+                    config[5],
+                    config[6],
+                    config[7],
+                    config[8],
+                    config[9],
+                    config[10],
+                    config[11],
+                    config[12],
+                    config[13],
+                )
 
     async def sentinel_check(self, msg: str) -> Toxicity:
         """
@@ -186,8 +242,34 @@ class Sentinel(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, msg):
         """
-        Testing
+        Sentinels time :)
         """
+        if msg.author.bot:
+            return
+        sentinel = self.sentinels.get(str(msg.guild.id))
+        if not sentinel:
+            pass
+        elif msg.channel.id not in sentinel.channels:
+            pass
+        else:
+            toxicness = await self.sentinel_check(msg.clean_content)
+            if (
+                toxicness.toxicity > sentinel.toxicity
+                or toxicness.severe_toxicity > sentinel.severe_toxicity
+                or toxicness.obscene > sentinel.obscene
+                or toxicness.identity_attack > sentinel.identity_attack
+                or toxicness.insult > sentinel.insult
+                or toxicness.threat > sentinel.threat
+                or toxicness.sexual_explicit > sentinel.sexual_explicit
+                or toxicness.average > sentinel.average
+            ):
+                webhook = discord.Webhook.from_url(
+                    sentinel.webhook_url,
+                    adapter=discord.AsyncWebhookAdapter(self.session)
+                )
+
+
+        '''
         if msg.author.bot:
             pass
         elif msg.guild.id == 839605885700669441:
@@ -208,6 +290,7 @@ class Sentinel(commands.Cog):
                     color=style.Color.RED,
                 )
                 await msg.channel.send(embed=embed, delete_after=10)
+        '''
 
     @commands.hybrid_group(
         name="sentinel",
@@ -228,12 +311,9 @@ class Sentinel(commands.Cog):
             description=f"""
             """,
             timestamp=discord.utils.utcnow(),
-            color=style.Color.RED
+            color=style.Color.RED,
         )
-        embed.add_field(
-            name="Current Config",
-            value="Stuff"
-        )
+        embed.add_field(name="Current Config", value="Stuff")
         await ctx.send(embed=embed, view=SentinelConfigView())
 
 

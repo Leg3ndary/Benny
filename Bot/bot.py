@@ -81,7 +81,7 @@ async def start_bot():
             async with aiohttp.ClientSession() as sentinel_session:
                 bot.aiosession = session
                 bot.sensession = sentinel_session
-                
+
                 bot.printer = InfoPrinter(bot)
                 await bot.printer.p_load("Printer")
 
