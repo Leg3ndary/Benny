@@ -175,6 +175,7 @@ class Sentinel(commands.Cog):
         async with self.db.cursor() as cursor:
             query = """SELECT * FROM config;"""
             data = await cursor.execute(query)
+            for guild in 
 
     async def sentinel_check(self, msg: str) -> Toxicity:
         """
