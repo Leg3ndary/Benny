@@ -146,9 +146,17 @@ class SentinelWatcherView(discord.ui.View):
         label="Mute", emoji=":mute:", style=discord.ButtonStyle.danger
     )
     async def mute(
-        self, interaction: discord.INteraction, button: discord.ui.Button
+        self, interaction: discord.Interaction, button: discord.ui.Button
     ):
         await interaction.send("Add mute stuff here idiot")
+
+    @discord.ui.button(
+        label="warn", emoji=":warning:", style=discord.ButtonStyle.blurple
+    )
+    async def warn(
+        self, interaction: discord.Interaction, button: discord.ui.Buttno
+    ):
+        await interaction.send("add warn stuff dumbass")
         
 
 class SentinelConfigView(discord.ui.View):
