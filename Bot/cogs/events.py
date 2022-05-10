@@ -76,6 +76,13 @@ class Events(commands.Cog):
             f" {guild.name} {guild.id}",
         )
 
+    @commands.Cog.listener()
+    async def on_thread_create(self, thread):
+        """
+        Whenever possible, join threads
+        """
+        await thread.join()
+
 
 async def setup(bot):
     await bot.add_cog(Events(bot))
