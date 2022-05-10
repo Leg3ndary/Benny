@@ -30,22 +30,25 @@ class Toxicity:
         prediction: dict
             The prediction dict to build the Toxicity object off of
         """
-        self.toxicity = round(prediction.get("toxicity"), 5)
-        self.severe_toxicity = round(prediction.get("severe_toxicity"), 5)
-        self.obscene = round(prediction.get("obscene"), 5)
-        self.identity_attack = round(prediction.get("identity_attack"), 5)
-        self.insult = round(prediction.get("insult"), 5)
-        self.threat = round(prediction.get("threat"), 5)
-        self.sexual_explicit = round(prediction.get("sexual_explicit"), 5)
+        self.toxicity = round(prediction.get("toxicity"), 5) * 100
+        self.severe_toxicity = round(prediction.get("severe_toxicity"), 5) * 100
+        self.obscene = round(prediction.get("obscene"), 5) * 100
+        self.identity_attack = round(prediction.get("identity_attack"), 5) * 100
+        self.insult = round(prediction.get("insult"), 5) * 100
+        self.threat = round(prediction.get("threat"), 5) * 100
+        self.sexual_explicit = round(prediction.get("sexual_explicit"), 5) * 100
         self.average = (
-            self.toxicity
-            + self.severe_toxicity
-            + self.obscene
-            + self.identity_attack
-            + self.insult
-            + self.threat
-            + self.sexual_explicit
-        ) / 7
+            (
+                self.toxicity
+                + self.severe_toxicity
+                + self.obscene
+                + self.identity_attack
+                + self.insult
+                + self.threat
+                + self.sexual_explicit
+            )
+            / 7
+        ) * 100
 
 
 class Config:
@@ -125,39 +128,30 @@ class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
         )
         await interaction.response.send_message(embed=embed)
 
+
 class SentinelWatcherView(discord.ui.View):
     """
     View for sentinel thingy
     """
-    
+
     def __init__(self):
         """Init"""
         super().__init__()
 
-    @discord.ui.button(
-        label="Ban", emoji=":hammer:", style=discord.ButtonStyle.danger
-    )
-    async def ban(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    @discord.ui.button(label="Ban", emoji=":hammer:", style=discord.ButtonStyle.danger)
+    async def ban(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.send("Add ban stuff idiot")
 
-    @discord.ui.button(
-        label="Mute", emoji=":mute:", style=discord.ButtonStyle.danger
-    )
-    async def mute(
-        self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    @discord.ui.button(label="Mute", emoji=":mute:", style=discord.ButtonStyle.danger)
+    async def mute(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.send("Add mute stuff here idiot")
 
     @discord.ui.button(
         label="warn", emoji=":warning:", style=discord.ButtonStyle.blurple
     )
-    async def warn(
-        self, interaction: discord.Interaction, button: discord.ui.Buttno
-    ):
+    async def warn(self, interaction: discord.Interaction, button: discord.ui.Buttno):
         await interaction.send("add warn stuff dumbass")
-        
+
 
 class SentinelConfigView(discord.ui.View):
     """
@@ -273,9 +267,15 @@ class Sentinel(commands.Cog):
             ):
                 webhook = discord.Webhook.from_url(
                     sentinel.webhook_url,
-                    adapter=discord.AsyncWebhookAdapter(self.session)
+                    adapter=discord.AsyncWebhookAdapter(self.session),
                 )
-
+                embed = discord.Embed(
+                    title=f"",
+                    description=f"""""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.RED
+                )
+                await webhook.send(embed=embed)
 
         '''
         if msg.author.bot:
