@@ -1,5 +1,4 @@
 import time
-from unittest.mock import sentinel
 import aiohttp
 import asyncio
 import discord
@@ -55,16 +54,19 @@ prefix = config.get("Bot").get("Prefix")
 async def get_prefix(bot, msg):
     """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
     prefixes = [f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "]
-    if msg.guild is None:
-        return prefixes.append(bot.prefix)
-    else:
-        return prefixes + bot.prefixes.get(str(msg.guild.id), "")
+    try:
+        if not msg.guild:
+            return prefixes.append(bot.prefix)
+        else:
+            return prefixes + bot.prefixes.get(str(msg.guild.id), "")
+    except AttributeError:
+        return prefixes
 
 
 bot = commands.Bot(
     command_prefix=get_prefix,
     intents=intents,
-    description="Benny Bot, a cool bot obviously",
+    description="Benny Bot",
 )
 bot.start_time = datetime.datetime.now(datetime.timezone.utc)
 bot.loaded_prefixes = False
@@ -72,7 +74,7 @@ bot.MUSIC_ON = True
 bot.prefix = prefix
 
 
-async def start_bot():
+async def start():
     """
     Start the bot with everything it needs
     """
@@ -139,4 +141,4 @@ async def start_bot():
                 await bot.start(bot.config.get("Bot").get("Token"))
 
 
-asyncio.run(start_bot())
+asyncio.run(start())
