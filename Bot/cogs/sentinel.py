@@ -215,22 +215,23 @@ class Sentinel(commands.Cog):
         async with self.db.cursor() as cursor:
             query = """SELECT * FROM config;"""
             data = await cursor.execute(query)
-            for config in data:
-                self.sentinels[config[0]] = Config(
-                    config[1],
-                    config[2],
-                    config[3],
-                    config[4],
-                    config[5],
-                    config[6],
-                    config[7],
-                    config[8],
-                    config[9],
-                    config[10],
-                    config[11],
-                    config[12],
-                    config[13],
-                )
+            if data:
+                for config in data:
+                    self.sentinels[config[0]] = Config(
+                        config[1],
+                        config[2],
+                        config[3],
+                        config[4],
+                        config[5],
+                        config[6],
+                        config[7],
+                        config[8],
+                        config[9],
+                        config[10],
+                        config[11],
+                        config[12],
+                        config[13],
+                    )
 
     async def sentinel_check(self, msg: str) -> Toxicity:
         """

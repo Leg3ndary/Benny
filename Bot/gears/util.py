@@ -102,6 +102,7 @@ class BotUtil:
 
             except Exception as e:
                 await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                print(e.with_traceback)
         self.bot.cog_list = cog_list
 
     async def report_error(self, error_descrip):
