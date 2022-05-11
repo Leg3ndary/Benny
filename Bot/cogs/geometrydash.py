@@ -13,7 +13,7 @@ class GeometryDash(commands.Cog):
         self.bot = bot
         self.gd = gd.Client()
 
-    @commands.command(
+    @commands.hybrid_group(
         name="gd",
         description="""Geometry dash related commands""",
         help="""Geometry dash related commands""",
@@ -28,7 +28,7 @@ class GeometryDash(commands.Cog):
         if not ctx.invoked_subcommand:
             pass
 
-    @gd_cmd.hybrid_group(
+    @gd_cmd.command(
         name="daily",
         description="""View the daily levels information""",
         help="""View the daily levels information""",
