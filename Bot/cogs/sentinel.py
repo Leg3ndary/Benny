@@ -1,6 +1,3 @@
-from re import A
-import aiohttp
-import asyncio
 import asqlite
 import discord
 import discord.utils
