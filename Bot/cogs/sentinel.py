@@ -270,10 +270,18 @@ class Sentinel(commands.Cog):
                     adapter=discord.AsyncWebhookAdapter(self.session),
                 )
                 embed = discord.Embed(
-                    title=f"",
-                    description=f"""""",
+                    title=f"Are you being toxic?",
+                    description=f"""So rude.
+                    toxicity: {toxicness.toxicity}%
+                    severe_toxicity: {toxicness.severe_toxicity}
+                    obscene: {toxicness.obscene}
+                    identity_attack: {toxicness.identity_attack}
+                    insult: {toxicness.insult}
+                    threat: {toxicness.threat}
+                    sexual_explicit: {toxicness.sexual_explicit}
+                    average: {toxicness.average}""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED
+                    color=style.Color.RED,
                 )
                 await webhook.send(embed=embed)
 
@@ -283,20 +291,7 @@ class Sentinel(commands.Cog):
         elif msg.guild.id == 839605885700669441:
             toxic = await self.sentinel_check(msg.clean_content)
             if toxic.toxicity > 0.6:
-                embed = discord.Embed(
-                    title=f"Are you being toxic?",
-                    description=f"""So rude.
-                    toxicity: {toxic.toxicity * 100}%
-                    severe_toxicity: {toxic.severe_toxicity * 100}
-                    obscene: {toxic.obscene * 100}
-                    identity_attack: {toxic.identity_attack * 100}
-                    insult: {toxic.insult * 100}
-                    threat: {toxic.threat * 100}
-                    sexual_explicit: {toxic.sexual_explicit * 100}
-                    average: {toxic.average * 100}""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED,
-                )
+                
                 await msg.channel.send(embed=embed, delete_after=10)
         '''
 
@@ -323,6 +318,19 @@ class Sentinel(commands.Cog):
         )
         embed.add_field(name="Current Config", value="Stuff")
         await ctx.send(embed=embed, view=SentinelConfigView())
+
+    @sentinel_cmd.command(
+        name="default",
+        description="""Set default command config""",
+        help="""Set sentinel config to default values.""",
+        brief="You should also use this to setup",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def sentinel_default_cmd(self, ctx):
+        """Set default command config"""
 
 
 async def setup(bot):
