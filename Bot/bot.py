@@ -74,7 +74,7 @@ bot.MUSIC_ON = True
 bot.prefix = prefix
 
 
-async def start():
+async def start_bot():
     """
     Start the bot with everything it needs
     """
@@ -141,4 +141,4 @@ async def start():
                 await bot.start(bot.config.get("Bot").get("Token"))
 
 
-asyncio.run(start())
+asyncio.run(start_bot())
