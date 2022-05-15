@@ -4,6 +4,7 @@ import discord.utils
 from discord.ext import commands
 from gears import style
 from detoxify import Detoxify
+import cleantext
 
 
 class Toxicity:
@@ -206,7 +207,50 @@ class Sentinel(commands.Cog):
                 );
                 """
             )
+            await cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS decancer (
+                    guild           TEXT NOT NULL
+                                        PRIMARY KEY,
+                    webhook_url     TEXT NOT NULL,
+                    decancer        BOOL NOT NULL,
+                );
+                """
+            )
         await self.bot.printer.p_load("Sentinel Config")
+
+    async def clean_username(self, username: str) -> str:
+        """
+        Clean a username
+        
+        Parameters
+        ----------
+        username: str
+            The username to clean
+            
+        Returns
+        -------
+        str
+            The cleaned username
+        """
+        new_username = cleantext.clean(username,
+            fix_unicode=True,
+            to_ascii=True,
+            lower=False,
+            no_line_breaks=True,
+            no_urls=True,
+            no_emails=True,
+            no_phone_numbers=True,
+            no_numbers=False,
+            no_digits=False,
+            no_currency_symbols=False,
+            no_punct=False,
+            replace_with_url="<URL>",
+            replace_with_email="<EMAIL>",
+            replace_with_phone_number="<PHONE>",
+            lang="en"
+        )
+        return new_username
 
     async def load_sentinels(self) -> None:
         """
@@ -293,6 +337,9 @@ class Sentinel(commands.Cog):
                 await msg.channel.send(embed=embed, delete_after=10)
         '''
 
+    @commands.Cog.listener()
+    async def on_member_join
+
     @commands.hybrid_group(
         name="sentinel",
         description="""View sentinel config""",
@@ -329,6 +376,32 @@ class Sentinel(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def sentinel_default_cmd(self, ctx):
         """Set default command config"""
+
+    @commands.hybrid_group()
+    async def decancer_cmd(self, ctx):
+        """
+        Decancer hybrid_group
+        """
+
+    @decancer_cmd.command(
+        name="enable",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def decancer_enable_cmd(self, ctx):
+        """Enable decancer_enable"""
+        embed = discord.Embed(
+            title=f"",
+            description=f"""""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random()
+        )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot):
