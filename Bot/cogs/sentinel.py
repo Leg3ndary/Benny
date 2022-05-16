@@ -338,7 +338,10 @@ class Sentinel(commands.Cog):
         '''
 
     @commands.Cog.listener()
-    async def on_member_join
+    async def on_member_join(self, member):
+        """
+        On member join check if we have to decancer the user"""
+        await
 
     @commands.hybrid_group(
         name="sentinel",
