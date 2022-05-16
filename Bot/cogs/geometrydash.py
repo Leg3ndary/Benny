@@ -5,13 +5,45 @@ from discord.ext import commands
 from gears import style
 import gd
 
+client = gd.Client()
+
+
+class GeometryDashWebhookUpdates:
+    """
+    This class manages sending geometry dash updates to webhooks
+    """
+
+    def __init__(self) -> None:
+        """
+        Initiating the manager
+        """
+        self.new_ = 0
+
 
 class GeometryDash(commands.Cog):
     """Gonna be adding geodash stuff"""
 
     def __init__(self, bot):
         self.bot = bot
-        self.gd = gd.Client()
+        self.gd = client
+
+    async def cog_load(self):
+        """
+        On cog load
+        """
+        gd.events.enable(self.bot.loop)
+
+    @client.event
+    async def on_new_daily(self, level: gd.Level) -> None:
+        """
+        On a new daily, post to a channel
+        """
+        embed = discord.Embed(
+            title=f"",
+            description=f"""""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random()
+        )
 
     @commands.hybrid_group(
         name="gd",

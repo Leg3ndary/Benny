@@ -11,3 +11,4 @@ numpy==1.19.4
 psutil==5.8.0
 python-dotenv==0.20.0
 wavelink==1.2.4
+clean-text==0.6.0

@@ -7,6 +7,45 @@ from detoxify import Detoxify
 import cleantext
 
 
+class DecancerManager:
+    """
+    Class for managing decancer states and info
+    """
+
+    def __init__(self, db) -> None:
+        """
+        Init the manager
+        """
+        self.db = db
+
+    async def ensure_guild(self, guild: int) -> None:
+        """Ensure a guild is in our db, if not found, will quickly add default config"""
+        async with self.db.cursor() as cur:
+            query = """SELECT guild FROM decancer;"""
+            check = await cur.execute(query)
+            if not check:
+                await cur.execute(f"""INSERT INTO decancer VALUES({str(guild)}, {None}, {False});""")
+                await self.db.commit()
+    
+    async def enable(self, guild: int) -> None:
+        """Enable decancering for a guild"""
+        await self.ensure_guild(guild)
+        async with self.db.cursor() as cur:
+            await cur.execute(f"""UPDATE decancer SET decancer = ? WHERE guild = ?;""", (True, str(guild)))
+    
+    async def disable(self, guild: int) -> None:
+        """Disable decancering for a guild"""
+        await self.ensure_guild(guild)
+        async with self.db.cursor() as cur:
+            await cur.execute(f"""UPDATE decancer SET decancer = ? WHERE guild = ?;""", (False, str(guild)))
+
+    async def set_webhook(self, guild: int, webhook_url: str) -> None:
+        """Set a webhook"""
+        await self.ensure_guild(guild)
+        async with self.db.cursor() as cur:
+            await cur.execute(f"""UPDATE decancer SET webhook_url = ? WHERE guild = ?;""", (webhook_url, str(guild)))
+
+
 class Toxicity:
     """
     Toxicity info for easy access
@@ -198,7 +237,7 @@ class Sentinel(commands.Cog):
                     avatar          TEXT,
                     webhook         INT NOT NULL,
                     toxicity        INT NOT NULL,
-                    severe_toxicity INT NOT NULL
+                    severe_toxicity INT NOT NULL,
                     obscene         INT NOT NULL,
                     identity_attack INT NOT NULL,
                     insult          INT NOT NULL,
@@ -212,12 +251,13 @@ class Sentinel(commands.Cog):
                 CREATE TABLE IF NOT EXISTS decancer (
                     guild           TEXT NOT NULL
                                         PRIMARY KEY,
-                    webhook_url     TEXT NOT NULL,
-                    decancer        BOOL NOT NULL,
+                    webhook_url     TEXT,
+                    decancer        BOOL NOT NULL
                 );
                 """
             )
         await self.bot.printer.p_load("Sentinel Config")
+        self.decancer = DecancerManager(self.db)
 
     async def clean_username(self, username: str) -> str:
         """
@@ -338,10 +378,15 @@ class Sentinel(commands.Cog):
         '''
 
     @commands.Cog.listener()
-    async def on_member_join(self, member):
+    async def on_member_join(self, member) -> None:
         """
-        On member join check if we have to decancer the user"""
-        await
+        On member join check if we have to decancer the user
+        """
+        new_nick = await self.clean_username(member.display_name)
+        if new_nick != member.display_name:
+            await member.edit(
+                nick=new_nick
+            )
 
     @commands.hybrid_group(
         name="sentinel",
@@ -381,14 +426,15 @@ class Sentinel(commands.Cog):
         """Set default command config"""
 
     @commands.hybrid_group()
-    async def decancer_cmd(self, ctx):
+    @commands.guild_only()
+    async def decancer(self, ctx):
         """
         Decancer hybrid_group
         """
 
-    @decancer_cmd.command(
+    @decancer.command(
         name="enable",
-        description="""Description of command""",
+        description="""Enable decancering for the server""",
         help="""What the help command displays""",
         brief="Brief one liner about the command",
         aliases=[],
@@ -397,7 +443,8 @@ class Sentinel(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def decancer_enable_cmd(self, ctx):
-        """Enable decancer_enable"""
+        """Enable decancer"""
+        await self.decancer_manager.enable(ctx.message.guild.id)
         embed = discord.Embed(
             title=f"",
             description=f"""""",
@@ -405,6 +452,43 @@ class Sentinel(commands.Cog):
             color=style.Color.random()
         )
         await ctx.send(embed=embed)
+
+    @decancer.command(
+        name="disable",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def decancer_disable_cmd(self, ctx):
+        """Enable decancer"""
+        await self.decancer_manager.disable(ctx.message.guild.id)
+        embed = discord.Embed(
+            title=f"",
+            description=f"""""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random()
+        )
+        await ctx.send(embed=embed)
+
+    @decancer.command(
+        name="logs",
+        description="""Set the decancer logs channel""",
+        help="""Set the decancer logs channel""",
+        brief="Set the decancer logs channel",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def decaner_logs_cmd(self, ctx, channel: discord.TextChannel):
+        """Set the decancer logs channel"""
+        await channel.create_webhook(
+            name="Decancer Logs"
+        )
 
 
 async def setup(bot):
