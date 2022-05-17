@@ -629,7 +629,7 @@ class Sentinel(commands.Cog):
 
         if webhook_url:
             embed = discord.Embed(
-                title=f"Decancer Automatic Action",
+                title=f"Decancer Action",
                 description=f"""{original} >> **{new_nick}**""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random()
@@ -637,6 +637,10 @@ class Sentinel(commands.Cog):
             embed.set_footer(
                 text=user.id,
                 icon_url=user.display_avatar.url
+            )
+            embed.set_author(
+                name=ctx.author.name,
+                icon_url=ctx.author.avatar.url
             )
             webhook = discord.Webhook.from_url(
                 url=webhook_url,
