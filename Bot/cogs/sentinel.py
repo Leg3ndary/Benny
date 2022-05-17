@@ -430,7 +430,7 @@ class Sentinel(commands.Cog):
                     title=f"Decancer Automatic Action",
                     description=f"""{original} >> **{new_nick}**""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.random()
+                    color=style.Color.BLUE
                 )
                 embed.set_footer(
                     text=member.id,
@@ -627,26 +627,29 @@ class Sentinel(commands.Cog):
                 nick=new_nick
             )
 
-        if webhook_url:
-            embed = discord.Embed(
+        embed = discord.Embed(
                 title=f"Decancer Action",
                 description=f"""{original} >> **{new_nick}**""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.random()
-            )
-            embed.set_footer(
-                text=user.id,
-                icon_url=user.display_avatar.url
-            )
-            embed.set_author(
-                name=ctx.author.name,
-                icon_url=ctx.author.avatar.url
-            )
+                color=style.Color.BLUE
+        )
+        embed.set_footer(
+            text=user.id,
+            icon_url=user.display_avatar.url
+        )
+        embed.set_author(
+            name=ctx.author.name,
+            icon_url=ctx.author.avatar.url
+        )
+    
+        if webhook_url:
             webhook = discord.Webhook.from_url(
                 url=webhook_url,
                 session=self.session
             )
             await webhook.send(embed=embed)
+        
+        await ctx.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Sentinel(bot))
