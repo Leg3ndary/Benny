@@ -481,6 +481,7 @@ class Sentinel(commands.Cog):
 
     @commands.hybrid_group()
     @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
     async def decancer(self, ctx):
         """
         Decancer hybrid_group
