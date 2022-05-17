@@ -425,7 +425,7 @@ class Sentinel(commands.Cog):
                     nick=new_nick
                 )
 
-            if webhook:
+            if webhook_url:
                 embed = discord.Embed(
                     title=f"Decancer Automatic Action",
                     description=f"""{original} >> **{new_nick}**""",
@@ -605,6 +605,44 @@ class Sentinel(commands.Cog):
 
         # ill finish this later because I really don't want to do it now
 
+    @decancer.command(
+        name="user",
+        description="""Decancer a user""",
+        help="""Decancer a user""",
+        brief="Decancer a user",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def decancer_user_cmd(self, ctx, user: discord.Member):
+        """Decancer a discord user"""
+        webhook_url = await self.decancer.get_webhook(ctx.message.guild.id)
+        new_nick = await self.clean_username(user.display_name)
+
+        original = user.display_name
+
+        if new_nick != original:
+            await user.edit(
+                nick=new_nick
+            )
+
+        if webhook_url:
+            embed = discord.Embed(
+                title=f"Decancer Automatic Action",
+                description=f"""{original} >> **{new_nick}**""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.random()
+            )
+            embed.set_footer(
+                text=user.id,
+                icon_url=user.display_avatar.url
+            )
+            webhook = discord.Webhook.from_url(
+                url=webhook_url,
+                session=self.session
+            )
+            await webhook.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Sentinel(bot))
