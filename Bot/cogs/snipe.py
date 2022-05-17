@@ -1,5 +1,7 @@
-import time
+# This entire cog is dicontinued due to message content privacy issues.
+# If it ever resurfaces it will be a lot more restricted.
 
+import time
 import asyncio
 import discord
 import discord.utils
