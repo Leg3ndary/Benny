@@ -112,6 +112,7 @@ async def start_bot():
                     await bot.wait_until_ready()
                     bot.dispatch("load_prefixes")
                     bot.dispatch("connect_wavelink")
+                    bot.dispatch("load_decancer_manager")
                     await bot.printer.p_bot_update("LOGGED IN")
 
                 @bot.check

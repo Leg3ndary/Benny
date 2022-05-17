@@ -4,6 +4,7 @@ import discord.utils
 from discord.ext import commands
 from gears import style
 from detoxify import Detoxify
+import io
 import cleantext
 
 
@@ -12,38 +13,63 @@ class DecancerManager:
     Class for managing decancer states and info
     """
 
-    def __init__(self, db) -> None:
+    def __init__(self, db, avatar) -> None:
         """
         Init the manager
         """
         self.db = db
+        self.username = "Benny Decancer"
+        self.avatar = avatar
 
     async def ensure_guild(self, guild: int) -> None:
         """Ensure a guild is in our db, if not found, will quickly add default config"""
         async with self.db.cursor() as cur:
-            query = """SELECT guild FROM decancer;"""
-            check = await cur.execute(query)
-            if not check:
-                await cur.execute(f"""INSERT INTO decancer VALUES({str(guild)}, {None}, {False});""")
+            check = await cur.execute("""SELECT guild FROM decancer WHERE guild = ?;""", (str(guild)))
+            if not await check.fetchone():
+                # second false needs to be changed later to premium
+                await cur.execute(f"""INSERT INTO decancer VALUES(?, ?, ?, ?, ?,?);""", (str(guild), None, False, False, self.username, self.avatar))
                 await self.db.commit()
     
     async def enable(self, guild: int) -> None:
         """Enable decancering for a guild"""
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
-            await cur.execute(f"""UPDATE decancer SET decancer = ? WHERE guild = ?;""", (True, str(guild)))
+            await cur.execute("""UPDATE decancer SET decancer = ? WHERE guild = ?;""", (True, str(guild)))
+            await self.db.commit()
     
     async def disable(self, guild: int) -> None:
         """Disable decancering for a guild"""
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
-            await cur.execute(f"""UPDATE decancer SET decancer = ? WHERE guild = ?;""", (False, str(guild)))
+            await cur.execute("""UPDATE decancer SET decancer = ? WHERE guild = ?;""", (False, str(guild)))
+            await self.db.commit()
 
     async def set_webhook(self, guild: int, webhook_url: str) -> None:
         """Set a webhook"""
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
-            await cur.execute(f"""UPDATE decancer SET webhook_url = ? WHERE guild = ?;""", (webhook_url, str(guild)))
+            await cur.execute("""UPDATE decancer SET webhook_url = ? WHERE guild = ?;""", (webhook_url, str(guild)))
+            await self.db.commit()
+
+    async def get_webhook(self, guild: int) -> str:
+        """Get a webhook"""
+        async with self.db.cursor() as cur:
+            results = await cur.execute("""SELECT webhook_url FROM decancer WHERE guild = ?;""", (str(guild),))
+            return (await results.fetchone())["webhook_url"]
+
+    async def set_user(self, guild: int, username: str, avatar: str) -> None:
+        """Set a users complete info"""
+        await self.ensure_guild(guild)
+        async with self.db.cursor() as cur:
+            await cur.execute("""UPDATE decancer SET username = ?, avatar = ? WHERE guild = ?;""", (username, avatar, str(guild)))
+            await self.db.commit()
+
+    async def decancer_user(self, guild: int) -> bool:
+        """Check if we should decancer a user"""
+        await self.ensure_guild(guild)
+        async with self.db.cursor() as cur:
+            results = await cur.execute("""SELECT decancer FROM decancer WHERE guild = ?;""", (str(guild),))
+            return (await results.fetchone())["decancer"]
 
 
 class Toxicity:
@@ -252,12 +278,14 @@ class Sentinel(commands.Cog):
                     guild           TEXT NOT NULL
                                         PRIMARY KEY,
                     webhook_url     TEXT,
-                    decancer        BOOL NOT NULL
+                    decancer        BOOL NOT NULL,
+                    premium         BOOL NOT NULL,
+                    username        TEXT NOT NULL,
+                    avatar          TEXT NOT NULL
                 );
                 """
             )
         await self.bot.printer.p_load("Sentinel Config")
-        self.decancer = DecancerManager(self.db)
 
     async def clean_username(self, username: str) -> str:
         """
@@ -324,6 +352,11 @@ class Sentinel(commands.Cog):
         return Toxicity(self.sentinel.predict(msg))
 
     @commands.Cog.listener()
+    async def on_load_decancer_manager(self) -> None:
+        """Load decancer manager when bots loaded"""
+        self.decancer = DecancerManager(self.db, self.bot.user.avatar.url)
+
+    @commands.Cog.listener()
     async def on_message(self, msg):
         """
         Sentinels time :)
@@ -331,9 +364,7 @@ class Sentinel(commands.Cog):
         if msg.author.bot:
             return
         sentinel = self.sentinels.get(str(msg.guild.id))
-        if not sentinel:
-            pass
-        elif msg.channel.id not in sentinel.channels:
+        if not sentinel or msg.channel.id not in sentinel.channels:
             pass
         else:
             toxicness = await self.sentinel_check(msg.clean_content)
@@ -382,11 +413,34 @@ class Sentinel(commands.Cog):
         """
         On member join check if we have to decancer the user
         """
-        new_nick = await self.clean_username(member.display_name)
-        if new_nick != member.display_name:
-            await member.edit(
-                nick=new_nick
-            )
+        check = await self.decancer.decancer_user(member.guild.id)
+        if check:
+            webhook_url = await self.decancer.get_webhook(member.guild.id)
+            new_nick = await self.clean_username(member.display_name)
+
+            original = member.display_name
+
+            if new_nick != original:
+                await member.edit(
+                    nick=new_nick
+                )
+
+            if webhook:
+                embed = discord.Embed(
+                    title=f"Decancer Automatic Action",
+                    description=f"""{original} >> **{new_nick}**""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.random()
+                )
+                embed.set_footer(
+                    text=member.id,
+                    icon_url=member.display_avatar.url
+                )
+                webhook = discord.Webhook.from_url(
+                    url=webhook_url,
+                    session=self.session
+                )
+                await webhook.send(embed=embed)
 
     @commands.hybrid_group(
         name="sentinel",
@@ -444,33 +498,41 @@ class Sentinel(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def decancer_enable_cmd(self, ctx):
         """Enable decancer"""
-        await self.decancer_manager.enable(ctx.message.guild.id)
+        await self.decancer.enable(ctx.message.guild.id)
         embed = discord.Embed(
-            title=f"",
-            description=f"""""",
+            title=f"Enabled Decancer",
+            description=f"""Successfully enabled the Decancer feature for {ctx.guild.name}.""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random()
+            color=style.Color.GREEN
+        )
+        embed.set_footer(
+            text="Consider enabling the decancer logs feature to see how nicknames are being decancered",
+            icon_url=ctx.guild.icon.url
         )
         await ctx.send(embed=embed)
 
     @decancer.command(
         name="disable",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        description="""Disable the decancer feature""",
+        help="""Disable the decancer feature""",
+        brief="Disable the decancer feature",
         aliases=[],
         enabled=True,
         hidden=False
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def decancer_disable_cmd(self, ctx):
-        """Enable decancer"""
-        await self.decancer_manager.disable(ctx.message.guild.id)
+        """Disable decancer"""
+        await self.decancer.disable(ctx.message.guild.id)
         embed = discord.Embed(
-            title=f"",
-            description=f"""""",
+            title=f"Disabled Decancer",
+            description=f"""Successfully enabled the Decancer feature for {ctx.guild.name}.""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random()
+            color=style.Color.RED
+        )
+        embed.set_footer(
+            text="Consider re-enabling this feature!",
+            icon_url=ctx.guild.icon.url
         )
         await ctx.send(embed=embed)
 
@@ -484,11 +546,63 @@ class Sentinel(commands.Cog):
         hidden=False
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def decaner_logs_cmd(self, ctx, channel: discord.TextChannel):
+    async def decancer_logs_cmd(self, ctx, channel: discord.TextChannel = None):
         """Set the decancer logs channel"""
-        await channel.create_webhook(
-            name="Decancer Logs"
-        )
+        old_webhook = await self.decancer.get_webhook(ctx.message.guild.id)
+
+        if not channel:
+            channel = ctx.message.channel
+        if old_webhook:
+            await discord.Webhook.from_url(
+                url=old_webhook,
+                session=self.session
+            ).delete(
+                reason="Removed BennyBot Decancer Logs Webhook"
+            )
+
+        async with self.session.get(self.decancer.avatar) as raw:
+            avatar_bytes = io.BytesIO(await raw.content.read())
+
+            webhook = await channel.create_webhook(
+                name=self.decancer.username,
+                avatar=avatar_bytes.getvalue(),
+                reason="BennyBot Decancer Logs Webhook"
+            )
+            await self.decancer.set_webhook(ctx.message.guild.id, webhook.url)
+            embed = discord.Embed(
+                title=f"Decancer Logs Channel Updated",
+                description=f"""Set Decancer Logs to {channel.mention}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.GREEN
+            )
+            if not await self.decancer.decancer_user(ctx.message.guild.id):
+                embed.set_footer(
+                    text="Reminder: You need to enable the decancer feature!",
+                    icon_url=ctx.guild.icon.url
+                )
+            await ctx.send(embed=embed)
+
+    @decancer.command(
+        name="auto",
+        description="""Automatically configure the decancer feature""",
+        help="""Automatically configure the decancer feature""",
+        brief="Auto setup the decancer feature",
+        aliases=[],
+        enabled=False,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.guild)
+    async def decancer_auto_cmd(self, ctx):
+        """Automatically configure the decancer feature"""
+        overwrites = {
+            ctx.guild.default_role: discord.PermissionOverwrite(
+                read_messages=False,
+                send_messages=False
+            ),
+        }
+        channel = await ctx.guild.create_text_channel("decancer-logs", overwrites=overwrites)
+
+        # ill finish this later because I really don't want to do it now
 
 
 async def setup(bot):
