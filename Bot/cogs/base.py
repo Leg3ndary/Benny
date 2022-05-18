@@ -343,7 +343,7 @@ Total Uptime: {resolved_rel}"""
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
     @system.command(
         name="info",
@@ -377,7 +377,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.random(),
         )
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @system.command(
         name="cpu",
@@ -422,7 +422,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.random(),
         )
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @system.command(
         name="memory",
@@ -454,7 +454,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.random(),
         )
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @system.command(
         name="disk",
@@ -507,7 +507,7 @@ Total Uptime: {resolved_rel}"""
 ```""",
                 inline=False,
             )
-        return await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command(
         name="files",
