@@ -42,7 +42,7 @@ class GeometryDash(commands.Cog):
             title=f"",
             description=f"""""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random()
+            color=style.Color.random(),
         )
 
     @commands.hybrid_group(
@@ -52,7 +52,7 @@ class GeometryDash(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["geometrydash"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def gd_cmd(self, ctx):
@@ -67,7 +67,7 @@ class GeometryDash(commands.Cog):
         brief="Daily level info",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def get_daily(self, ctx) -> None:
@@ -79,18 +79,22 @@ class GeometryDash(commands.Cog):
                 title="Error Occured",
                 description="Failed to get a daily level.",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.RED
+                color=style.Color.RED,
             )
             return await ctx.send(embed=embed)
 
         embed = (
-            discord.Embed(color=0x7289da).set_author(name="Current Daily")
+            discord.Embed(color=0x7289DA)
+            .set_author(name="Current Daily")
             .add_field(name="Name", value=daily.name)
-            .add_field(name="Difficulty", value=f"{daily.stars} ({daily.difficulty.title})")
+            .add_field(
+                name="Difficulty", value=f"{daily.stars} ({daily.difficulty.title})"
+            )
             .add_field(name="ID", value=f"{daily.id}")
             .set_footer(text=f"Creator: {daily.creator.name}")
         )
         await ctx.send(embed=embed)
+
 
 async def setup(bot):
     await bot.add_cog(GeometryDash(bot))
