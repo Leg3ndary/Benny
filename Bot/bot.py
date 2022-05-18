@@ -51,8 +51,14 @@ intents = discord.Intents(
 prefix = config.get("Bot").get("Prefix")
 
 
-async def get_prefix(bot, msg):
-    """Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is the below"""
+async def get_prefix(bot, msg) -> list:
+    """
+    Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is just pinging the bot
+
+    Raises AttributeError when the cache isn't built so we just have this quick fix,
+    the bot itself won't respond to anything until prefixes are built but this 
+    silences noisy errors.
+    """
     prefixes = [f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "]
     try:
         if not msg.guild:
@@ -74,7 +80,7 @@ bot.MUSIC_ON = True
 bot.prefix = prefix
 
 
-async def start_bot():
+async def start_bot() -> None:
     """
     Start the bot with everything it needs
     """
@@ -116,7 +122,7 @@ async def start_bot():
                     await bot.printer.p_bot_update("LOGGED IN")
 
                 @bot.check
-                async def global_check(ctx):
+                async def global_check(ctx: commands.context) -> bool:
                     """
                     Global check that applies to all commands
                     ├─ Check if prefixes are actually loaded
