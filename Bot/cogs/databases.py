@@ -55,7 +55,7 @@ class Databases(commands.Cog):
             await ctx.send_help("redis")
 
     @redis.command()
-    async def get(self, ctx, key):
+    async def get(self, ctx: commands.Context, key):
         """Get a certain keys data"""
         data = await self.bot.redis.get(key)
 
@@ -78,7 +78,7 @@ class Databases(commands.Cog):
         await ctx.send(embed=embed)
 
     @redis.command()
-    async def add(self, ctx, key, value):
+    async def add(self, ctx: commands.Context, key, value):
         """Add something to our db"""
         try:
             await self.bot.redis.set("key", "Data")
@@ -102,7 +102,7 @@ class Databases(commands.Cog):
             await ctx.send(embed=unable)
 
     @redis.command()
-    async def search(self, ctx, *, pattern: str = "*"):
+    async def search(self, ctx: commands.Context, *, pattern: str = "*"):
         """List all our keys"""
         keys = ""
         for count, value in enumerate(await self.bot.redis.keys(pattern), start=1):

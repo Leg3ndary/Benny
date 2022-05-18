@@ -65,9 +65,14 @@ class ModerationManager:
 
 
 class Mod(commands.Cog):
-    """Moderation related commands"""
+    """
+    Moderation related commands
+    """
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
+        """
+        Init with moderationmanager short mm
+        """
         self.bot = bot
         self.mm = ModerationManager(bot)
 
@@ -131,16 +136,17 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     async def warn_cmd(
-        self, ctx, member: commands.Greedy[discord.Member], *, reason="None"
+        self, ctx: commands.Context, member: commands.Greedy[discord.Member], *, reason: str = "None"
     ):
         """
         Warn cmd
         """
+        await self.mm.warn(ctx, member, reason)
 
     @commands.hybrid_command(
         name="ban",
         description="""Ban a user from this guild""",
-        help="""More help""",
+        help="""Ban a user from entering a guild because we don't like them""",
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
@@ -148,9 +154,9 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def ban_cmd(self, ctx, user: discord.Member = None, *, reason: str = None):
+    async def ban_cmd(self, ctx: commands.Context, user: discord.Member = None, *, reason: str = None):
         """
-        Ban a member, requires ban member permissionw3w
+        Ban a member, requires ban member permission
         """
         if user == ctx.author:
             same_user_embed = discord.Embed(
@@ -230,7 +236,7 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def unban_cmd(self, ctx, member: int, reason: str = None):
+    async def unban_cmd(self, ctx: commands.Context, member: int, reason: str = None):
         """Command description"""
         if not re.match(r"[0-9]{15,19}", str(member)):
             embed = discord.Embed(
@@ -262,7 +268,7 @@ class Mod(commands.Cog):
             pass
 
     @modlogs.command(name="channel", aliases=["set"])
-    async def modlogs_channel(self, ctx, channel: discord.TextChannel):
+    async def modlogs_channel(self, ctx: commands.Context, channel: discord.TextChannel):
         """Set a channel for modlogs"""
 
         data = await self.db_modlogs.find_one({"_id": ctx.guild.id})

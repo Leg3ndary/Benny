@@ -198,7 +198,7 @@ class Help(commands.Cog):
         bot.help_command = help_command
 
     @commands.command()
-    async def show_help(self, ctx, hello: str, stuff, optional=None):
+    async def show_help(self, ctx: commands.Context, hello: str, stuff, optional=None):
         await ctx.send_help(ctx.command.name)
 
 

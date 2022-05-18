@@ -49,7 +49,7 @@ class Tags(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def tagtest_cmd(self, ctx, *, args):
+    async def tagtest_cmd(self, ctx: commands.Context, *, args):
         """"""
         response = await self.tsei.process(
             message=args, seed_variables={"args": tse.StringAdapter(args)}

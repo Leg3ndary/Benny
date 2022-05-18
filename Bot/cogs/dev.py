@@ -71,7 +71,7 @@ class Dev(commands.Cog):
         description="None",
         hidden=True,
     )
-    async def load(self, ctx, *, cog: str):
+    async def load(self, ctx: commands.Context, *, cog: str):
         try:
             await self.bot.load_extension(cog)
             await self.bot.printer.p_cog_update(cog, "LOAD")
@@ -104,7 +104,7 @@ class Dev(commands.Cog):
         description="None",
         hidden=True,
     )
-    async def unload(self, ctx, *, cog: str):
+    async def unload(self, ctx: commands.Context, *, cog: str):
         try:
             await self.bot.unload_extension(cog)
             await self.bot.printer.p_cog_update(cog, "UNLOAD")
@@ -137,7 +137,7 @@ class Dev(commands.Cog):
         description="None",
         hidden=True,
     )
-    async def reload(self, ctx, *, cog: str):
+    async def reload(self, ctx: commands.Context, *, cog: str):
         try:
             await self.bot.unload_extension(cog)
             await self.bot.load_extension(cog)
@@ -273,7 +273,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def leave_cmd(self, ctx, *, guild: discord.Guild):
+    async def leave_cmd(self, ctx: commands.Context, *, guild: discord.Guild):
         """Leave a guild."""
         try:
             await ctx.guild.leave()
@@ -307,7 +307,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def eval_cmd(self, ctx, *, code: str):
+    async def eval_cmd(self, ctx: commands.Context, *, code: str):
         """Evaluates code given"""
         if "```py" not in code:
             no_cb = discord.Embed(

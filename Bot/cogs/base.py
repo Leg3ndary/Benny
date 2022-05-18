@@ -557,7 +557,7 @@ Total Uptime: {resolved_rel}"""
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     @commands.guild_only()
-    async def afk_set_cmd(self, ctx, *, message: str):
+    async def afk_set_cmd(self, ctx: commands.Context, *, message: str):
         """Set your afk"""
         await self.afk.set_afk(ctx, message)
 

@@ -562,7 +562,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def decancer_logs_cmd(self, ctx, channel: discord.TextChannel = None):
+    async def decancer_logs_cmd(self, ctx: commands.Context, channel: discord.TextChannel = None):
         """Set the decancer logs channel"""
         old_webhook = await self.decancer.get_webhook(ctx.message.guild.id)
 
@@ -628,7 +628,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def decancer_user_cmd(self, ctx, user: discord.Member):
+    async def decancer_user_cmd(self, ctx: commands.Context, user: discord.Member):
         """Decancer a discord user"""
         webhook_url = await self.decancer.get_webhook(ctx.message.guild.id)
         new_nick = await self.clean_username(user.display_name)

@@ -141,7 +141,7 @@ class Dictionary(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def define_cmd(self, ctx, *, word: str):
+    async def define_cmd(self, ctx: commands.Context, *, word: str):
         """Define a word"""
         data = await self.get_word(word)
         await ctx.send("Sorry, this command doesn't actually do anything as of now")

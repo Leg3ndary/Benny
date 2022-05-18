@@ -92,7 +92,7 @@ class Snipe(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def snipe_group(self, ctx, choice=1):
+    async def snipe_group(self, ctx: commands.Context, choice=1):
         """Snipe command"""
         if not ctx.invoked_subcommand:
             coll = await self.snipe[str(ctx.guild.id)]

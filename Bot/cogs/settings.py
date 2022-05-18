@@ -381,7 +381,7 @@ class Settings(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def add_prefix(self, ctx, *, prefix: str):
+    async def add_prefix(self, ctx: commands.Context, *, prefix: str):
         """Command description"""
         add_prefix = await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
 
@@ -413,7 +413,7 @@ class Settings(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def remove_prefix(self, ctx, *, prefix: str):
+    async def remove_prefix(self, ctx: commands.Context, *, prefix: str):
         """Remove a prefix from your server"""
         del_prefix = await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
 
@@ -463,7 +463,7 @@ class Settings(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def add_premium(self, ctx, *, prefix: str):
+    async def add_premium(self, ctx: commands.Context, *, prefix: str):
         """Add premium to the bot"""
         pass
 
@@ -478,7 +478,7 @@ class Settings(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def remove_premium(self, ctx, *, prefix: str):
+    async def remove_premium(self, ctx: commands.Context, *, prefix: str):
         """Command description"""
         pass
 

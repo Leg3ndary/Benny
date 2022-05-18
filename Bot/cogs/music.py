@@ -67,7 +67,7 @@ class PlayerDropdown(discord.ui.Select):
     Shows up to 25 songs in a Select so we can see it
     """
 
-    def __init__(self, ctx, player, songs: list):
+    def __init__(self, ctx: commands.Context, player, songs: list):
         self.ctx = ctx
         self.player = player
         self.songs = songs
@@ -119,7 +119,7 @@ class PlayerDropdown(discord.ui.Select):
 class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
-    def __init__(self, ctx, player, songs: list):
+    def __init__(self, ctx: commands.Context, player, songs: list):
         self.ctx = ctx
         self.play_embed = None
         super().__init__(timeout=60)
@@ -501,7 +501,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def play(self, ctx, *, song: str):
+    async def play(self, ctx: commands.Context, *, song: str):
         """
         Play a song with the given search query.
 
@@ -805,7 +805,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def remove_cmd(self, ctx, *, number: str):
+    async def remove_cmd(self, ctx: commands.Context, *, number: str):
         """
         Will support removing by song name / author soon.
         """
@@ -941,7 +941,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def create_playlist(self, ctx, *, playlist_name: str):
+    async def create_playlist(self, ctx: commands.Context, *, playlist_name: str):
         """Create a playlist"""
         try:
             c_status = await self.playlistmanager.create_playlist(
@@ -976,7 +976,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def delete_playist(self, ctx, *, playlist_name: str):
+    async def delete_playist(self, ctx: commands.Context, *, playlist_name: str):
         """Create a playlist"""
         try:
             c_status = await self.playlistmanager.delete_playlist(

@@ -138,7 +138,7 @@ class PlayerManagerView(discord.ui.View):
 class PlayerDropdown(discord.ui.Select):
     """Shows up to 25 songs in a select"""
 
-    def __init__(self, ctx, player, songs: list):
+    def __init__(self, ctx: commands.Context, player, songs: list):
         self.ctx = ctx
         self.player = player
         self.songs = songs
@@ -192,7 +192,7 @@ class PlayerDropdown(discord.ui.Select):
 class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
-    def __init__(self, ctx, player, songs: list):
+    def __init__(self, ctx: commands.Context, player, songs: list):
         self.ctx = ctx
         self.play_embed = None
         super().__init__(timeout=60)
@@ -233,7 +233,7 @@ class PlayerSelector(discord.ui.View):
 class QueueClear(discord.ui.View):
     """Clear the queue?"""
 
-    def __init__(self, ctx, queue):
+    def __init__(self, ctx: commands.Context, queue):
         self.ctx = ctx
         self.queue = queue
         self.embed = None
@@ -284,7 +284,7 @@ class QueueClear(discord.ui.View):
 class PlaylistViewer(discord.ui.View):
     """Clear the queue?"""
 
-    def __init__(self, ctx, player, playlistdb):
+    def __init__(self, ctx: commands.Context, player, playlistdb):
         self.ctx = ctx
         self.player = player
         self.playlistdb = playlistdb
