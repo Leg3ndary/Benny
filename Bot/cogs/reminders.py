@@ -138,7 +138,7 @@ class Reminders(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def reminder_cmd(self, ctx):
+    async def reminder_cmd(self, ctx: commands.Context) -> None:
         """Command description"""
         await self.rm.create_timer()
 

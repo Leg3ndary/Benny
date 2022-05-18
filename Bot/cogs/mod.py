@@ -1,10 +1,67 @@
 import asqlite
+import time
 import datetime
 import discord
 import discord.utils
+import parsedatetime
 import re
 from discord.ext import commands
 from gears import style
+
+
+class ModerationManager:
+    """
+    Class for managing moderation actions
+    """
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init the bot
+        """
+        self.bot = bot
+        self.calendar = parsedatetime.Calendar()
+
+    async def pull_time(self, string: str) -> float:
+        """
+        Pull the time from a string
+        """
+        time_struct, parse_status = self.calendar.parse(string)
+        return datetime.datetime(*time_struct[:6]).timestamp()
+
+    async def warn(
+        self, ctx: commands.Context, member: discord.Member, reason: str
+    ) -> None:
+        """
+        Warn a member
+        """
+        future_time = await self.pull_time(reason)
+        current_time = int(time.time())
+
+        user = self.bot.get_user(ctx.author.id) or (
+            await self.bot.fetch_user(ctx.author.id)
+        )
+
+        if future_time <= current_time:
+            await self.db.execute(
+                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
+                (member.id, ctx.author.id, reason, current_time, future_time),
+            )
+            description = " "
+
+        else:
+            await self.db.execute(
+                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
+                (member.id, ctx.author.id, reason, current_time, None),
+            )
+        await self.db.commit()
+
+        embed = discord.Embed(
+            title=f"Warned",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.YELLOW,
+        )
+
+        await ctx.send(embed=embed)
 
 
 class Mod(commands.Cog):
@@ -12,46 +69,46 @@ class Mod(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.mm = ModerationManager(bot)
 
     async def cog_load(self) -> None:
         """
         Load our sqlite db yay
         """
-        # Warns
         self.db = await asqlite.connect("Databases/mod.db")
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (
-                id    TEXT    NOT NULL
+                id      TEXT    NOT NULL
                             PRIMARY KEY,
-                mod  TEXT    NOT NULL,
+                mod     TEXT    NOT NULL,
                 reason  TEXT,
-                time  DATE    NOT NULL,
-                finish  DATE
+                time    INT     NOT NULL,
+                finish  INT
             );
             """
         )
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS bans (
-                id    TEXT    NOT NULL
+                id      TEXT    NOT NULL
                             PRIMARY KEY,
-                mod  TEXT    NOT NULL,
+                mod     TEXT    NOT NULL,
                 reason  TEXT,
-                time  DATE    NOT NULL,
-                finish  DATE
+                time    INT     NOT NULL,
+                finish  INT
             );
             """
         )
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS mutes (
-                id    TEXT    NOT NULL
+                id      TEXT    NOT NULL
                             PRIMARY KEY,
-                mod  TEXT    NOT NULL,
+                mod     TEXT    NOT NULL,
                 reason  TEXT,
-                time  DATE    NOT NULL,
-                finish  DATE
+                time    INT     NOT NULL,
+                finish  INT
             );
             """
         )
@@ -59,14 +116,14 @@ class Mod(commands.Cog):
 
     async def cog_unload(self) -> None:
         """
-        Unload our sqlite db
+        Unload our sqlite db when the cog is closed
         """
         await self.db.close()
 
-    @commands.command(
+    @commands.hybrid_command(
         name="warn",
         description="""Warn a user""",
-        help="""Warn a user, optional reason""",
+        help="""Warn a user""",
         brief="Warn a user",
         aliases=[],
         enabled=True,
@@ -79,18 +136,6 @@ class Mod(commands.Cog):
         """
         Warn cmd
         """
-        await self.db.execute(
-            f"""INSERT INTO warns VALUES(?, ?, ?, ?);""",
-            (member.id, ctx.author.id, reason, datetime.datetime.now()),
-        )
-        await self.db.commit()
-        embed = discord.Embed(
-            title=f"Warned",
-            description=f"""""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.YELLOW,
-        )
-        await ctx.send(embed=embed)
 
     @commands.hybrid_command(
         name="ban",
@@ -150,7 +195,7 @@ class Mod(commands.Cog):
                 await user.ban(reason=reason)
                 await self.db.execute(
                     f"""INSERT INTO bans VALUES(?, ?, ?, ?);""",
-                    (user.id, ctx.author.id, reason, datetime.datetime.now()),
+                    (user.id, ctx.author.id, reason, int(time.time())),
                 )
                 await self.db.commit()
                 banned_embed = discord.Embed(
@@ -211,7 +256,7 @@ class Mod(commands.Cog):
         await ctx.guild.unban(discord.Object(id=member), reason)
 
     @commands.group(name="modlogs")
-    async def modlogs(self, ctx):
+    async def modlogs(self, ctx: commands.Context) -> None:
         """Check someones latest modlogs"""
         if not ctx.invoked_subcommand:
             pass

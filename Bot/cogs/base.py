@@ -5,7 +5,6 @@ import discord.utils
 import json
 import platform
 import psutil
-import random
 import unicodedata
 from discord.ext import commands
 from gears import cviews, style
@@ -19,10 +18,10 @@ async def ping(ctx):
 
 class AFKManager:
     """
-    Manage afk sessions
+    Manage afk sessions and related data
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
         """
         Init the manager
         """
@@ -54,7 +53,7 @@ class AFKManager:
         )
         await ctx.send(embed=embed)
 
-    async def del_afk(self, guild, user) -> None:
+    async def del_afk(self, guild: int, user: int) -> None:
         """
         Delete an afk from the db, usually called when a user has sent a message showing that they aren't actually afk
         """
@@ -97,15 +96,6 @@ class AFKManager:
                     await message.channel.send(embed=embed)
 
 
-def get_size(bytes, suffix="B"):
-    """Return the correct data from bytes"""
-    factor = 1024
-    for unit in ["", "K", "M", "G", "T", "P"]:
-        if bytes < factor:
-            return f"{bytes:.2f}{unit}{suffix}"
-        bytes /= factor
-
-
 class Base(commands.Cog):
     """Basic commands that you would use with no specific category"""
 
@@ -114,9 +104,17 @@ class Base(commands.Cog):
         self.MemberConverter = commands.MemberConverter()
         self.afk = AFKManager(bot)
 
+    def get_size(bytes, suffix="B") -> str:
+        """Return the correct data from bytes"""
+        factor = 1024
+        for unit in ["", "K", "M", "G", "T", "P"]:
+            if bytes < factor:
+                return f"{bytes:.2f}{unit}{suffix}"
+            bytes /= factor
+
     @commands.command(
         name="about",
-        description="""tells you some stuff about the bot""",
+        description="""About command for the bot, tells you a bit about the bot""",
         help="""About the bot, why I built it, what it can and is going to do""",
         brief="About the bot",
         aliases=[],
@@ -124,8 +122,10 @@ class Base(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
-    async def about_cmd(self, ctx):
-        """About command"""
+    async def about_cmd(self, ctx: commands.Context) -> None:
+        """
+        About command for the bot, just tells you a little bit about the bot
+        """
         embed = discord.Embed(
             title=f"About the Bot",
             description=f"""A Bot I've made for fun, friends and learning python.""",
@@ -148,8 +148,12 @@ class Base(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def avatar_cmd(self, ctx, *, user: discord.Member = None):
-        """Show a users avatar"""
+    async def avatar_cmd(
+        self, ctx: commands.Context, *, user: discord.Member = None
+    ) -> None:
+        """
+        Show a users avatar
+        """
         view = cviews.DeleteView()
         if not user:
             user = ctx.author
@@ -162,15 +166,17 @@ class Base(commands.Cog):
 
     @commands.command(
         name="info",
-        description="""Description of Command""",
-        help="""Long Help text for this command""",
-        brief="""Short help text""",
+        description="""View a users info""",
+        help="""View some info about a user""",
+        brief="""View some info about a user""",
         aliases=["i"],
         enabled=True,
         hidden=False,
     )
-    async def info_cmd(self, ctx, person: discord.Member = None):
-        """View an users info"""
+    async def info_cmd(self, ctx: commands.Context, person: discord.Member = None) -> None:
+        """
+        View an users info
+        """
         if not person:
             person = ctx.author
 
@@ -184,7 +190,8 @@ class Base(commands.Cog):
             {person.mention}
             {person.mutual_guilds}
             {person.public_flags}
-            {person.system}""",
+            {person.system}
+            Not Completed.""",
             timestamp=discord.utils.utcnow(),
             color=person.color,
         )
@@ -200,8 +207,10 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def charinfo(self, ctx, *, characters: str):
-        """Gives you the character info"""
+    async def charinfo(self, ctx: commands.Context, *, characters: str) -> None:
+        """
+        Gives you the character info of whatever you input
+        """
 
         def to_string(c):
             digit = f"{ord(c):x}"
@@ -231,8 +240,10 @@ class Base(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
-    async def dog_cmd(self, ctx):
-        """dog command"""
+    async def dog_cmd(self, ctx: commands.Context) -> None:
+        """
+        dog command
+        """
         dog = await self.bot.aiosession.get("https://dog.ceo/api/breeds/image/random")
 
         dog_image = (await dog.json()).get("message")
@@ -250,9 +261,9 @@ class Base(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 30.0, commands.BucketType.channel)
-    async def uptime_cmd(self, ctx):
+    async def uptime_cmd(self, ctx: commands.Context) -> None:
         """
-        Uptime Slash
+        Uptime command to show the bots uptime
         """
         resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
         resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
@@ -276,8 +287,10 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(2.0, 10.0, commands.BucketType.user)
-    async def ping_cmd(self, ctx):
-        """Ping command"""
+    async def ping_cmd(self, ctx: commands.Context) -> None:
+        """
+        Ping command
+        """
         start = time.monotonic()
         embed = discord.Embed(
             title=f"Pinging...",
@@ -312,12 +325,13 @@ Total Uptime: {resolved_rel}"""
 
     @commands.group()
     @commands.cooldown(3.0, 7.0, commands.BucketType.user)
-    async def system(self, ctx):
-        """Actual system info"""
+    async def system(self, ctx: commands.Context) -> None:
+        """
+        Actual system info
+        """
         if not ctx.invoked_subcommand:
-            options = ["info", "boot", "cpu", "memory", "disk"]
             embed = discord.Embed(
-                title="Tenshi PC Info",
+                title="System Info",
                 description=f"""**Options:**
 ```asciidoc
 [ info ]
@@ -325,10 +339,6 @@ Total Uptime: {resolved_rel}"""
 [ cpu ]
 [ memory ]
 [ disk ]
-```
-                Example:
-```fix
-system {random.choice(options)}
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
@@ -345,7 +355,7 @@ system {random.choice(options)}
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def info_cmd(self, ctx):
+    async def info_cmd(self, ctx: commands.Context) -> None:
         """Showing full system information"""
         uname = platform.uname()
         embed = discord.Embed(
@@ -379,7 +389,7 @@ system {random.choice(options)}
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def cpu_cmd(self, ctx):
+    async def cpu_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our cpu information
 
@@ -424,7 +434,7 @@ system {random.choice(options)}
         hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def memory_cmd(self, ctx):
+    async def memory_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our memory information
         """
@@ -433,11 +443,11 @@ system {random.choice(options)}
             title="================ Memory Information ================",
             description=f"""```asciidoc
 [ Total ]
-= {get_size(svmem.total)} = 
+= {self.get_size(svmem.total)} = 
 [ Available ]
-= {get_size(svmem.available)} =
+= {self.get_size(svmem.available)} =
 [ Used ]
-= {get_size(svmem.used)} =
+= {self.get_size(svmem.used)} =
 [ Percentage ]
 = {svmem.percent}% =
 ```""",
@@ -456,7 +466,7 @@ system {random.choice(options)}
         hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def disk_cmd(self, ctx):
+    async def disk_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our disk information
         """
@@ -466,9 +476,9 @@ system {random.choice(options)}
             title="================= Disk Information =================",
             description=f"""```asciidoc
 [ Total Read ]
-= {get_size(disk_io.read_bytes)} = 
+= {self.get_size(disk_io.read_bytes)} = 
 [ Total Write ]
-= {get_size(disk_io.write_bytes)} =
+= {self.get_size(disk_io.write_bytes)} =
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.random(),
@@ -487,11 +497,11 @@ system {random.choice(options)}
 [ File System Type ]
 = {partition.fstype} =
 [ Total Size ]
-= {get_size(partition_usage.total)} =
+= {self.get_size(partition_usage.total)} =
 [ Used ]
-= {get_size(partition_usage.used)} =
+= {self.get_size(partition_usage.used)} =
 [ Free ]
-= {get_size(partition_usage.free)} =
+= {self.get_size(partition_usage.free)} =
 [ Percentage ]
 = {partition_usage.percent}% =
 ```""",
@@ -509,7 +519,7 @@ system {random.choice(options)}
         hidden=False,
     )
     @commands.cooldown(2.0, 7.0, commands.BucketType.user)
-    async def files_cmd(self, ctx):
+    async def files_cmd(self, ctx: commands.Context) -> None:
         """
         Send our stuff
         """
@@ -533,7 +543,7 @@ system {random.choice(options)}
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def afk_group(self, ctx):
+    async def afk_group(self, ctx: commands.Context) -> None:
         """Afk hybrid_group"""
 
     @afk_group.command(

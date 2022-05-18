@@ -468,7 +468,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def sentinel_cmd(self, ctx):
+    async def sentinel_cmd(self, ctx: commands.Context) -> None:
         """
         Sentinel command, very cool
         """
@@ -492,13 +492,13 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def sentinel_default_cmd(self, ctx):
+    async def sentinel_default_cmd(self, ctx: commands.Context) -> None:
         """Set default command config"""
 
     @commands.hybrid_group()
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    async def decancer(self, ctx):
+    async def decancer(self, ctx: commands.Context) -> None:
         """
         Decancer hybrid_group
         """
@@ -513,7 +513,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def decancer_enable_cmd(self, ctx):
+    async def decancer_enable_cmd(self, ctx: commands.Context) -> None:
         """Enable decancer"""
         await self.decancer.enable(ctx.message.guild.id)
         embed = discord.Embed(
@@ -538,7 +538,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def decancer_disable_cmd(self, ctx):
+    async def decancer_disable_cmd(self, ctx: commands.Context) -> None:
         """Disable decancer"""
         await self.decancer.disable(ctx.message.guild.id)
         embed = discord.Embed(
@@ -605,7 +605,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.guild)
-    async def decancer_auto_cmd(self, ctx):
+    async def decancer_auto_cmd(self, ctx: commands.Context) -> None:
         """Automatically configure the decancer feature"""
         overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(

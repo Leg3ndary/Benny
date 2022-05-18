@@ -655,7 +655,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def queue_cmd(self, ctx):
+    async def queue_cmd(self, ctx: commands.Context) -> None:
         """Command description"""
         player = await self.get_player(ctx)
 
@@ -709,7 +709,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def nowplaying_cmd(self, ctx):
+    async def nowplaying_cmd(self, ctx: commands.Context) -> None:
         """
         Showing whats now playing
         """
@@ -750,7 +750,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
-    async def skip_cmd(self, ctx):
+    async def skip_cmd(self, ctx: commands.Context) -> None:
         """Skip command"""
         player = await self.get_player(ctx)
 
@@ -789,7 +789,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def dc_cmd(self, ctx):
+    async def dc_cmd(self, ctx: commands.Context) -> None:
         """Disconnect"""
         player = await self.get_player(ctx)
 
@@ -846,7 +846,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def shuffle_cmd(self, ctx):
+    async def shuffle_cmd(self, ctx: commands.Context) -> None:
         """Shuffle the queue"""
         player = await self.get_player(ctx)
 
@@ -881,7 +881,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def loop_cmd(self, ctx):
+    async def loop_cmd(self, ctx: commands.Context) -> None:
         """Looping command noice"""
         player = await self.get_player(ctx)
 
@@ -920,7 +920,7 @@ class Music(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def playlist_manage(self, ctx):
+    async def playlist_manage(self, ctx: commands.Context) -> None:
         """Command description"""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
@@ -1011,7 +1011,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def playlist_list_cmd(self, ctx):
+    async def playlist_list_cmd(self, ctx: commands.Context) -> None:
         """Command description"""
 
         playlists = await self.playlistmanager.get_playlists(ctx.author.id)

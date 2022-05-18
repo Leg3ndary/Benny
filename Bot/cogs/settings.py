@@ -348,7 +348,7 @@ class Settings(commands.Cog):
     @commands.guild_only()
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
     @commands.has_permissions(manage_messages=True)
-    async def prefix_manage(self, ctx):
+    async def prefix_manage(self, ctx: commands.Context) -> None:
         """
         Prefix group for commands
         """
@@ -446,7 +446,7 @@ class Settings(commands.Cog):
     )
     @commands.guild_only()
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def premium_info(self, ctx):
+    async def premium_info(self, ctx: commands.Context) -> None:
         """
         Premium group for commands
         """

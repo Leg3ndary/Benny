@@ -49,12 +49,12 @@ class Dev(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_check(self, ctx):
+    async def cog_check(self, ctx: commands.Context) -> None:
         """Check if the user is the owner."""
         return await self.bot.is_owner(ctx.author)
 
     @commands.group()
-    async def dev(self, ctx):
+    async def dev(self, ctx: commands.Context) -> None:
         """Commands thats sole purpose is for me to experiment."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
@@ -171,7 +171,7 @@ class Dev(commands.Cog):
         description="None",
         hidden=True,
     )
-    async def servers(self, ctx):
+    async def servers(self, ctx: commands.Context) -> None:
         servers = self.bot.guilds
         servers_var = ""
         for guild in servers:
@@ -195,7 +195,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def sync_cmd(self, ctx):
+    async def sync_cmd(self, ctx: commands.Context) -> None:
         cmd = os.popen("git pull").read()
 
         embed = discord.Embed(
@@ -251,7 +251,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def syncs_cmd(self, ctx):
+    async def syncs_cmd(self, ctx: commands.Context) -> None:
         """
         Syncs the bots command tree
         """
@@ -400,7 +400,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def end_bot(self, ctx):
+    async def end_bot(self, ctx: commands.Context) -> None:
         """Stopping the bot"""
         await ctx.message.add_reaction(style.get_emoji("regular", "check"))
         embed = discord.Embed(

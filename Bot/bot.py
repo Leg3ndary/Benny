@@ -56,7 +56,7 @@ async def get_prefix(bot, msg) -> list:
     Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is just pinging the bot
 
     Raises AttributeError when the cache isn't built so we just have this quick fix,
-    the bot itself won't respond to anything until prefixes are built but this 
+    the bot itself won't respond to anything until prefixes are built but this
     silences noisy errors.
     """
     prefixes = [f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "]

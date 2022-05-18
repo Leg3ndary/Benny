@@ -55,7 +55,7 @@ class GeometryDash(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def gd_cmd(self, ctx):
+    async def gd_cmd(self, ctx: commands.Context) -> None:
         """Does nothing on its own as of now"""
         if not ctx.invoked_subcommand:
             pass

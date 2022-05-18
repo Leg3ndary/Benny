@@ -49,7 +49,7 @@ class Databases(commands.Cog):
 
     @commands.group()
     @commands.is_owner()
-    async def redis(self, ctx):
+    async def redis(self, ctx: commands.Context) -> None:
         """Access stuff about redis"""
         if not ctx.invoked_subcommand:
             await ctx.send_help("redis")
@@ -122,7 +122,7 @@ class Databases(commands.Cog):
         await ctx.send(embed=embed)
 
     @redis.command()
-    async def info(self, ctx):
+    async def info(self, ctx: commands.Context) -> None:
         """Show some info about our connection"""
         embed = discord.Embed(
             title="Redis Info",
@@ -141,7 +141,7 @@ class Databases(commands.Cog):
         await ctx.send(embed=embed)
 
     @redis.command()
-    async def cinfo(self, ctx):
+    async def cinfo(self, ctx: commands.Context) -> None:
         """Show complex info about our Redis DB"""
         data = await self.bot.redis.info()
 
@@ -164,7 +164,7 @@ class Databases(commands.Cog):
         await ctx.send(embed=embed)
 
     @redis.command()
-    async def sa(self, ctx):
+    async def sa(self, ctx: commands.Context) -> None:
         """Show all data"""
         embed = discord.Embed(
             title="Attempting to fetch all data",
