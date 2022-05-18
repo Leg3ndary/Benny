@@ -9,11 +9,95 @@ import random
 import unicodedata
 from discord.ext import commands
 from gears import cviews, style
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
 async def ping(ctx):
     await ctx.send("pong")"""
+
+
+class AFKManager:
+    """
+    Manage afk sessions
+    """
+
+    def __init__(self, bot) -> None:
+        """
+        Init the manager
+        """
+        self.bot = bot
+        mongo_uri = (
+            self.bot.config.get("Mongo")
+            .get("URL")
+            .replace("<Username>", self.bot.config.get("Mongo").get("User"))
+            .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
+        )
+        self.db = AsyncIOMotorClient(mongo_uri)["AFK"]
+
+    async def set_afk(self, ctx: commands.Context, message: str) -> None:
+        """
+        Set an afk for a user in a certain guild
+        """
+        query = {
+            "_id": str(ctx.author.id)
+        }
+        afk_doc = {
+            "_id": str(ctx.author.id),
+            "message": message,
+            "unix": int(time.time())
+        }
+        await self.db[str(ctx.message.guild.id)].replace_one(query, afk_doc, True)
+        embed = discord.Embed(
+            title=f"Set AFK",
+            description=f""">>> {message}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.AQUA
+        )
+        await ctx.send(embed=embed)
+
+    async def del_afk(self, guild, user) -> None:
+        """
+        Delete an afk from the db, usually called when a user has sent a message showing that they aren't actually afk
+        """
+        query = {
+            "_id": str(user)
+        }
+        await self.db[str(guild)].delete_one(query)
+
+    async def manage_afk(self, message: discord.Message) -> None:
+        """
+        Manage an afk when it gets sent here, first check if its a message from a user
+        """
+        query = {
+            "_id": str(message.author.id)
+        }
+        afk_data = await self.db[str(message.guild.id)].find_one(query)
+        if afk_data:
+            await self.del_afk(message.guild.id, message.author.id)
+            embed = discord.Embed(
+                title=f"Removed AFK",
+                description=f"""Welcome back {message.author.mention}!
+                
+                You've been afk since <t:{afk_data["unix"]}:R>""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.PINK
+            )
+            await message.channel.send(embed=embed)
+        
+        for mention in message.mentions[:3]:
+            if not message.author.id == mention.id:
+                query = {"_id": str(mention.id)}
+                afk_data = await self.db[str(message.guild.id)].find_one(query)
+                username = (self.bot.get_user(mention.id) or (await self.bot.fetch_user(mention.id))).name
+                if afk_data:
+                    embed = discord.Embed(
+                        title=f"{username} is AFK",
+                        description=afk_data["message"],
+                        timestamp=discord.utils.utcnow(),
+                        color=style.Color.PINK
+                    )
+                    await message.channel.send(embed=embed)
 
 
 def get_size(bytes, suffix="B"):
@@ -31,6 +115,7 @@ class Base(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
+        self.afk = AFKManager(bot)
 
     @commands.command(
         name="about",
@@ -441,6 +526,40 @@ system {random.choice(options)}
         )
         await ctx.send(embed=embed)
 
+    @commands.hybrid_group(
+        name="afk",
+        description="""AFK Command Group""",
+        help="""Afk Command Group""",
+        brief="AFK command group",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def afk_group(self, ctx):
+        """Afk hybrid_group"""
+
+    @afk_group.command(
+        name="set",
+        description="""Set your afk""",
+        help="""Set your afk""",
+        brief="Set your afk",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.guild_only()
+    async def afk_set_cmd(self, ctx, *, message: str):
+        """Set your afk"""
+        await self.afk.set_afk(ctx, message)
+
+    @commands.Cog.listener()
+    async def on_message(self, message) -> None:
+        """
+        On a message, check if that user is either pinging an afk user or is an afk user with an active afk
+        """
+        await self.afk.manage_afk(message)
 
 async def setup(bot):
     await bot.add_cog(Base(bot))
