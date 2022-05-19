@@ -397,7 +397,7 @@ class Music(commands.Cog):
 
     async def connect_nodes(self):
         """Connect to our Lavalink nodes."""
-        if not self.bot.MUSIC_ON:
+        if not self.bot.MUSIC_ENABLED:
             return
 
         # Making sure cog loads and unloads don't stop this

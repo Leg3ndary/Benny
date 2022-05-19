@@ -26,13 +26,12 @@ class BotUtil:
         -------
         int
         """
-        try:
+        if not file in [".github", ".vscode"]:
             with open(file, encoding="utf8") as f:
                 for i, l in enumerate(f):
                     pass
             return i + 1
-        except:
-            # Sometimes we can't read so
+        else:
             return 0
 
     async def get_files(self, directory: str = None) -> list:

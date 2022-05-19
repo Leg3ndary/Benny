@@ -319,7 +319,7 @@ class Settings(commands.Cog):
             else:
                 # We didn't find the prefix added to to the db, add and add to prefixes
                 await self.bot.prefix_manager.add_guild(guild.id)
-        self.bot.loaded_prefixes = True
+        self.bot.LOADED_PREFIXES = True
         await self.bot.printer.p_load("Prefixes")
 
     @commands.Cog.listener()

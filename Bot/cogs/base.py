@@ -265,8 +265,8 @@ class Base(commands.Cog):
         """
         Uptime command to show the bots uptime
         """
-        resolved_full = discord.utils.format_dt(self.bot.start_time, "F")
-        resolved_rel = discord.utils.format_dt(self.bot.start_time, "R")
+        resolved_full = discord.utils.format_dt(self.bot.START_TIME, "F")
+        resolved_rel = discord.utils.format_dt(self.bot.START_TIME, "R")
         fmt = f"""Started at {resolved_full}
 Total Uptime: {resolved_rel}"""
         embed = discord.Embed(

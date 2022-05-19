@@ -2,6 +2,7 @@ import discord
 import json
 import lavalink
 from gears import style, util
+from discord.ext import commands
 
 
 config = json.load(open("config.json"))

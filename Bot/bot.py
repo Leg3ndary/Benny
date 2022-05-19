@@ -11,6 +11,7 @@ from gears import util
 from gears.cprinter import InfoPrinter
 import logging
 
+load_dotenv()
 
 start = time.monotonic()
 
@@ -21,8 +22,6 @@ handler.setFormatter(
     logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 )
 logger.addHandler(handler)
-
-load_dotenv()
 
 config = json.load(open("config.json"))
 
@@ -48,8 +47,6 @@ intents = discord.Intents(
     message_content=True,
 )
 
-prefix = config.get("Bot").get("Prefix")
-
 
 async def get_prefix(bot, msg) -> list:
     """
@@ -74,10 +71,10 @@ bot = commands.Bot(
     intents=intents,
     description="Benny Bot",
 )
-bot.start_time = datetime.datetime.now(datetime.timezone.utc)
-bot.loaded_prefixes = False
-bot.MUSIC_ON = True
-bot.prefix = prefix
+bot.START_TIME = datetime.datetime.now(datetime.timezone.utc)
+bot.LOADED_PREFIXES = False
+bot.MUSIC_ENABLED = True
+bot.PREFIX = config.get("Bot").get("Prefix")
 
 
 async def start_bot() -> None:
@@ -131,12 +128,14 @@ async def start_bot() -> None:
                     ├──── Check if channel/thread is being ignored
                     └────────
                     """
-                    if not bot.loaded_prefixes:
+                    if not bot.LOADED_PREFIXES:
                         return False
                     return True
 
                 await bot.printer.p_connect("AIOHTTP Session")
+
                 end = time.monotonic()
+
                 await bot.printer.p_bot(
                     "",
                     f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
