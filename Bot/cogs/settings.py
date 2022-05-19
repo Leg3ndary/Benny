@@ -6,33 +6,29 @@ from discord.ext import commands
 from gears import style
 
 
-"""
-Prefix Table Schema
-CREATE TABLE IF NOT EXISTS prefixes(guild_id text, p1 text, p2 text, p3 text, p4 text, p5 text, p6 text, p7 text, p8 text, p9 text, p10 text, p11 text, p12 text, p13 text, p14 text, p15 text);
-
-INSERT INTO prefixes VALUES(guild_id, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");
-
-UPDATE prefixes SET pnumhere WHERE guild_id = 'guildidhere';
-"""
-
-
 class UserAccess:
     """
     Class to access our users info
     """
 
-    def __init__(self, db) -> None:
-        """Init with the userdb"""
+    def __init__(self, db: asqlite.Connection) -> None:
+        """
+        Init with the userdb
+        """
         self.db = db
 
     async def create_user(self, user_id: str) -> tuple:
-        """Create a user in our small database"""
+        """
+        Create a user in our small database
+        """
         async with self.db as db:
             await db.execute("""INSERT INTO users VALUES(?, 0, False);""", (user_id,))
             await db.commit()
 
     async def get_user(self, user_id: str) -> tuple:
-        """Get a users info"""
+        """
+        Get a users info
+        """
         async with self.db as db:
             async with db.execute(
                 """SELECT * FROM users WHERE user_id = ?;""", (user_id,)
@@ -51,8 +47,12 @@ class Prefixes:
     A way to update prefixes both in the bot's cache and in the database with nice simple functions
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: commands.Bot, db: asqlite.Connection) -> None:
+        """
+        Init
+        """
         self.bot = bot
+        self.db = db
 
     def sanitize_prefix(self, prefix: str) -> str:
         """
@@ -67,6 +67,8 @@ class Prefixes:
         -------
         str
         """
+        if ":|:" in prefix:
+            raise commands.BadArgument("Why do you have :|: as a prefix...")
         return prefix.strip()[:25]
 
     async def generate_prefix_list(self, prefixes: tuple) -> list:
@@ -88,10 +90,7 @@ class Prefixes:
         for prefix in prefixes:
             if count:
                 count = False
-            elif prefix == "":
-                pass
-            elif prefix in prefix_list:
-                # Shouldn't ever happen, but just in case
+            elif not prefix or prefix in prefix_list:
                 pass
             else:
                 prefix_list.append(prefix)
@@ -110,7 +109,7 @@ class Prefixes:
         -------
         tuple
         """
-        async with asqlite.connect("Databases/server.db") as db:
+        async with self.db as db:
             async with db.execute(
                 """SELECT * FROM prefixes WHERE guild_id = ?;""", (str(guild_id),)
             ) as cursor:
@@ -251,64 +250,49 @@ class Settings(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    async def on_cog_load(self):
+    async def cog_load(self) -> None:
         """
         On cog load, load up some users
         """
-        async with asqlite.connect("Databases/users.db") as db:
-            await db.execute(
-                """
-                CREATE TABLE IF NOT EXISTS users (
-                    id           TEXT    PRIMARY KEY
-                                        NOT NULL,
-                    patron_level INTEGER NOT NULL
-                                        DEFAULT (0),
-                    blacklisted  BOOLEAN DEFAULT (False) 
-                                        NOT NULL
-                );
-                """
-            )
-        self.bot.usersDB = await asqlite.connect("Databases/users.db")
-
-        async with self.bot.usersDB as db:
-            await db.execute(
-                """
-                
-                """
-            )
+        self.users_db = await asqlite.connect("Databases/users.db")
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS users (
+                id           TEXT    PRIMARY KEY
+                                    NOT NULL,
+                patron_level INTEGER NOT NULL
+                                    DEFAULT (0),
+                blacklisted  BOOLEAN DEFAULT (False) 
+                                    NOT NULL
+            );
+            """
+        )
         await self.bot.printer.p_load("Users")
+        self.server_db = await asqlite.connect("Databases/server.db")
+
+    async def cog_unload(self) -> None:
+        """
+        On cog unload close connections
+        """
+        await self.users_db.close()
+        await self.server_db.close()
 
     @commands.Cog.listener()
-    async def on_load_prefixes(self):
+    async def on_load_prefixes(self) -> None:
         """
         Loading every prefix into a cache so we can quickly access it
         """
-
         self.bot.prefixes = {}
-        async with asqlite.connect("Databases/server.db") as db:
-            # Ha carl, this bot has 15 prefixes if you ever see this i forget how much ur bot has
-            await db.execute(
-                """CREATE TABLE IF NOT EXISTS prefixes (
-                    guild_id TEXT PRIMARY KEY,
-                    p1       TEXT,
-                    p2       TEXT,
-                    p3       TEXT,
-                    p4       TEXT,
-                    p5       TEXT,
-                    p6       TEXT,
-                    p7       TEXT,
-                    p8       TEXT,
-                    p9       TEXT,
-                    p10      TEXT,
-                    p11      TEXT,
-                    p12      TEXT,
-                    p13      TEXT,
-                    p14      TEXT,
-                    p15      TEXT
-                );
-                """
-            )
-            self.bot.prefix_manager = Prefixes(self.bot)
+
+        await self.server_db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS prefixes (
+                guild_id TEXT PRIMARY KEY,
+                prefixes TEXT
+            );
+            """
+        )
+        self.bot.prefix_manager = Prefixes(self.bot, self.server_db)
 
         for guild in self.bot.guilds:
             prefix_tup = await self.bot.prefix_manager.get_prefixes(guild.id)
@@ -323,14 +307,14 @@ class Settings(commands.Cog):
         await self.bot.printer.p_load("Prefixes")
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild: discord.Guild) -> None:
         """
         Whenever we join a guild add our data
         """
         await self.bot.prefix_manager.add_guild(guild.id)
 
     @commands.Cog.listener()
-    async def on_guild_remove(self, guild):
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
         """
         Whenever we leave a guild, remove prefix data
         """

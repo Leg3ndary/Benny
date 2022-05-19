@@ -10,6 +10,9 @@ class Tags(commands.Cog):
     """Cog Example Description"""
 
     def __init__(self, bot: commands.Bot):
+        """
+        Init the bot with all the blocks it needs
+        """
         self.bot = bot
         tse_blocks = [
             tse.MathBlock(),
@@ -49,8 +52,11 @@ class Tags(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def tagtest_cmd(self, ctx: commands.Context, *, args):
-        """"""
+    @commands.is_owner()
+    async def tagtest_cmd(self, ctx: commands.Context, *, args: str) -> None:
+        """
+        Testing out tags
+        """
         response = await self.tsei.process(
             message=args, seed_variables={"args": tse.StringAdapter(args)}
         )
