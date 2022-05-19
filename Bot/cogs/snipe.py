@@ -98,5 +98,5 @@ class Snipe(commands.Cog):
             coll = await self.snipe[str(ctx.guild.id)]
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Snipe(bot))

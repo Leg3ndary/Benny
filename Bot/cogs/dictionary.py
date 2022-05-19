@@ -147,5 +147,5 @@ class Dictionary(commands.Cog):
         await ctx.send("Sorry, this command doesn't actually do anything as of now")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Dictionary(bot))

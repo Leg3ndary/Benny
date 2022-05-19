@@ -199,5 +199,5 @@ class Databases(commands.Cog):
         await self.bot.redis.set("updater", "1")
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Databases(bot))

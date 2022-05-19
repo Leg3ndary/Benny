@@ -59,5 +59,5 @@ class DiscordStatus(commands.Cog):
         await self.DSClient.close()
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(DiscordStatus(bot))

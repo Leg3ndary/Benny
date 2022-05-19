@@ -81,5 +81,5 @@ class Logging(commands.Cog):
         """View basic log config"""
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Logging(bot))

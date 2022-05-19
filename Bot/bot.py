@@ -63,7 +63,7 @@ async def get_prefix(bot, msg) -> list:
         else:
             return prefixes + bot.prefixes.get(str(msg.guild.id), "")
     else:
-        return prefixes
+        return ""
 
 
 bot = commands.Bot(

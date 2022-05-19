@@ -84,5 +84,5 @@ class Events(commands.Cog):
         await thread.join()
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Events(bot))

@@ -28,7 +28,7 @@ HELP_FORMAT = f"{util.ansi('grey')}prefix{util.ansi('white', None, 'bold')}comma
 class BennyHelp(commands.HelpCommand):
     """Custom Help Command Class"""
 
-    def get_command_signature(self, command):
+    def get_command_signature(self, command: commands.Command) -> str:
         """
         Rewriting the get_command_signature method to remove stuff I don't like
         """
@@ -48,7 +48,7 @@ class BennyHelp(commands.HelpCommand):
 
         return f"{self.context.clean_prefix}{command_name} {command.signature}"
 
-    def get_colored_command_signature(self, command):
+    def get_colored_command_signature(self, command: commands.Command) -> str:
         """
         ANSI colored version
         """
@@ -85,7 +85,7 @@ class BennyHelp(commands.HelpCommand):
 
         return f"{colored_prefix}{colored_command_name} {colored_signature}"
 
-    async def send_bot_help(self, mapping):
+    async def send_bot_help(self, mapping: dict) -> None:
         """When help is ran on its own no args"""
         embed = discord.Embed(title="Help", color=style.Color.AQUA)
         for cog, commands in mapping.items():
@@ -113,8 +113,10 @@ class BennyHelp(commands.HelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
-    async def send_cog_help(self, cog):
-        """Sending help for cogs"""
+    async def send_cog_help(self, cog: commands.Cog) -> None:
+        """
+        Sending help for cogs
+        """
         embed = discord.Embed(
             title=cog.qualified_name,
             description=cog.description,
@@ -131,8 +133,10 @@ class BennyHelp(commands.HelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
-    async def send_group_help(self, group):
-        """Sending help for groups"""
+    async def send_group_help(self, group: commands.Group) -> None:
+        """
+        Sending help for groups
+        """
         embed = discord.Embed(
             title=group.signature,
             description=f"""{group.short_doc}""",
@@ -151,7 +155,7 @@ class BennyHelp(commands.HelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
-    async def send_command_help(self, command):
+    async def send_command_help(self, command: commands.Command) -> None:
         """
         Sending help for actual commands
         """
@@ -181,8 +185,10 @@ class BennyHelp(commands.HelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
-    async def send_error_message(self, error):
-        """Error Messages that may appear"""
+    async def send_error_message(self, error: str) -> None:
+        """
+        Error Messages that may appear
+        """
         embed = discord.Embed(title="Error", description=error, color=style.Color.RED)
         channel = self.get_destination()
         await channel.send(embed=embed)
@@ -192,6 +198,9 @@ class Help(commands.Cog):
     """The help cog"""
 
     def __init__(self, bot: commands.Bot):
+        """
+        Init the help cog
+        """
         self.bot = bot
         help_command = BennyHelp()
         help_command.cog = self
@@ -202,5 +211,5 @@ class Help(commands.Cog):
         await ctx.send_help(ctx.command.name)
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Help(bot))

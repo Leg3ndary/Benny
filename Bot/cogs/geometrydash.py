@@ -96,5 +96,5 @@ class GeometryDash(commands.Cog):
         await ctx.send(embed=embed)
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(GeometryDash(bot))

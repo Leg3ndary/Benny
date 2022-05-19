@@ -569,5 +569,5 @@ Total Uptime: {resolved_rel}"""
         await self.afk.manage_afk(message)
 
 
-async def setup(bot):
+async def setup(bot: commands.Bot):
     await bot.add_cog(Base(bot))
