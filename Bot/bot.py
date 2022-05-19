@@ -142,8 +142,8 @@ async def start_bot() -> None:
                 )
 
                 bot.loop.create_task(when_bot_ready())
-                bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
-                bot.ipc.start()
+                #bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                #bot.ipc.start()
                 await bot.start(bot.config.get("Bot").get("Token"))
 
 

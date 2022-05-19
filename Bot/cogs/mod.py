@@ -14,12 +14,13 @@ class ModerationManager:
     Class for managing moderation actions
     """
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: commands.Bot, db: asqlite.Connection) -> None:
         """
         Init the bot
         """
         self.bot = bot
         self.calendar = parsedatetime.Calendar()
+        self.db = db
 
     async def pull_time(self, string: str) -> float:
         """
@@ -46,21 +47,22 @@ class ModerationManager:
                 f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
                 (member.id, ctx.author.id, reason, current_time, future_time),
             )
-            description = " "
+            description = f"{reason}\n\nExpires in <t:{future_time}:R>"
 
         else:
             await self.db.execute(
                 f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
                 (member.id, ctx.author.id, reason, current_time, None),
             )
+            description = reason
         await self.db.commit()
 
         embed = discord.Embed(
-            title=f"Warned",
+            title=f"Warned {user.name}#{user.discriminator}",
+            description=description,
             timestamp=discord.utils.utcnow(),
             color=style.Color.YELLOW,
         )
-
         await ctx.send(embed=embed)
 
 
@@ -74,7 +76,6 @@ class Mod(commands.Cog):
         Init with moderationmanager short mm
         """
         self.bot = bot
-        self.mm = ModerationManager(bot)
 
     async def cog_load(self) -> None:
         """
@@ -118,6 +119,7 @@ class Mod(commands.Cog):
             """
         )
         await self.bot.printer.p_load("Mod")
+        self.mm = ModerationManager(self.bot, self.db)
 
     async def cog_unload(self) -> None:
         """
@@ -141,7 +143,7 @@ class Mod(commands.Cog):
         """
         Warn cmd
         """
-        await self.mm.warn(ctx, member, reason)
+        await self.mm.warn(ctx, member[0], reason)
 
     @commands.hybrid_command(
         name="ban",

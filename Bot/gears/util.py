@@ -77,7 +77,7 @@ class BotUtil:
                 files.append(f"{filepath}{file}")
         return files
 
-    async def load_cogs(self, cogs) -> None:
+    async def load_cogs(self, cogs: list) -> None:
         """
         Print and load a live feed,
         Parameters
@@ -93,7 +93,7 @@ class BotUtil:
             try:
                 filename = file.split("/")[-1][:-3]
                 if file.endswith(".py") and (
-                    filename not in ["cog_template", "discordstatus", "snipe"]
+                    filename not in ["cog_template", "discordstatus", "snipe", "ipc"]
                 ):
                     await self.bot.load_extension(f"cogs.{file[:-3]}")
                     await self.bot.printer.p_cog_update(file[:-3], "LOAD")
