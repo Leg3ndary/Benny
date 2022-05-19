@@ -31,7 +31,7 @@ MONGODB (Client)
 class Snipe(commands.Cog):
     """The amazing snipe cog we use for this bot"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     async def cog_load(self):

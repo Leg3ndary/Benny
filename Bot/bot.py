@@ -57,12 +57,12 @@ async def get_prefix(bot, msg) -> list:
     silences noisy errors.
     """
     prefixes = [f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "]
-    try:
+    if bot.LOADED_PREFIXES:
         if not msg.guild:
             return prefixes.append(bot.prefix)
         else:
             return prefixes + bot.prefixes.get(str(msg.guild.id), "")
-    except AttributeError:
+    else:
         return prefixes
 
 

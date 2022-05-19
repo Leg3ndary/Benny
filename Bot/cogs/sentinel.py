@@ -260,7 +260,7 @@ class Sentinel(commands.Cog):
     Sentinel cog, drama watcher, moderation supreme, call it what you want
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.sentinel = Detoxify(model_type="unbiased")
         self.sentinels = {}

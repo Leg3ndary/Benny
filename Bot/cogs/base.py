@@ -99,7 +99,7 @@ class AFKManager:
 class Base(commands.Cog):
     """Basic commands that you would use with no specific category"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
         self.afk = AFKManager(bot)

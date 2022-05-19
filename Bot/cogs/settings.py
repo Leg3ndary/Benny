@@ -248,7 +248,7 @@ class Prefixes:
 class Settings(commands.Cog):
     """Manage server settings like prefixes, welcome messages, etc"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     async def on_cog_load(self):

@@ -12,7 +12,7 @@ class Events(commands.Cog):
     Events that I wanna receive but don't really have a cog for
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()

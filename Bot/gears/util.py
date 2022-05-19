@@ -12,7 +12,9 @@ class BotUtil:
     Bot utility.
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init the bot"""
         self.bot = bot
 
     async def len_file(self, file: str) -> int:
@@ -104,7 +106,7 @@ class BotUtil:
                 print(e.with_traceback)
         self.bot.cog_list = cog_list
 
-    async def report_error(self, error_descrip):
+    async def report_error(self, error_descrip: str) -> None:
         """
         Report an error by directly direct messaging me.
         Parameters
@@ -127,7 +129,7 @@ class BotUtil:
         await ben.send(embed=embed)
 
 
-def match_calc(string1, string2):
+def match_calc(string1: str, string2: str) -> int:
     """Calculate how much 2 different strings match each other"""
     rows = len(string1) + 1
     cols = len(string2) + 1
@@ -145,8 +147,8 @@ def match_calc(string1, string2):
             else:
                 cost = 2
             distance[row][col] = min(
-                distance[row - 1][col] + 1,  # Cost of deletions
-                distance[row][col - 1] + 1,  # Cost of insertions
+                distance[row - 1][col] + 1,         # Cost of deletions
+                distance[row][col - 1] + 1,         # Cost of insertions
                 distance[row - 1][col - 1] + cost,  # Cost of substitutions
             )
     ratio = ((len(string1) + len(string2)) - distance[row][col]) / (

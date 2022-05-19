@@ -19,7 +19,7 @@ class Databases(commands.Cog):
     Currently using redis and mongodb
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.redis_updater.start()
 

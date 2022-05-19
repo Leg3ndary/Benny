@@ -10,7 +10,7 @@ from gears import style, util
 class Errors(commands.Cog):
     """Handling all our bots errors"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @commands.Cog.listener()

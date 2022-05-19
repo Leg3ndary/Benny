@@ -23,7 +23,7 @@ class GeometryDashWebhookUpdates:
 class GeometryDash(commands.Cog):
     """Gonna be adding geodash stuff"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.gd = client
 

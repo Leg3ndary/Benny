@@ -46,7 +46,7 @@ class Dev(commands.Cog):
     All commands in this cog are owner only, they are meant for bot development
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     async def cog_check(self, ctx: commands.Context) -> None:

@@ -42,7 +42,7 @@ class DSException(Exception):
 class DiscordStatus(commands.Cog):
     """Cog Example Description"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     async def cog_load(self) -> None:

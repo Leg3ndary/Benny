@@ -191,7 +191,7 @@ class BennyHelp(commands.HelpCommand):
 class Help(commands.Cog):
     """The help cog"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         help_command = BennyHelp()
         help_command.cog = self

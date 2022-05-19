@@ -66,7 +66,7 @@ class Dictionary(commands.Cog):
     important in the end though.
     """
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
 

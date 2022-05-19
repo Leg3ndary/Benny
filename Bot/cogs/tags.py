@@ -9,7 +9,7 @@ from gears import style
 class Tags(commands.Cog):
     """Cog Example Description"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         tse_blocks = [
             tse.MathBlock(),

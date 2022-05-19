@@ -15,7 +15,7 @@ class ProfileView(discord.ui.View):
 class Profile(commands.Cog):
     """Profile Cog"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     async def cog_load(self):

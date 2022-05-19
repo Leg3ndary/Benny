@@ -111,7 +111,7 @@ class ReminderManager:
 class Reminders(commands.Cog):
     """Cog Example Description"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.rm = ReminderManager(bot)
 

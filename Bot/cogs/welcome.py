@@ -9,7 +9,7 @@ class Welcome(commands.Cog):
     """
     Anything to deal with welcoming or leaving"""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
 
 
