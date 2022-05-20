@@ -42,7 +42,7 @@ class UserAccess:
                     return cursor.fetchone()
 
 
-class Prefixes:
+class PrefixManager:
     """
     A way to update prefixes both in the bot's cache and in the database with nice simple functions
     """
@@ -68,60 +68,50 @@ class Prefixes:
         str
         """
         if ":|:" in prefix:
-            raise commands.BadArgument("Why do you have :|: as a prefix...")
+            raise commands.BadArgument("Why do you have `:|:` as a prefix...")
         return prefix.strip()[:25]
 
-    async def generate_prefix_list(self, prefixes: tuple) -> list:
+    async def prefixes_to_string(self, prefixes: list) -> str:
         """
-        Generate a prefix list from a tuple, skipping duplicates and emptys.
+        Turn prefix list into string
 
         Parameters
         ----------
-        prefixes: tuple
-            A tuple of prefixes, ignore the first as that will be the guild id
+        prefixes: list
+            A list of prefixes
+
+        Returns
+        -------
+        str
+        """
+        return prefixes.join(":|:")
+
+    async def get_prefixes(self, guild: str) -> list:
+        """
+        Return a tuple of prefixes a guild has
+
+        Parameters
+        ----------
+        guild: str
+            The guild id
 
         Returns
         -------
         list
         """
-        prefix_list = []
-
-        count = True
-        for prefix in prefixes:
-            if count:
-                count = False
-            elif not prefix or prefix in prefix_list:
-                pass
-            else:
-                prefix_list.append(prefix)
-        return prefix_list
-
-    async def get_prefixes(self, guild_id: str) -> tuple:
-        """
-        Return a tuple of prefixes a guild has, first item is the guild_id
-
-        Parameters
-        ----------
-        guild_id: str
-            The guild id
-
-        Returns
-        -------
-        tuple
-        """
         async with self.db as db:
             async with db.execute(
-                """SELECT * FROM prefixes WHERE guild_id = ?;""", (str(guild_id),)
+                """SELECT prefixes FROM prefixes WHERE guild = ?;""", (str(guild),)
             ) as cursor:
-                return await cursor.fetchone()
+                return await sorted((cursor.fetchone())[0].split(":|:"), key=len)
 
-    async def add_prefix(self, guild_id: str, prefix: str) -> str:
+    async def add_prefix(self, guild: str, prefix: str) -> None:
         """
         Add a prefix to a guild, adds to both our database and cache
 
         Parameters
         ----------
-        guild_id: str
+        guild: str
             The guild id
         prefix: str
             The prefix which we will sanitize
@@ -130,41 +120,35 @@ class Prefixes:
         -------
         str
         """
-        prefixes = await self.get_prefixes(guild_id)
+        prefixes = await self.get_prefixes(guild)
         prefix = self.sanitize_prefix(prefix)
 
         if prefix in prefixes:
-            return "ERROR:You already have this prefix as a prefix in your server"
-        elif "" in prefixes:
-            clear = 0
-            for prefix_slot in prefixes:
-                if prefix_slot == "":
-                    pnum = "p" + str(clear)
-                    async with asqlite.connect("Databases/server.db") as db:
-                        # We don't worry about injection because it's literally not possible for pnum
-                        await db.execute(
-                            f"""UPDATE prefixes SET {pnum} = ? WHERE guild_id = ?;""",
-                            (prefix, str(guild_id)),
-                        )
-                        await db.commit()
-                        self.bot.prefixes[
-                            str(guild_id)
-                        ] = await self.generate_prefix_list(
-                            await self.get_prefixes(guild_id)
-                        )
-                        return f"SUCCESS:Added prefix `{prefix}` to your server!"
-                else:
-                    clear += 1
-        else:
-            return "ERROR:You've already hit the max of 15 prefixes!\nRemove some to add more"
+            raise commands.BadArgument(f"You already have {prefix} as a prefix in your server")
 
-    async def delete_prefix(self, guild_id: str, prefix: str) -> str:
+        elif len(prefixes) >= 15:
+            raise commands.BadArgument(f"You can only have up to 15 prefixes")
+
+        elif prefix == "":
+            raise commands.BadArgument(f"You cannot have an empty prefix")
+
+        else:
+            prefixes = sorted(prefixes.append(prefix), key=len)
+            async with self.db as db:
+                await db.execute(
+                    f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                    (await self.prefixes_to_string(prefixes), str(guild)),
+                )
+                await db.commit()
+                self.bot.prefixes[str(guild)] = await self.get_prefixes(guild)
+
+    async def delete_prefix(self, guild: str, prefix: str) -> None:
         """
         Delete a prefix from a guild, deletes to both our database and cache
 
         Parameters
         ----------
-        guild_id: str
+        guild: str
             The guild id
         prefix: str
             The prefix which we will also sanitize
@@ -173,74 +157,68 @@ class Prefixes:
         -------
         str
         """
-        prefixes = tuple(await self.get_prefixes(guild_id))
+        prefixes = await self.get_prefixes(guild)
         prefix = self.sanitize_prefix(prefix)
+
         if prefix not in prefixes:
-            return f"ERROR:You don't have {prefix} as a prefix in your server"
-        elif len(prefixes) == 2:
-            return f"ERROR:You must have at least one prefix for the bot at all times!"
+            raise commands.BadArgument(f"You don't have {prefix} as a prefix in your server")
         else:
-            pnum = "p" + str(prefixes.index(prefix))
-            async with asqlite.connect("Databases/server.db") as db:
-                # We don't worry about injection because it's literally not possible for pnum
+            async with self.db as db:
+                prefixes.remove(prefix)
                 await db.execute(
-                    f"""UPDATE prefixes SET {pnum} = "" WHERE guild_id = ?;""",
-                    (str(guild_id),),
+                    f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                    (prefixes, str(guild)),
                 )
                 await db.commit()
-                self.bot.prefixes[str(guild_id)] = await self.generate_prefix_list(
-                    await self.get_prefixes(guild_id)
-                )
-                return f"SUCCESS:Deleted prefix `{prefix}` from your server!"
+            self.bot.prefixes[str(guild)] = await self.get_prefixes(guild)
 
-    async def add_guild(self, guild_id: str) -> None:
+    async def add_guild(self, guild: str) -> None:
         """
         Add a guild to our db with default prefixes
 
         Parameters
         ----------
-        guild_id: str
+        guild: str
             The guild id to add.
 
         Returns
         -------
         None
         """
-        async with asqlite.connect("Databases/server.db") as db:
+        async with self.db as db:
             await db.execute(
-                """INSERT INTO prefixes VALUES(?, "?", "", "", "", "", "", "", "", "", "", "", "", "", "", "");""",
-                (str(guild_id),),
+                """INSERT INTO prefixes VALUES(?, ?);""",
+                (str(guild), self.bot.PREFIX),
             )
             await db.commit()
-            # Since we already know that they should only one value, nice
-            self.bot.prefixes[str(guild_id)] = ["?"]
+            self.bot.prefixes[str(guild)] = [self.bot.PREFIX]
             await self.bot.printer.p_cog(
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
-                f"Added {guild_id} to prefixes",
+                f"Added {guild} to prefixes",
             )
 
-    async def delete_guild(self, guild_id: str) -> None:
+    async def delete_guild(self, guild: str) -> None:
         """
-        Delete a guild to our db, remove all prefixes
+        Delete a guild from our db, remove all prefixes
 
         Parameters
         ----------
-        guild_id: str
-            The guild_id to delete the data from
+        guild: str
+            The guild to delete the data from
 
         Returns
         -------
         None
         """
-        async with asqlite.connect("Databases/server.db") as db:
+        async with self.db as db:
             await db.execute(
-                """DELETE FROM prefixes WHERE guild_id = ?;""", (str(guild_id),)
+                """DELETE FROM prefixes WHERE guild = ?;""", (str(guild),)
             )
             await db.commit()
-            del self.bot.prefixes[str(guild_id)]
+            del self.bot.prefixes[str(guild)]
             await self.bot.printer.p_cog(
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
-                f"Deleted {guild_id} from  prefixes",
+                f"Deleted {guild} from  prefixes",
             )
 
 
@@ -287,12 +265,12 @@ class Settings(commands.Cog):
         await self.server_db.execute(
             """
             CREATE TABLE IF NOT EXISTS prefixes (
-                guild_id TEXT PRIMARY KEY,
-                prefixes TEXT
+                guild       TEXT PRIMARY KEY,
+                prefixes    TEXT
             );
             """
         )
-        self.bot.prefix_manager = Prefixes(self.bot, self.server_db)
+        self.bot.prefix_manager = PrefixManager(self.bot, self.server_db)
 
         for guild in self.bot.guilds:
             prefix_tup = await self.bot.prefix_manager.get_prefixes(guild.id)
