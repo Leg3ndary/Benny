@@ -310,29 +310,39 @@ class Settings(commands.Cog):
     @commands.guild_only()
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
     @commands.has_permissions(manage_messages=True)
-    async def prefix_manage(self, ctx: commands.Context) -> None:
+    async def prefix(self, ctx: commands.Context) -> None:
         """
         Prefix group for commands
         """
-        if not ctx.invoked_subcommand:
-            prefixes = await self.bot.prefix_manager.generate_prefix_list(
-                await self.bot.prefix_manager.get_prefixes(ctx.guild.id)
-            )
-            prefix_visual = ""
-            for count, prefix in enumerate(prefixes, start=1):
-                prefix_visual += f"\n{count}. {prefix}"
-            embed = discord.Embed(
-                title=f"Prefixes",
-                description=f"""Viewing prefixes for {ctx.guild.name}
+
+    @prefix.command(
+        name="list",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["view", "config"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def prefix_list_cmd(self, ctx: commands.Context) -> None:
+        """Command description"""
+        prefixes = await self.bot.prefix_manager.get_prefixes(ctx.guild.id)
+        prefix_visual = ""
+        for count, prefix in enumerate(prefixes, start=1):
+            prefix_visual += f"\n{count}. {prefix}"
+        embed = discord.Embed(
+            title=f"Prefixes",
+            description=f"""Viewing prefixes for {ctx.guild.name}
 ```md
 {prefix_visual}
 ```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            await ctx.send(embed=embed)
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.AQUA,
+        )
+        await ctx.send(embed=embed)
 
-    @prefix_manage.command(
+    @prefix.command(
         name="add",
         description="""Add a prefix to said guild""",
         help="""Add a prefix to your server
@@ -344,28 +354,18 @@ class Settings(commands.Cog):
         hidden=False,
     )
     async def add_prefix(self, ctx: commands.Context, *, prefix: str):
-        """Command description"""
-        add_prefix = await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
+        """Add a prefix to a server"""
+        await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
 
-        if add_prefix.split(":")[0] == "SUCCESS":
-            embed = discord.Embed(
-                title=f"Success",
-                description=f"""{add_prefix.split(":")[1]}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN,
-            )
-            await ctx.send(embed=embed)
+        embed = discord.Embed(
+            title=f"Success",
+            description=f"""Successfully added {prefix} to your server""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await ctx.send(embed=embed)
 
-        else:
-            embed = discord.Embed(
-                title=f"Error",
-                description=f"""{add_prefix.split(":")[1]}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
-
-    @prefix_manage.command(
+    @prefix.command(
         name="remove",
         description="""Remove a prefix from said guild""",
         help="""Remove a prefix from your server
@@ -377,25 +377,15 @@ class Settings(commands.Cog):
     )
     async def remove_prefix(self, ctx: commands.Context, *, prefix: str):
         """Remove a prefix from your server"""
-        del_prefix = await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
+        await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
 
-        if del_prefix.split(":")[0] == "SUCCESS":
-            embed = discord.Embed(
-                title=f"Success",
-                description=f"""{del_prefix.split(":")[1]}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN,
-            )
-            await ctx.send(embed=embed)
-
-        else:
-            embed = discord.Embed(
-                title=f"Error",
-                description=f"""{del_prefix.split(":")[1]}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
+        embed = discord.Embed(
+            title=f"Prefix Removed",
+            description=f"""Successfully removed `{prefix}` from your server""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await ctx.send(embed=embed)
 
     @commands.group(
         name="premium",
