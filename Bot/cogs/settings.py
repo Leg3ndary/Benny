@@ -1,3 +1,4 @@
+from unittest import result
 import asqlite
 import discord
 import discord.utils
@@ -103,7 +104,12 @@ class PrefixManager:
             async with db.execute(
                 """SELECT prefixes FROM prefixes WHERE guild = ?;""", (str(guild),)
             ) as cursor:
-                return await sorted((cursor.fetchone())[0].split(":|:"), key=len)
+                result = await cursor.fetchone()
+                if result:
+                    return sorted((result)[0].split(":|:"), key=len)
+                else:
+                    await self.add_guild(guild)
+                    return await self.get_prefixes(guild)
 
     async def add_prefix(self, guild: str, prefix: str) -> None:
         """
@@ -118,7 +124,7 @@ class PrefixManager:
 
         Returns
         -------
-        str
+        None
         """
         prefixes = await self.get_prefixes(guild)
         prefix = self.sanitize_prefix(prefix)
@@ -134,13 +140,14 @@ class PrefixManager:
 
         else:
             prefixes = sorted(prefixes.append(prefix), key=len)
+            self.bot.prefixes[str(guild)] = prefixes
             async with self.db as db:
                 await db.execute(
                     f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
                     (await self.prefixes_to_string(prefixes), str(guild)),
                 )
                 await db.commit()
-                self.bot.prefixes[str(guild)] = await self.get_prefixes(guild)
+                
 
     async def delete_prefix(self, guild: str, prefix: str) -> None:
         """
@@ -155,7 +162,7 @@ class PrefixManager:
 
         Returns
         -------
-        str
+        None
         """
         prefixes = await self.get_prefixes(guild)
         prefix = self.sanitize_prefix(prefix)
@@ -163,14 +170,15 @@ class PrefixManager:
         if prefix not in prefixes:
             raise commands.BadArgument(f"You don't have {prefix} as a prefix in your server")
         else:
+            prefixes.remove(prefix)
+            self.bot.prefixes[str(guild)] = prefixes
             async with self.db as db:
-                prefixes.remove(prefix)
                 await db.execute(
                     f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
-                    (prefixes, str(guild)),
+                    (await self.prefixes_to_string(prefixes), str(guild)),
                 )
                 await db.commit()
-            self.bot.prefixes[str(guild)] = await self.get_prefixes(guild)
+            
 
     async def add_guild(self, guild: str) -> None:
         """
@@ -185,13 +193,13 @@ class PrefixManager:
         -------
         None
         """
+        self.bot.prefixes[str(guild)] = [self.bot.PREFIX]
         async with self.db as db:
             await db.execute(
                 """INSERT INTO prefixes VALUES(?, ?);""",
                 (str(guild), self.bot.PREFIX),
             )
             await db.commit()
-            self.bot.prefixes[str(guild)] = [self.bot.PREFIX]
             await self.bot.printer.p_cog(
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
                 f"Added {guild} to prefixes",
@@ -210,12 +218,12 @@ class PrefixManager:
         -------
         None
         """
+        del self.bot.prefixes[str(guild)]
         async with self.db as db:
             await db.execute(
                 """DELETE FROM prefixes WHERE guild = ?;""", (str(guild),)
             )
             await db.commit()
-            del self.bot.prefixes[str(guild)]
             await self.bot.printer.p_cog(
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
                 f"Deleted {guild} from  prefixes",
@@ -250,7 +258,7 @@ class Settings(commands.Cog):
 
     async def cog_unload(self) -> None:
         """
-        On cog unload close connections
+        On cog unload, close connections
         """
         await self.users_db.close()
         await self.server_db.close()
@@ -261,6 +269,7 @@ class Settings(commands.Cog):
         Loading every prefix into a cache so we can quickly access it
         """
         self.bot.prefixes = {}
+        self.bot.prefix_manager = PrefixManager(self.bot, self.server_db)
 
         await self.server_db.execute(
             """
@@ -270,8 +279,7 @@ class Settings(commands.Cog):
             );
             """
         )
-        self.bot.prefix_manager = PrefixManager(self.bot, self.server_db)
-
+        
         for guild in self.bot.guilds:
             prefix_tup = await self.bot.prefix_manager.get_prefixes(guild.id)
             if prefix_tup:
@@ -279,8 +287,8 @@ class Settings(commands.Cog):
                     str(guild.id)
                 ] = await self.bot.prefix_manager.generate_prefix_list(prefix_tup)
             else:
-                # We didn't find the prefix added to to the db, add and add to prefixes
                 await self.bot.prefix_manager.add_guild(guild.id)
+
         self.bot.LOADED_PREFIXES = True
         await self.bot.printer.p_load("Prefixes")
 
