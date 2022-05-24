@@ -396,7 +396,7 @@ class Music(commands.Cog):
         await self.bot.printer.p_load("Playlist")
 
     async def connect_nodes(self):
-        """Connect to our Lavalink nodes."""
+        """Connect to our wavelink nodes."""
         if not self.bot.MUSIC_ENABLED:
             return
 

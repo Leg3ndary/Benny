@@ -1,4 +1,3 @@
-from unittest import result
 import asqlite
 import discord
 import discord.utils
@@ -35,9 +34,7 @@ class UserAccess:
                 """SELECT * FROM users WHERE user_id = ?;""", (user_id,)
             ) as cursor:
                 if not cursor.fetchone():
-                    # Uh oh, user wasn't found, time to create a profile for them
                     await self.create_user(user_id)
-                    # Gasp scary recursion
                     return await self.get_user(user_id)
                 else:
                     return cursor.fetchone()
@@ -334,7 +331,7 @@ class Settings(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def prefix_list_cmd(self, ctx: commands.Context) -> None:
-        """Command description"""
+        """List prefixes for a server"""
         prefixes = await self.bot.prefix_manager.get_prefixes(ctx.guild.id)
         prefix_visual = ""
         for count, prefix in enumerate(prefixes, start=1):
@@ -439,7 +436,7 @@ class Settings(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def remove_premium(self, ctx: commands.Context, *, prefix: str):
-        """Command description"""
+        """Remove premium from a server"""
         pass
 
 

@@ -2,12 +2,10 @@ git+https://github.com/Rapptz/asqlite
 git+https://github.com/Rapptz/discord.py
 git+https://github.com/Leg3ndary/discord-ext-ipc
 aiofiles==0.8.0
-aiohttp==3.6.3
+aiohttp==3.8.1
 aioredis==2.0.0a1
 colorama==0.4.4
-lavalink==3.1.4
 motor==2.4.0
-numpy==1.19.4
 psutil==5.8.0
 python-dotenv==0.20.0
 wavelink==1.2.4

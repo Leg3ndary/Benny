@@ -2,7 +2,6 @@ import math
 import os
 import discord
 import discord.utils
-import numpy
 from discord.ext import commands
 from gears import style
 
@@ -128,7 +127,7 @@ class BotUtil:
         embed.set_thumbnail(url=style.get_emoji("image", "cancel"))
         await ben.send(embed=embed)
 
-
+'''
 def match_calc(string1: str, string2: str) -> int:
     """Calculate how much 2 different strings match each other"""
     rows = len(string1) + 1
@@ -178,6 +177,7 @@ def remove_zcs(text: str) -> str:
     if split == "":
         return text
     return text.split(split)[1]
+    '''
 
 
 async def gen_loading_bar(self, percentage: float) -> list:
