@@ -90,19 +90,33 @@ class BotUtil:
         None
         """
         cog_list = []
-        for file in cogs:
-            try:
-                filename = file.split("/")[-1][:-3]
-                if file.endswith(".py") and (
-                    filename not in ["cog_template", "discordstatus", "snipe", "ipc"]
-                ):
+        if self.bot.config.get("Cogs"):
+            cogs = self.bot.config.get("Cogs")
+            for file in cogs:
+                try:
                     await self.bot.load_extension(f"cogs.{file[:-3]}")
                     await self.bot.printer.p_cog_update(file[:-3], "LOAD")
                     cog_list.append(f"cogs.{file[:-3]}")
 
-            except Exception as e:
-                await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
-                print(e.with_traceback)
+                except Exception as e:
+                    await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                    print(e.with_traceback)
+
+        else:
+            for file in cogs:
+                try:
+                    filename = file.split("/")[-1][:-3]
+                    if file.endswith(".py") and (
+                        filename not in ["cog_template", "discordstatus", "snipe", "ipc"]
+                    ):
+                        await self.bot.load_extension(f"cogs.{file[:-3]}")
+                        await self.bot.printer.p_cog_update(file[:-3], "LOAD")
+                        cog_list.append(f"cogs.{file[:-3]}")
+
+                except Exception as e:
+                    await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                    print(e.with_traceback)
+
         self.bot.cog_list = cog_list
 
     async def report_error(self, error_descrip: str) -> None:

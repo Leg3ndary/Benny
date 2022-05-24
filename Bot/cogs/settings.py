@@ -97,16 +97,23 @@ class PrefixManager:
         -------
         list
         """
+        print(f"received get for {guild}")
         async with self.db as db:
+            print("reached 1")
             async with db.execute(
                 """SELECT prefixes FROM prefixes WHERE guild = ?;""", (str(guild),)
             ) as cursor:
+                print("reached 2")
+                print(cursor)
                 result = await cursor.fetchone()
-                if result:
-                    return sorted((result)[0].split(":|:"), key=len)
-                else:
-                    await self.add_guild(guild)
-                    return await self.get_prefixes(guild)
+        print(result)
+        if result:
+            return sorted((result)[0].split(":|:"), key=len)
+        else:
+            print("adding guild")
+            await self.add_guild(guild)
+            print("finished")
+            return [self.bot.PREFIX]
 
     async def add_prefix(self, guild: str, prefix: str) -> None:
         """
@@ -144,7 +151,7 @@ class PrefixManager:
                     (await self.prefixes_to_string(prefixes), str(guild)),
                 )
                 await db.commit()
-                
+        return          
 
     async def delete_prefix(self, guild: str, prefix: str) -> None:
         """
@@ -201,6 +208,7 @@ class PrefixManager:
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
                 f"Added {guild} to prefixes",
             )
+            return
 
     async def delete_guild(self, guild: str) -> None:
         """
@@ -225,6 +233,7 @@ class PrefixManager:
                 await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
                 f"Deleted {guild} from  prefixes",
             )
+        return
 
 
 class Settings(commands.Cog):
@@ -238,7 +247,7 @@ class Settings(commands.Cog):
         On cog load, load up some users
         """
         self.users_db = await asqlite.connect("Databases/users.db")
-        await self.db.execute(
+        await self.users_db.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
                 id           TEXT    PRIMARY KEY
@@ -276,15 +285,13 @@ class Settings(commands.Cog):
             );
             """
         )
-        
+        print(1)
+        print(self.bot.guilds)
         for guild in self.bot.guilds:
-            prefix_tup = await self.bot.prefix_manager.get_prefixes(guild.id)
-            if prefix_tup:
-                self.bot.prefixes[
-                    str(guild.id)
-                ] = await self.bot.prefix_manager.generate_prefix_list(prefix_tup)
-            else:
-                await self.bot.prefix_manager.add_guild(guild.id)
+            print(guild)
+            prefixes = await self.bot.prefix_manager.get_prefixes(guild.id)
+        
+            self.bot.prefixes[str(guild.id)] = prefixes
 
         self.bot.LOADED_PREFIXES = True
         await self.bot.printer.p_load("Prefixes")
