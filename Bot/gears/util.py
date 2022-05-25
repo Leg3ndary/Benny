@@ -53,6 +53,7 @@ class BotUtil:
                 "Databases",
                 "Logs",
                 ".vscode",
+                "Docs"
             ]:
                 directories = []
             else:
