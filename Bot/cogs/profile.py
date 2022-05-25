@@ -20,7 +20,7 @@ class Profile(commands.Cog):
 
     async def cog_load(self):
         """Load profile db"""
-        self.profile_db = asqlite.connect("Databases/profile.db")
+        self.profile_db = await asqlite.connect("Databases/profile.db")
         await self.profile_db.execute(
             """
             CREATE TABLE IF NOT EXISTS profiles (

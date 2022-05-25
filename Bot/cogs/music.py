@@ -377,7 +377,7 @@ class Music(commands.Cog):
     async def cog_load(self):
         """Load up playlist related stuff"""
         self.playlist_db = await asqlite.connect("Databases/music.db")
-        await self.db.execute(
+        await self.playlist_db.execute(
             """
             CREATE TABLE IF NOT EXISTS playlists (
                 id    TEXT    NOT NULL
