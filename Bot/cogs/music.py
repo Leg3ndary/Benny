@@ -176,11 +176,12 @@ class PlaylistManager:
         The max length of a song name in chars
     """
 
-    def __init__(self) -> None:
+    def __init__(self, db: asqlite.Connection) -> None:
         """Constructs all the necessary attributes for the PlaylistManager"""
         self.PLAYLIST_SONG_LIMIT = 150
         self.PLAYLIST_LIMIT = 5
         self.SONG_NAME_LIMIT = 50
+        self.db = db
 
     async def create_playlist(self, user_id: str, playlist_name: str) -> None:
         """
@@ -197,19 +198,18 @@ class PlaylistManager:
         -------
         None
         """
-        async with asqlite.connect("Databases/music.db") as db:
-            async with db.execute(
-                """SELECT id FROM playlists WHERE id = ?;""", (str(user_id),)
-            ) as cursor:
-                length = len(await cursor.fetchall())
-                if length > self.PLAYLIST_LIMIT:
-                    raise PlaylistLimitReached("Too many playlists have been created.")
+        async with self.db.execute(
+            """SELECT id FROM playlists WHERE id = ?;""", (str(user_id),)
+        ) as cursor:
+            length = len(await cursor.fetchall())
+            if length > self.PLAYLIST_LIMIT:
+                raise PlaylistLimitReached("Too many playlists have been created.")
 
-            await db.execute(
-                """INSERT INTO playlists VALUES(?, ?, 0, "");""",
-                (user_id, playlist_name),
-            )
-            await db.commit()
+        await self.db.execute(
+            """INSERT INTO playlists VALUES(?, ?, 0, "");""",
+            (user_id, playlist_name),
+        )
+        await self.db.commit()
 
     async def delete_playlist(self, user_id: str, playlist_name: str) -> None:
         """
@@ -226,19 +226,18 @@ class PlaylistManager:
         -------
         None
         """
-        async with asqlite.connect("Databases/music.db") as db:
-            async with db.execute(
-                """SELECT id, name FROM playlists WHERE id = ? and name = ?;""",
-                (int(user_id), playlist_name),
-            ) as cursor:
-                if not cursor.fetchall():
-                    raise PlaylistNotFound(
-                        f"Playlist {playlist_name} was not found for deletion."
-                    )
-            await db.execute(
-                """DELETE FROM playlists WHERE name = ?;""", (playlist_name,)
-            )
-            await db.commit()
+        async with self.db.execute(
+            """SELECT id, name FROM playlists WHERE id = ? and name = ?;""",
+            (int(user_id), playlist_name),
+        ) as cursor:
+            if not cursor.fetchall():
+                raise PlaylistNotFound(
+                    f"Playlist {playlist_name} was not found for deletion."
+                )
+        await self.db.execute(
+            """DELETE FROM playlists WHERE name = ?;""", (playlist_name,)
+        )
+        await self.db.commit()
 
     async def add_song(self, user_id: str, playlist_name: str, song: str) -> None:
         """
@@ -263,32 +262,31 @@ class PlaylistManager:
         if len(song) > self.SONG_NAME_LIMIT:
             return f"ERROR:Please limit the song name to 50 characters ({self.SONG_NAME_LIMIT} currently)"
 
-        async with asqlite.connect("Databases/music.db") as db:
-            async with db.execute(
-                """SELECT * FROM playlists WHERE id = ? AND name = ?;""",
-                (str(user_id), playlist_name),
-            ) as cursor:
-                if not await cursor.fetch():
-                    raise PlaylistNotFound(
-                        f"Playlist {playlist_name} was not found for song addition."
+        async with self.db.execute(
+            """SELECT * FROM playlists WHERE id = ? AND name = ?;""",
+            (str(user_id), playlist_name),
+        ) as cursor:
+            if not await cursor.fetch():
+                raise PlaylistNotFound(
+                    f"Playlist {playlist_name} was not found for song addition."
+                )
+            else:
+                # Songs index is no 3
+                data = await cursor.fetch()
+                songs_length = data[3].count(", ")
+                if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
+                    raise PlaylistSongLimitReached(
+                        f"Playlist {playlist_name} has reached the max amount of songs. ({self.PLAYLIST_SONG_LIMIT})"
                     )
+                elif songs_length == 0:
+                    prefix = ""
                 else:
-                    # Songs index is no 3
-                    data = await cursor.fetch()
-                    songs_length = data[3].count(", ")
-                    if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
-                        raise PlaylistSongLimitReached(
-                            f"Playlist {playlist_name} has reached the max amount of songs. ({self.PLAYLIST_SONG_LIMIT})"
-                        )
-                    elif songs_length == 0:
-                        prefix = ""
-                    else:
-                        prefix = ", "
-            await db.execute(
-                f"""INSERT INTO playlists VALUES(?, ?, ?, ?);""",
-                (data[0], data[1], data[2], data[4].append(prefix + song)),
-            )
-            await db.commit()
+                    prefix = ", "
+        await self.db.execute(
+            f"""INSERT INTO playlists VALUES(?, ?, ?, ?);""",
+            (data[0], data[1], data[2], data[4].append(prefix + song)),
+        )
+        await self.db.commit()
 
     async def delete_song(self, user_id: str, playlist_name: str, song_index) -> str:
         """
@@ -320,29 +318,28 @@ class PlaylistManager:
         if song_index.is_numeric() and song_index > self.PLAYLIST_SONG_LIMIT:
             return f"ERROR:Max"
 
-        async with asqlite.connect("Databases/music.db") as db:
-            async with db.execute(
-                """SELECT * FROM playlists WHERE id = ? AND name = ?""",
-                (int(user_id), playlist_name),
-            ) as cursor:
-                if not await cursor.fetch():
-                    return f"ERROR:You have no playlists named {playlist_name}!"
+        async with self.db.execute(
+            """SELECT * FROM playlists WHERE id = ? AND name = ?""",
+            (int(user_id), playlist_name),
+        ) as cursor:
+            if not await cursor.fetch():
+                return f"ERROR:You have no playlists named {playlist_name}!"
+            else:
+                # Songs index is no 3
+                data = await cursor.fetch()
+                songs_length = data[3].count(", ")
+                if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
+                    return f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})"
+                elif songs_length == 0:
+                    prefix = ""
                 else:
-                    # Songs index is no 3
-                    data = await cursor.fetch()
-                    songs_length = data[3].count(", ")
-                    if (songs_length + 1) > self.PLAYLIST_SONG_LIMIT:
-                        return f"ERROR:You have reached the max amount of songs ({self.PLAYLIST_SONG_LIMIT})"
-                    elif songs_length == 0:
-                        prefix = ""
-                    else:
-                        prefix = ", "
-            await db.execute(
-                f"""DELETE FROM playlists WHERE id = ?, ?, ?, ?);""",
-                (data[0], data[1], data[2], data[4].append(prefix)),
-            )
-            await db.commit()
-            return f"SUCCESS"
+                    prefix = ", "
+        await self.db.execute(
+            f"""DELETE FROM playlists WHERE id = ?, ?, ?, ?);""",
+            (data[0], data[1], data[2], data[4].append(prefix)),
+        )
+        await self.db.commit()
+        return f"SUCCESS"
 
     async def get_playlists(self, user_id: str) -> list:
         """
@@ -357,12 +354,11 @@ class PlaylistManager:
         -------
         list
         """
-        async with asqlite.connect("Databases/music.db") as db:
-            async with db.execute(
-                """SELECT * FROM playlists WHERE id = ?;""", (str(user_id),)
-            ) as cursor:
-                playlists = await cursor.fetchall()
-                return playlists
+        async with self.db.execute(
+            """SELECT * FROM playlists WHERE id = ?;""", (str(user_id),)
+        ) as cursor:
+            playlists = await cursor.fetchall()
+            return playlists
 
 
 class Music(commands.Cog):
@@ -377,23 +373,23 @@ class Music(commands.Cog):
         self.spotify = tekore.Spotify(
             token=app_token, asynchronous=True, max_limits_on=True
         )
-        self.playlistmanager = PlaylistManager()
 
     async def cog_load(self):
         """Load up playlist related stuff"""
-        async with asqlite.connect("Databases/music.db") as db:
-            await db.execute(
-                """
-                CREATE TABLE IF NOT EXISTS playlists (
-                    id    TEXT    NOT NULL
-                                PRIMARY KEY,
-                    name  TEXT    NOT NULL,
-                    plays INTEGER NOT NULL,
-                    songs TEXT
-                );
-                """
-            )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS playlists (
+                id    TEXT    NOT NULL
+                            PRIMARY KEY,
+                name  TEXT    NOT NULL,
+                plays INTEGER NOT NULL,
+                songs TEXT
+            );
+            """
+        )
         await self.bot.printer.p_load("Playlist")
+        self.playlist_db = await asqlite.connect("Databases/music.db")
+        self.playlistmanager = PlaylistManager(self.playlist_db)
 
     async def connect_nodes(self):
         """Connect to our wavelink nodes."""
@@ -520,7 +516,7 @@ class Music(commands.Cog):
                     f"""INSERT INTO recently_played VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
                     (str(ctx.author.id), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None),
                 )
-                await db.commit()
+                await self.db.commit()
         '''
 
         decoded = spotify.decode_url(song)

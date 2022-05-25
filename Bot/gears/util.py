@@ -174,10 +174,12 @@ def match_calc(string1: str, string2: str) -> int:
 def remove_zcs(text: str) -> str:
     """
     Remove leading zeros and colons
+
     Parameters
     ----------
     text: str
         The text to remove colons and zeros from
+    
     Returns
     -------
     str
@@ -195,7 +197,7 @@ def remove_zcs(text: str) -> str:
     
 
 
-async def gen_loading_bar(self, percentage: float) -> list:
+async def gen_loading_bar(percentage: float) -> list:
     """
     Generate a nice loading bar based on the stuff we output, returns in a list format
     An embed can have up to ████████████████████████████████████████████████████████████ (60 things)

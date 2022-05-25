@@ -20,19 +20,18 @@ class Profile(commands.Cog):
 
     async def cog_load(self):
         """Load profile db"""
-
-        async with asqlite.connect("Databases/profile.db") as db:
-            await db.execute(
-                """
-                CREATE TABLE IF NOT EXISTS profiles (
-                    id               TEXT PRIMARY KEY
-                                        NOT NULL,
-                    name             TEXT NOT NULL,
-                    main_description TEXT,
-                    main_image       TEXT
-                );
-                """
-            )
+        self.profile_db = asqlite.connect("Databases/profile.db")
+        await self.profile_dbdb.execute(
+            """
+            CREATE TABLE IF NOT EXISTS profiles (
+                id               TEXT PRIMARY KEY
+                                    NOT NULL,
+                name             TEXT NOT NULL,
+                main_description TEXT,
+                main_image       TEXT
+            );
+            """
+        )
         await self.bot.printer.p_load("Profiles")
 
 

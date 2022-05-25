@@ -51,25 +51,25 @@ class ReminderManager:
         Load up all our reminders our timers as we call them here
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: commands.Bot, db: asqlite.Connection) -> None:
         """Constructs all the necessary attributes for our Reminder Manager"""
         self.REMINDER_LIMIT = 10
         self.bot = bot
         self.remind_id = None
         self.active_reminders = {}
+        self.db = db
 
     async def create_table(self) -> None:
         """Create a table for our stuff :D"""
-        async with asqlite.connect("Databases/reminders.db") as db:
-            schema = """CREATE reminders IF NOT EXISTS (
-                rid       INTEGER       NOT NULL
-                                        PRIMARY KEY,
-                id        TEXT    NOT NULL,
-                datetime  DATETIME   NOT NULL,
-                reminder  TEXT
-            );
-            """
-            await db.execute(schema)
+        schema = """CREATE reminders IF NOT EXISTS (
+            rid       INTEGER       NOT NULL
+                                    PRIMARY KEY,
+            id        TEXT    NOT NULL,
+            datetime  DATETIME   NOT NULL,
+            reminder  TEXT
+        );
+        """
+        await self.db.execute(schema)
 
     async def load_config(self) -> None:
         """Start setting up the config for the reminders"""
@@ -84,11 +84,10 @@ class ReminderManager:
         """Load all our reminders and timers and queue them when the bot is started so reminders actually get sent"""
         await self.load_config()
         await self.create_table()
-
-        async with asqlite.connect("Databases/reminders.db") as db:
-            query = """SELECT * FROM reminders;"""
-            async with db.execute(query) as conn:
-                results = await conn.fetchall()
+        
+        query = """SELECT * FROM reminders;"""
+        async with self.db.execute(query) as cursor:
+            results = await cursor.fetchall()
 
         for reminder in results:
             await self.create_timer(reminder[0], reminder[1])
@@ -99,25 +98,25 @@ class ReminderManager:
         timer = asyncio.create_task(
             self.bot.dispatch("on_create_timer"), rid, id, time, reminder
         )
-        async with asqlite.connect("Databases/reminders.db") as db:
-            query = """INSERT INTO reminders VALUES(?, ?, 0, "");"""
-            await db.execute(
-                query,
-            )
-            await db.commit()
+        query = """INSERT INTO reminders VALUES(?, ?, 0, "");"""
+        await self.db.execute(
+            query,
+        )
+        await self.db.commit()
         self.active_reminders.update(f"{rid}-{uid}", timer)
 
 
 class Reminders(commands.Cog):
-    """Cog Example Description"""
+    """Reminder cog for reminders, literally what else"""
 
     def __init__(self, bot: commands.Bot):
+        """Init for the bot """
         self.bot = bot
-        self.rm = ReminderManager(bot)
 
     async def cog_load(self):
         """Dispatch to start load reminders"""
-
+        self.reminders_db = await asqlite.connect("Databases/reminders.db")
+        self.rm = ReminderManager(self.bot, self.reminders_db)
         # await self.rm.load_timers()
 
     @commands.Cog.listener()
