@@ -3,8 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Benny's documentation!
-=================================
+Welcome to Benny Bot's documentation!
+=====================================
+
+.. note::
+   
+   This is no where near complete and will likely be updated frequently!
 
 .. toctree::
    :maxdepth: 2
