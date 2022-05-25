@@ -376,6 +376,7 @@ class Music(commands.Cog):
 
     async def cog_load(self):
         """Load up playlist related stuff"""
+        self.playlist_db = await asqlite.connect("Databases/music.db")
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS playlists (
@@ -387,9 +388,8 @@ class Music(commands.Cog):
             );
             """
         )
-        await self.bot.printer.p_load("Playlist")
-        self.playlist_db = await asqlite.connect("Databases/music.db")
         self.playlistmanager = PlaylistManager(self.playlist_db)
+        await self.bot.printer.p_load("Playlist")
 
     async def connect_nodes(self):
         """Connect to our wavelink nodes."""
