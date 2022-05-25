@@ -169,7 +169,7 @@ def match_calc(string1: str, string2: str) -> int:
         len(string1) + len(string2)
     )
     return int(ratio * 100)
-
+'''
 
 def remove_zcs(text: str) -> str:
     """
@@ -192,7 +192,7 @@ def remove_zcs(text: str) -> str:
     if split == "":
         return text
     return text.split(split)[1]
-    '''
+    
 
 
 async def gen_loading_bar(self, percentage: float) -> list:
