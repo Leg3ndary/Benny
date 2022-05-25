@@ -261,6 +261,7 @@ class Sentinel(commands.Cog):
     """
 
     def __init__(self, bot: commands.Bot):
+        """Init the detoxify models and get sessions ready!"""
         self.bot = bot
         self.sentinel = Detoxify(model_type="unbiased")
         self.sentinels = {}

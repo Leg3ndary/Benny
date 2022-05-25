@@ -125,13 +125,16 @@ async def start_bot() -> None:
                     """
                     Global check that applies to all commands
                     ├─ Check if prefixes are actually loaded
-                    ├── Check if the user is blacklisted from the bot
-                    ├─── Check if command is disabled
-                    ├──── Check if channel/thread is being ignored
-                    └────────
+                    ├── Check if it's me, if so, let me do anything L
+                    ├─── Check if the user is blacklisted from the bot
+                    ├──── Check if command is disabled
+                    ├───── Check if channel/thread is being ignored
+                    └───────
                     """
                     if not bot.LOADED_PREFIXES:
                         return False
+                    elif ctx.author.id == bot.owner_id:
+                        return True
                     return True
 
                 await bot.printer.p_connect("AIOHTTP Session")
