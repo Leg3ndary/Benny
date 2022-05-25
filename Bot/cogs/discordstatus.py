@@ -9,17 +9,10 @@ from gears import style
 class DiscordStatusClient:
     """A client for accessing info about discord status"""
 
-    def __init__(self) -> None:
+    def __init__(self, session: aiohttp.ClientSession) -> None:
         self.session = None
         self.api_url = "https://discordstatus.com/api/v2"
 
-    async def async_init(self) -> None:
-        """
-        Asynchronous Initialization
-
-        Base url not available in current version.
-        """
-        self.session = aiohttp.ClientSession()
 
     async def fetch_summary(self) -> str:
         """
