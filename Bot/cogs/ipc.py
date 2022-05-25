@@ -23,5 +23,5 @@ class IpcRoutes(commands.Cog):
     '''
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(IpcRoutes(bot))

@@ -153,5 +153,5 @@ Type: {error.converter}
             )
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Errors(bot))

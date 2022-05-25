@@ -142,5 +142,5 @@ class Reminders(commands.Cog):
         await self.rm.create_timer()
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Reminders(bot))

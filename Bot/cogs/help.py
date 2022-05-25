@@ -211,5 +211,5 @@ class Help(commands.Cog):
         await ctx.send_help(ctx.command.name)
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Help(bot))

@@ -13,5 +13,5 @@ class Welcome(commands.Cog):
         self.bot = bot
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Welcome(bot))

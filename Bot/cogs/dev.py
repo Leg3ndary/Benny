@@ -415,5 +415,5 @@ Add stuff here later...
         await self.bot.close()
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Dev(bot))

@@ -66,5 +66,5 @@ class Tags(commands.Cog):
         await ctx.send(response.variables)
 
 
-async def setup(bot: commands.Bot):
+async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Tags(bot))
