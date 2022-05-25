@@ -103,6 +103,7 @@ class Base(commands.Cog):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
         self.afk = AFKManager(bot)
+        self.session = bot.sessions.get("main")
 
     def get_size(bytes, suffix="B") -> str:
         """Return the correct data from bytes"""
@@ -244,7 +245,7 @@ class Base(commands.Cog):
         """
         dog command
         """
-        dog = await self.bot.aiosession.get("https://dog.ceo/api/breeds/image/random")
+        dog = await self.session.get("https://dog.ceo/api/breeds/image/random")
 
         dog_image = (await dog.json()).get("message")
         embed = discord.Embed(color=style.Color.random())

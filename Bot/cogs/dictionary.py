@@ -69,6 +69,7 @@ class Dictionary(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
+        self.session = bot.sessions.get("main")
 
     async def cog_load(self):
         """
@@ -98,7 +99,7 @@ class Dictionary(commands.Cog):
         -------
         dict
         """
-        async with self.bot.aiosession.get(f"{self.api_url}{word}") as request:
+        async with self.session.get(f"{self.api_url}{word}") as request:
             new_data = await request.json()
             if request.status == 404:
                 raise WordNotFound(f"Sorry but the word: {word}, has not been found")

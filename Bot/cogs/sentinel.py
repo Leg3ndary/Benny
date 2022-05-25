@@ -264,7 +264,7 @@ class Sentinel(commands.Cog):
         self.bot = bot
         self.sentinel = Detoxify(model_type="unbiased")
         self.sentinels = {}
-        self.session = bot.sensession
+        self.session = bot.sessions.get("sentinel")
 
     async def cog_load(self) -> None:
         """

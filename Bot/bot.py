@@ -82,10 +82,12 @@ async def start_bot() -> None:
     Start the bot with everything it needs
     """
     async with bot:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession() as main_session:
             async with aiohttp.ClientSession() as sentinel_session:
-                bot.aiosession = session
-                bot.sensession = sentinel_session
+                bot.sessions = {
+                    "main": main_session,
+                    "sentinel": sentinel_session
+                }
 
                 bot.printer = InfoPrinter(bot)
                 await bot.printer.p_load("Printer")

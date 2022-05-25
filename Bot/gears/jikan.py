@@ -1,11 +1,14 @@
 import datetime
+from discord.ext import commands
 
 
 class Jikan:
     """Presents ways to access the jikan api"""
 
-    def __init__(self):
+    def __init__(self, bot: commands.Bot):
+        """Initiation of our custom nice jikan class"""
         self.api_url = "https://api.jikan.moe/v4"
+        self.session = bot.session.get("main")
 
     async def request_url(self, endpoint: str, parameters: dict = "") -> dict:
         """
@@ -23,7 +26,7 @@ class Jikan:
         -------
         dict
         """
-        async with self.bot.aiosession.get(
+        async with self.session.get(
             f"{self.api_url}{endpoint}{await self.to_url(parameters)}"
         ) as request:
             if request.status in [200, 400]:
