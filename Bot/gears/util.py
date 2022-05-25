@@ -69,6 +69,7 @@ class BotUtil:
                 or file.endswith(".pyc")
                 or file.endswith(".jar")
                 or file.endswith(".git")
+                or file.endswith(".pytest_cache")
             ):
                 pass
             elif "." not in file:

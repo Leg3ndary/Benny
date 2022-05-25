@@ -21,23 +21,21 @@ class UserAccess:
         """
         Create a user in our small database
         """
-        async with self.db as db:
-            await db.execute("""INSERT INTO users VALUES(?, 0, False);""", (user_id,))
-            await db.commit()
+        await self.db.execute("""INSERT INTO users VALUES(?, 0, False);""", (user_id,))
+        await self.db.commit()
 
     async def get_user(self, user_id: str) -> tuple:
         """
         Get a users info
         """
-        async with self.db as db:
-            async with db.execute(
-                """SELECT * FROM users WHERE user_id = ?;""", (user_id,)
-            ) as cursor:
-                if not cursor.fetchone():
-                    await self.create_user(user_id)
-                    return await self.get_user(user_id)
-                else:
-                    return cursor.fetchone()
+        async with self.db.execute(
+            """SELECT * FROM users WHERE user_id = ?;""", (user_id,)
+        ) as cursor:
+            if not cursor.fetchone():
+                await self.create_user(user_id)
+                return await self.get_user(user_id)
+            else:
+                return cursor.fetchone()
 
 
 class PrefixManager:
@@ -82,7 +80,7 @@ class PrefixManager:
         -------
         str
         """
-        return prefixes.join(":|:")
+        return ":|:".join(prefixes)
 
     async def get_prefixes(self, guild: str) -> list:
         """
@@ -97,22 +95,15 @@ class PrefixManager:
         -------
         list
         """
-        print(f"received get for {guild}")
-        async with self.db as db:
-            print("reached 1")
-            async with db.execute(
-                """SELECT prefixes FROM prefixes WHERE guild = ?;""", (str(guild),)
-            ) as cursor:
-                print("reached 2")
-                print(cursor)
-                result = await cursor.fetchone()
-        print(result)
+        async with self.db.execute(
+            """SELECT prefixes FROM prefixes WHERE guild = ?;""", (str(guild),)
+        ) as cursor:
+            result = await cursor.fetchone()
+
         if result:
             return sorted((result)[0].split(":|:"), key=len)
         else:
-            print("adding guild")
             await self.add_guild(guild)
-            print("finished")
             return [self.bot.PREFIX]
 
     async def add_prefix(self, guild: str, prefix: str) -> None:
@@ -143,14 +134,15 @@ class PrefixManager:
             raise commands.BadArgument(f"You cannot have an empty prefix")
 
         else:
-            prefixes = sorted(prefixes.append(prefix), key=len)
+            prefixes.append(prefix)
+            if prefixes:
+                prefixes = sorted(prefixes, key=len)
             self.bot.prefixes[str(guild)] = prefixes
-            async with self.db as db:
-                await db.execute(
-                    f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
-                    (await self.prefixes_to_string(prefixes), str(guild)),
-                )
-                await db.commit()
+            await self.db.execute(
+                f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                (await self.prefixes_to_string(prefixes), str(guild)),
+            )
+            await self.db.commit()
         return          
 
     async def delete_prefix(self, guild: str, prefix: str) -> None:
@@ -176,12 +168,11 @@ class PrefixManager:
         else:
             prefixes.remove(prefix)
             self.bot.prefixes[str(guild)] = prefixes
-            async with self.db as db:
-                await db.execute(
-                    f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
-                    (await self.prefixes_to_string(prefixes), str(guild)),
-                )
-                await db.commit()
+            await self.db.execute(
+                f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                (await self.prefixes_to_string(prefixes), str(guild)),
+            )
+            await self.db.commit()
             
 
     async def add_guild(self, guild: str) -> None:
@@ -198,17 +189,16 @@ class PrefixManager:
         None
         """
         self.bot.prefixes[str(guild)] = [self.bot.PREFIX]
-        async with self.db as db:
-            await db.execute(
-                """INSERT INTO prefixes VALUES(?, ?);""",
-                (str(guild), self.bot.PREFIX),
-            )
-            await db.commit()
-            await self.bot.printer.p_cog(
-                await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
-                f"Added {guild} to prefixes",
-            )
-            return
+        await self.db.execute(
+            """INSERT INTO prefixes VALUES(?, ?);""",
+            (str(guild), self.bot.PREFIX),
+        )
+        await self.db.commit()
+        await self.bot.printer.p_cog(
+            await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
+            f"Added   {guild} to prefixes",
+        )
+        return
 
     async def delete_guild(self, guild: str) -> None:
         """
@@ -224,15 +214,14 @@ class PrefixManager:
         None
         """
         del self.bot.prefixes[str(guild)]
-        async with self.db as db:
-            await db.execute(
-                """DELETE FROM prefixes WHERE guild = ?;""", (str(guild),)
-            )
-            await db.commit()
-            await self.bot.printer.p_cog(
-                await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
-                f"Deleted {guild} from  prefixes",
-            )
+        await self.db.execute(
+            """DELETE FROM prefixes WHERE guild = ?;""", (str(guild),)
+        )
+        await self.db.commit()
+        await self.bot.printer.p_cog(
+            await self.bot.printer.generate_category(f"{Fore.CYAN}SERVER SETTINGS"),
+            f"Deleted {guild} from prefixes",
+        )
         return
 
 
@@ -285,12 +274,8 @@ class Settings(commands.Cog):
             );
             """
         )
-        print(1)
-        print(self.bot.guilds)
         for guild in self.bot.guilds:
-            print(guild)
             prefixes = await self.bot.prefix_manager.get_prefixes(guild.id)
-        
             self.bot.prefixes[str(guild.id)] = prefixes
 
         self.bot.LOADED_PREFIXES = True
@@ -371,7 +356,7 @@ class Settings(commands.Cog):
 
         embed = discord.Embed(
             title=f"Success",
-            description=f"""Successfully added {prefix} to your server""",
+            description=f"""Successfully added `{prefix}` to your server""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
