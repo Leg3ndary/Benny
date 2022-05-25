@@ -174,7 +174,9 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def info_cmd(self, ctx: commands.Context, person: discord.Member = None) -> None:
+    async def info_cmd(
+        self, ctx: commands.Context, person: discord.Member = None
+    ) -> None:
         """
         View an users info
         """

@@ -1,6 +1,7 @@
 import discord
 
-#config = json.load(open("config.json"))
+# config = json.load(open("config.json"))
+
 
 class DeleteView(discord.ui.View):
     """Delete view to delete the message from the bot"""

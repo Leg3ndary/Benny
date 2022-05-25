@@ -77,79 +77,81 @@ bot.MUSIC_ENABLED = True
 bot.PREFIX = config.get("Bot").get("Prefix")
 
 
+@bot.check
+async def global_check(ctx: commands.context) -> bool:
+    """
+    Global check that applies to all commands
+    ├─ Check if prefixes are actually loaded
+    ├── Check if it's me, if so, let me do anything L
+    ├─── Check if the user is blacklisted from the bot
+    ├──── Check if command is disabled
+    ├───── Check if channel/thread is being ignored
+    └───────
+    """
+    if not bot.LOADED_PREFIXES:
+        return False
+    elif ctx.author.id == bot.owner_id:
+        return True
+    return True
+
+
 async def start_bot() -> None:
     """
     Start the bot with everything it needs
     """
+    bot.printer = InfoPrinter(bot)
+    await bot.printer.p_load("Printer")
+
+    bot.config = config
+    await bot.printer.p_load("Config")
+
+    bot.util = util.BotUtil(bot)
+    await bot.printer.p_load("Bot Util")
+
+    file_list = {}
+    total = 0
+
+    for file in await bot.util.get_files():
+        file_len = await bot.util.len_file(file)
+        file_list[file] = file_len
+        total += file_len
+    file_list["total"] = total
+    bot.file_list = file_list
+
+    async def when_bot_ready():
+        """
+        On ready dispatch and print stuff
+        """
+        await bot.wait_until_ready()
+        bot.dispatch("load_prefixes")
+        bot.dispatch("connect_wavelink")
+        bot.dispatch("load_decancer_manager")
+        await bot.printer.p_bot_update("LOGGED IN")
+
     async with bot:
         async with aiohttp.ClientSession() as main_session:
             async with aiohttp.ClientSession() as sentinel_session:
-                bot.sessions = {
-                    "main": main_session,
-                    "sentinel": sentinel_session
-                }
+                async with aiohttp.ClientSession() as discordstatus_session:
+                    bot.sessions = {
+                        "main": main_session,
+                        "sentinel": sentinel_session,
+                        "discordstatus": discordstatus_session,
+                    }
+                    await bot.printer.p_connect("AIOHTTP Sessions")
 
-                bot.printer = InfoPrinter(bot)
-                await bot.printer.p_load("Printer")
+                    await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
-                bot.config = config
-                await bot.printer.p_load("Config")
+                    end = time.monotonic()
 
-                bot.util = util.BotUtil(bot)
-                await bot.printer.p_load("Bot Util")
+                    await bot.printer.p_bot(
+                        "",
+                        f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+                    )
 
-                file_list = {}
-                total = 0
-
-                for file in await bot.util.get_files():
-                    file_len = await bot.util.len_file(file)
-                    file_list[file] = file_len
-                    total += file_len
-                file_list["total"] = total
-                bot.file_list = file_list
-
-                await bot.util.load_cogs(os.listdir("Bot/cogs"))
-
-                async def when_bot_ready():
-                    """
-                    On ready dispatch and print stuff
-                    """
-                    await bot.wait_until_ready()
-                    bot.dispatch("load_prefixes")
-                    bot.dispatch("connect_wavelink")
-                    bot.dispatch("load_decancer_manager")
-                    await bot.printer.p_bot_update("LOGGED IN")
-
-                @bot.check
-                async def global_check(ctx: commands.context) -> bool:
-                    """
-                    Global check that applies to all commands
-                    ├─ Check if prefixes are actually loaded
-                    ├── Check if it's me, if so, let me do anything L
-                    ├─── Check if the user is blacklisted from the bot
-                    ├──── Check if command is disabled
-                    ├───── Check if channel/thread is being ignored
-                    └───────
-                    """
-                    if not bot.LOADED_PREFIXES:
-                        return False
-                    elif ctx.author.id == bot.owner_id:
-                        return True
-                    return True
-
-                await bot.printer.p_connect("AIOHTTP Session")
-
-                end = time.monotonic()
-
-                await bot.printer.p_bot(
-                    "",
-                    f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
-                )
-
-                bot.loop.create_task(when_bot_ready())
-                #bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
-                #bot.ipc.start()
-                await bot.start(bot.config.get("Bot").get("Token"))
+                    bot.loop.create_task(when_bot_ready())
+                    # bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                    # bot.ipc.start()
+                    await bot.start(bot.config.get("Bot").get("Token"))
 
 
 asyncio.run(start_bot())

@@ -108,7 +108,8 @@ class BotUtil:
                 try:
                     filename = file.split("/")[-1][:-3]
                     if file.endswith(".py") and (
-                        filename not in ["cog_template", "discordstatus", "snipe", "ipc"]
+                        filename
+                        not in ["cog_template", "discordstatus", "snipe", "ipc"]
                     ):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
                         await self.bot.printer.p_cog_update(file[:-3], "LOAD")
@@ -142,6 +143,7 @@ class BotUtil:
         embed.set_thumbnail(url=style.get_emoji("image", "cancel"))
         await ben.send(embed=embed)
 
+
 '''
 def match_calc(string1: str, string2: str) -> int:
     """Calculate how much 2 different strings match each other"""
@@ -171,6 +173,7 @@ def match_calc(string1: str, string2: str) -> int:
     return int(ratio * 100)
 '''
 
+
 def remove_zcs(text: str) -> str:
     """
     Remove leading zeros and colons
@@ -179,7 +182,7 @@ def remove_zcs(text: str) -> str:
     ----------
     text: str
         The text to remove colons and zeros from
-    
+
     Returns
     -------
     str
@@ -194,7 +197,6 @@ def remove_zcs(text: str) -> str:
     if split == "":
         return text
     return text.split(split)[1]
-    
 
 
 async def gen_loading_bar(percentage: float) -> list:

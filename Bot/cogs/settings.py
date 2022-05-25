@@ -125,7 +125,9 @@ class PrefixManager:
         prefix = self.sanitize_prefix(prefix)
 
         if prefix in prefixes:
-            raise commands.BadArgument(f"You already have {prefix} as a prefix in your server")
+            raise commands.BadArgument(
+                f"You already have {prefix} as a prefix in your server"
+            )
 
         elif len(prefixes) >= 15:
             raise commands.BadArgument(f"You can only have up to 15 prefixes")
@@ -143,7 +145,7 @@ class PrefixManager:
                 (await self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
-        return          
+        return
 
     async def delete_prefix(self, guild: str, prefix: str) -> None:
         """
@@ -164,7 +166,9 @@ class PrefixManager:
         prefix = self.sanitize_prefix(prefix)
 
         if prefix not in prefixes:
-            raise commands.BadArgument(f"You don't have {prefix} as a prefix in your server")
+            raise commands.BadArgument(
+                f"You don't have {prefix} as a prefix in your server"
+            )
         else:
             prefixes.remove(prefix)
             self.bot.prefixes[str(guild)] = prefixes
@@ -173,7 +177,6 @@ class PrefixManager:
                 (await self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
-            
 
     async def add_guild(self, guild: str) -> None:
         """
@@ -319,7 +322,7 @@ class Settings(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["view", "config"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def prefix_list_cmd(self, ctx: commands.Context) -> None:

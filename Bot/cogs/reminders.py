@@ -84,7 +84,7 @@ class ReminderManager:
         """Load all our reminders and timers and queue them when the bot is started so reminders actually get sent"""
         await self.load_config()
         await self.create_table()
-        
+
         query = """SELECT * FROM reminders;"""
         async with self.db.execute(query) as cursor:
             results = await cursor.fetchall()
@@ -110,7 +110,7 @@ class Reminders(commands.Cog):
     """Reminder cog for reminders, literally what else"""
 
     def __init__(self, bot: commands.Bot):
-        """Init for the bot """
+        """Init for the bot"""
         self.bot = bot
 
     async def cog_load(self):

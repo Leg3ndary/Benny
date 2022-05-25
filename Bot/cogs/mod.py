@@ -138,7 +138,11 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     async def warn_cmd(
-        self, ctx: commands.Context, member: commands.Greedy[discord.Member], *, reason: str = "None"
+        self,
+        ctx: commands.Context,
+        member: commands.Greedy[discord.Member],
+        *,
+        reason: str = "None",
     ):
         """
         Warn cmd
@@ -156,7 +160,9 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def ban_cmd(self, ctx: commands.Context, user: discord.Member = None, *, reason: str = None):
+    async def ban_cmd(
+        self, ctx: commands.Context, user: discord.Member = None, *, reason: str = None
+    ):
         """
         Ban a member, requires ban member permission
         """
@@ -270,7 +276,9 @@ class Mod(commands.Cog):
             pass
 
     @modlogs.command(name="channel", aliases=["set"])
-    async def modlogs_channel(self, ctx: commands.Context, channel: discord.TextChannel):
+    async def modlogs_channel(
+        self, ctx: commands.Context, channel: discord.TextChannel
+    ):
         """Set a channel for modlogs"""
 
         data = await self.db_modlogs.find_one({"_id": ctx.guild.id})
