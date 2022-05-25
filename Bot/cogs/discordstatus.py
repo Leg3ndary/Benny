@@ -4,8 +4,8 @@ import discord
 import datetime
 import discord.utils
 from discord.ext import commands
-from soupsieve import select
 from gears import style
+from typing_extensions import Self
 
 
 class Page:
@@ -20,14 +20,15 @@ class Page:
         self.id = None
         self.name = None
         self.url = None
-        self.updated_at = datetime.datetime
+        self.updated_at = None
 
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """Construct the class from some data"""
         self.id = data.get("id")
         self.name = data.get("name")
         self.url = data.get("url")
-        self.updated_at = self.updated_at.fromisoformat(data.get("updated_at"))
+        self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
+        return self
 
 class Status:
     """
@@ -41,10 +42,11 @@ class Status:
         self.description = None
         self.indicator = None
 
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """Construct the class from data"""
         self.description = data.get("description")
         self.indicator = data.get("indicator")
+        return self
 
 class Component:
     """Summary components, can have multiple"""
@@ -53,25 +55,26 @@ class Component:
         """
         Init the component class
         """
-        self.created_at = datetime.datetime
+        self.created_at = None
         self.description = None
         self.id = None
         self.name = None
         self.page_id = None
         self.position = None
         self.status = None
-        self.updated_at = datetime.datetime
+        self.updated_at = None
 
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """Construct the class from data"""
-        self.created_at = self.created_at.fromisoformat(data.get("created_at"))
+        self.created_at = datetime.datetime.fromisoformat(data.get("created_at"))
         self.description = data.get("description")
         self.id = data.get("id")
         self.name = data.get("name")
         self.page_id = data.get("page_id")
         self.position = data.get("position")
         self.status = data.get("status")
-        self.updated_at = self.updated_at.fromisoformat(data.get("updated_at"))
+        self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
+        return self
 
 class Incident:
     """
@@ -82,33 +85,34 @@ class Incident:
         """
         Init the incident class with atributes
         """
-        self.created_at = datetime.datetime
+        self.created_at = None
         self.id = None
         self.impact = None
         self.incident_updates = []
-        self.monitoring_at = datetime.datetime
+        self.monitoring_at = None
         self.name = None
         self.page_id = None
-        self.resolved_at = datetime.datetime
+        self.resolved_at = None
         self.shortlink = None
         self.status = None
-        self.updated_at = datetime.datetime
+        self.updated_at = None
 
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """Construct the class from data"""
-        self.created_at = self.created_at.fromisoformat(data.get("created_at"))
+        self.created_at = datetime.datetime.fromisoformat(data.get("created_at"))
         self.id = data.get("id")
         self.impact = data.get("impact")
         if data.get("incident_updates"):
             for incident_update in data.get("incident_updates"):
                 self.incident_updates.append(IncidentUpdate().from_data(incident_update))
-        self.monitoring_at = self.monitoring_at.fromisoformat(data.get("monitoring_at"))
+        self.monitoring_at = datetime.datetime.fromisoformat(data.get("monitoring_at"))
         self.name = data.get("name")
         self.page_id = data.get("page_id")
-        self.resolved_at = self.resolved_at.fromisoformat(data.get("resolved_at"))
+        self.resolved_at = datetime.datetime.fromisoformat(data.get("resolved_at"))
         self.shortlink = data.get("shortlink")
         self.status = data.get("status")
-        self.updated_at = self.updated_at.fromisoformat(data.get("updated_at"))
+        self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
+        return self
 
 class IncidentUpdate:
     """Summary incident update class"""
@@ -116,22 +120,23 @@ class IncidentUpdate:
     def __init__(self) -> None:
         """Summary incident update init"""
         self.body = None
-        self.created_at = datetime.datetime
-        self.display_at = datetime.datetime
+        self.created_at = None
+        self.display_at = None
         self.id = None
         self.incident_id = None
         self.status = None
-        self.updated_at = datetime.datetime
+        self.updated_at = None
 
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """Construct the class from data"""
         self.body = data.get("body")
-        self.created_at = self.updated_at.fromisoformat(data.get("created_at"))
-        self.display_at = self.display_at.fromisoformat(data.get("display_at"))
+        self.created_at = datetime.datetime.fromisoformat(data.get("created_at"))
+        self.display_at = datetime.datetime.fromisoformat(data.get("display_at"))
         self.id = data.get("id")
         self.incident_id = data.get("incident_id")
         self.status = data.get("status")
-        self.updated_at = self.updated_at.fromisoformat(data.get("updated_at"))
+        self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
+        return self
 
 class ScheduledMaintenance:
     """
@@ -140,37 +145,38 @@ class ScheduledMaintenance:
     
     def __init__(self) -> None:
         """init the scheduled maintenance class"""
-        self.created_at = datetime.datetime
+        self.created_at = None
         self.id = None
         self.impact = None
         self.incident_updates = []
-        self.monitoring_at = datetime.datetime
+        self.monitoring_at = None
         self.name = None
         self.page_id = None
-        self.resolved_at = datetime.datetime
-        self.scheduled_for = datetime.datetime
-        self.scheduled_until = datetime.datetime
+        self.resolved_at = None
+        self.scheduled_for = None
+        self.scheduled_until = None
         self.shortlink = None
         self.status = None
-        self.updated_at = datetime.datetime
+        self.updated_at = None
 
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """Generate the class data from a dict"""
-        self.created_at = self.created_at.fromisoformat(data.get("created_at"))
+        self.created_at = datetime.datetime.fromisoformat(data.get("created_at"))
         self.id = data.get("id")
         self.impact = data.get("impact")
         if data.get("incident_updates"):
             for incident_update in data.get("incident_updates"):
                 self.incident_updates.append(IncidentUpdate().from_data(incident_update))
-        self.monitoring_at = self.monitoring_at.fromisoformat(data.get("monitoring_at"))
+        self.monitoring_at = datetime.datetime.fromisoformat(data.get("monitoring_at"))
         self.name = data.get("name")
         self.page_id = data.get("page_id")
-        self.resolved_at = self.resolved_at.fromisoformat(data.get("resolved_at"))
-        self.scheduled_for = self.scheduled_for.fromisoformat(data.get("scheduled_for"))
-        self.scheduled_until = self.scheduled_until.fromisoformat(data.get("scheduled"))
+        self.resolved_at = datetime.datetime.fromisoformat(data.get("resolved_at"))
+        self.scheduled_for = datetime.datetime.fromisoformat(data.get("scheduled_for"))
+        self.scheduled_until = datetime.datetime.fromisoformat(data.get("scheduled"))
         self.shortlink = data.get("shortlink")
         self.status = data.get("status")
-        self.updated_at = self.updated_at.fromisoformat(data.get("updated_at"))
+        self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
+        return self
 
 class Summary:
     """
@@ -187,7 +193,7 @@ class Summary:
         self.incidents = []
         self.scheduled_maintenances = []
     
-    def from_data(self, data: dict) -> None:
+    def from_data(self, data: dict) -> Self:
         """
         Construct a summary object from data
         """
@@ -202,6 +208,7 @@ class Summary:
         if data.get("scheduled_maintenances"):
             for scheduled_maintenance in data.get("scheduled_maintenances"):
                 self.scheduled_maintenances.append(ScheduledMaintenance().from_data(scheduled_maintenance))
+        return self
 
 
 class DiscordStatusClient:
@@ -259,7 +266,7 @@ class SummaryView(discord.ui.View):
 
 
 class DiscordStatus(commands.Cog):
-    """Cog Example Description"""
+    """Discord Status, not done"""
 
     def __init__(self, bot: commands.Bot) -> None:
         """init the discordstatus"""
@@ -290,7 +297,7 @@ class DiscordStatus(commands.Cog):
         embed = discord.Embed(
             title=f"{summary.page.name} - {summary.page.id}",
             url=summary.page.url,
-            description=f"""Last updated: <t:{summary.page.updated_at.timestamp()}:F> (<t:{summary.page.updated_at.timestamp()}:R>)""",
+            description=f"""Last updated: <t:{round(summary.page.updated_at.timestamp())}:F> (<t:{round(summary.page.updated_at.timestamp())}:R>)""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA
         )
