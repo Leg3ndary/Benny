@@ -1,4 +1,5 @@
 import asqlite
+from redis import asyncio as aioredis
 import time
 import datetime
 import discord
@@ -21,6 +22,14 @@ class ModerationManager:
         self.bot = bot
         self.calendar = parsedatetime.Calendar()
         self.db = db
+
+    async def get_count(self) -> int:
+        """
+        Get the current moderation counter
+        """
+        count = int(await self.bot.redis.get("Mod_Count"))
+        await self.bot.redis.set("Mod_Count", count + 1)
+        return count
 
     async def pull_time(self, string: str) -> float:
         """
@@ -87,6 +96,7 @@ class Mod(commands.Cog):
             CREATE TABLE IF NOT EXISTS warns (
                 id      TEXT    NOT NULL
                             PRIMARY KEY,
+                case    TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT,
                 time    INT     NOT NULL,

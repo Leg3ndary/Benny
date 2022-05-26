@@ -1,4 +1,4 @@
-import aioredis
+from redis import asyncio as aioredis
 import asyncio
 import discord
 from motor.motor_asyncio import AsyncIOMotorClient
