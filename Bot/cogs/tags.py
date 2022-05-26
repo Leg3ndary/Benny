@@ -8,7 +8,7 @@ from discord.ext import commands
 from gears import style
 
 
-def to_seed(self, ctx: commands.Context) -> dict:
+def to_seed(ctx: commands.Context) -> dict:
     """
     Grab seed from context"""
     author = tse.MemberAdapter(ctx.author)
@@ -65,6 +65,7 @@ class Tags(commands.Cog):
             tse.ReplaceBlock(),
             tse.PythonBlock(),
             tse.URLEncodeBlock(),
+            tse.URLDecodeBlock(),
             tse.RequireBlock(),
             tse.BlacklistBlock(),
             tse.CommandBlock(),
@@ -112,6 +113,7 @@ class Tags(commands.Cog):
         """
         seeds = {"args": tse.StringAdapter(args)}
         seeds.update(to_seed(ctx))
+
         await ctx.send(seeds)
         response = await self.tsei.process(message=args, seed_variables=seeds)
 

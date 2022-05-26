@@ -21,13 +21,25 @@ class ModerationManager:
         self.bot = bot
         self.calendar = parsedatetime.Calendar()
         self.db = db
+        self.count_db = bot.mongo["Mod"]
 
-    async def get_count(self) -> int:
+    async def get_count(self, guild: str) -> int:
         """
         Get the current moderation counter
         """
-        count = int(await self.bot.redis.get("Mod_Count"))
-        await self.bot.redis.set("Mod_Count", count + 1)
+        guild_coll = self.count_db["Counts"]
+        query = {"_id": str(guild)}
+        doc = await guild_coll.find_one(query)
+
+        if not doc:
+            doc = {
+                "_id": str(guild),
+                "count": 1
+            }
+            await guild_coll.insert_one(doc)
+        count = doc.get("count")
+        await guild_coll.update_one(query, {"$set": {"count": count + 1}})
+
         return count
 
     async def pull_time(self, string: str) -> float:
