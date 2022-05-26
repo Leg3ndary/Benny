@@ -52,15 +52,15 @@ class ModerationManager:
 
         if future_time <= current_time:
             await self.db.execute(
-                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
-                (member.id, ctx.author.id, reason, current_time, future_time),
+                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
+                (await self.get_count(), member.id, ctx.author.id, reason, current_time, future_time),
             )
             description = f"{reason}\n\nExpires in <t:{future_time}:R>"
 
         else:
             await self.db.execute(
                 f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
-                (member.id, ctx.author.id, reason, current_time, None),
+                (await self.get_count(), member.id, ctx.author.id, reason, current_time, None),
             )
             description = reason
         await self.db.commit()
