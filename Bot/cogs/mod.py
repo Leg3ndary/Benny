@@ -1,5 +1,4 @@
 import asqlite
-from redis import asyncio as aioredis
 import time
 import datetime
 import discord
@@ -94,9 +93,9 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (
-                id      TEXT    NOT NULL
-                            PRIMARY KEY,
-                case    TEXT    NOT NULL,
+                case    TEXT    PRIMARY KEY
+                                NOT NULL,
+                guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT,
                 time    INT     NOT NULL,
@@ -107,8 +106,9 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS bans (
-                id      TEXT    NOT NULL
-                            PRIMARY KEY,
+                case    TEXT    PRIMARY KEY
+                                NOT NULL,
+                guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT,
                 time    INT     NOT NULL,
@@ -119,8 +119,9 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS mutes (
-                id      TEXT    NOT NULL
-                            PRIMARY KEY,
+                case    TEXT    PRIMARY KEY
+                                NOT NULL,
+                guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT,
                 time    INT     NOT NULL,
