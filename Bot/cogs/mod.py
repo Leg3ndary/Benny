@@ -71,7 +71,7 @@ class ModerationManager:
 
         else:
             await self.db.execute(
-                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
+                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
                 (await self.get_count(), member.id, ctx.author.id, reason, current_time, None),
             )
             description = reason
