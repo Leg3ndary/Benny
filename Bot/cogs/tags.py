@@ -12,7 +12,9 @@ def to_seed(self, ctx: commands.Context) -> dict:
     """
     Grab seed from context"""
     author = tse.MemberAdapter(ctx.author)
-    target = tse.MemberAdapter(ctx.message.mentions[0]) if ctx.message.mentions else author
+    target = (
+        tse.MemberAdapter(ctx.message.mentions[0]) if ctx.message.mentions else author
+    )
     channel = tse.ChannelAdapter(ctx.channel)
     seed = {
         "author": author,
@@ -34,6 +36,7 @@ class Tag:
 
     def __init__(self) -> None:
         pass
+
 
 class Tags(commands.Cog):
     """Tag cog"""
@@ -76,8 +79,9 @@ class Tags(commands.Cog):
         On cog load start up our nice db
         """
         self.db = await asqlite.connect("Databases/tags.db")
-        
-        await self.db.execute("""
+
+        await self.db.execute(
+            """
         CREATE TABLE IF NOT EXISTS tags (
             tag_id     TEXT PRIMARY KEY
                             NOT NULL,
@@ -88,7 +92,8 @@ class Tags(commands.Cog):
             uses       INT  NOT NULL,
             tagscript  TEXT NOT NULL
         )
-        """)
+        """
+        )
 
     @commands.command(
         name="tag",
@@ -108,9 +113,7 @@ class Tags(commands.Cog):
         seeds = {"args": tse.StringAdapter(args)}
         seeds.update(to_seed(ctx))
         await ctx.send(seeds)
-        response = await self.tsei.process(
-            message=args, seed_variables=seeds
-        )
+        response = await self.tsei.process(message=args, seed_variables=seeds)
 
         await ctx.send(response.body)
         await ctx.send(f"{response.actions} + {response.variables}")

@@ -53,14 +53,28 @@ class ModerationManager:
         if future_time <= current_time:
             await self.db.execute(
                 f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
-                (await self.get_count(), member.id, ctx.author.id, reason, current_time, future_time),
+                (
+                    await self.get_count(),
+                    member.id,
+                    ctx.author.id,
+                    reason,
+                    current_time,
+                    future_time,
+                ),
             )
             description = f"{reason}\n\nExpires in <t:{future_time}:R>"
 
         else:
             await self.db.execute(
                 f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
-                (await self.get_count(), member.id, ctx.author.id, reason, current_time, None),
+                (
+                    await self.get_count(),
+                    member.id,
+                    ctx.author.id,
+                    reason,
+                    current_time,
+                    None,
+                ),
             )
             description = reason
         await self.db.commit()
@@ -97,7 +111,7 @@ class Mod(commands.Cog):
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
-                reason  TEXT,
+                reason  TEXT    NOT NULL,
                 time    INT     NOT NULL,
                 finish  INT
             );
@@ -110,7 +124,7 @@ class Mod(commands.Cog):
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
-                reason  TEXT,
+                reason  TEXT    NOT NULL,
                 time    INT     NOT NULL,
                 finish  INT
             );
@@ -123,7 +137,7 @@ class Mod(commands.Cog):
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
-                reason  TEXT,
+                reason  TEXT    NOT NULL,
                 time    INT     NOT NULL,
                 finish  INT
             );
