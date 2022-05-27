@@ -1,4 +1,7 @@
 import asyncio
+from msilib.schema import InstallExecuteSequence
+from time import thread_time
+from xmlrpc.client import SERVER_ERROR
 import aiohttp
 import asqlite
 import cleantext
@@ -6,6 +9,7 @@ from colorama import Style, Fore
 import discord
 import discord.utils
 from discord.ext import commands
+from numpy import identity
 from gears import style
 from detoxify import Detoxify
 import io
@@ -369,6 +373,28 @@ Average                                     {bars_colors[7]}{round(float(values[
         await self.db.commit()
         await self.load_sentinel(guild)
 
+    async def view_config(self, ctx: commands.Context) -> None:
+        """
+        View current sentinel setup for a server
+        """
+        sentinel = self.sentinel.get(str(ctx.guild.id))
+        if not sentinel:
+            raise commands.BadArgument("You need to create a Sentinel config with /sentinel default!")
+
+        embed = discord.Embed(
+            title=f"Sentinel Config",
+            description=f"""This server is marked as """,
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED
+        )
+        await ctx.send(embed=embed)
+
+    async def edit_config(self, ctx: commands.Context) -> None:
+        """
+        Edit config
+        """
+        await ctx.send_modal()
+
 class DecancerManager:
     """
     Class for managing decancer states and info
@@ -454,20 +480,88 @@ class DecancerManager:
             return (await results.fetchone())["decancer"]
 
 
-
-
 class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
     """
     Config for sentinel
     """
-
-    config = discord.ui.TextInput(
-        label="Set config below, please only change the numbers",
-        style=discord.TextStyle.long,
-        placeholder="Type your feedback here...",
-        required=True,
-        max_length=500,
-    )
+    
+    def __init__(self, config: SentinelConfig) -> None:
+        """
+        Init"""
+        super().__init__()
+        self.config = config
+        threshold = discord.ui.TextInput(
+            label="Set your threshold values below, it should be a 2 digit long number like below (Default 75).",
+            style=discord.TextStyle.long,
+            placeholder="75",
+            required=False,
+            max_length=2,
+        )
+        toxicity = discord.ui.TextInput(
+            label="Toxicity",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.toxicity),
+            required=False,
+            max_length=2,
+        )
+        severe_toxicity = discord.ui.TextInput(
+            label="Severe Toxicity",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.severe_toxicity),
+            required=False,
+            max_length=2,
+        )
+        obscene = discord.ui.TextInput(
+            label="Obscene",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.obscene),
+            required=False,
+            max_length=2,
+        )
+        identity_attack = discord.ui.TextInput(
+            label="Identity Attack",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.identity_attack),
+            required=False,
+            max_length=2,
+        )
+        insult = discord.ui.TextInput(
+            label="Insult",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.insult),
+            required=False,
+            max_length=2,
+        )
+        threat = discord.ui.TextInput(
+            label="Threat",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.threat),
+            required=False,
+            max_length=2,
+        )
+        sexual_explicit = discord.ui.TextInput(
+            label="Sexual Explicit",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.sexual_explicit),
+            required=False,
+            max_length=2,
+        )
+        average = discord.ui.TextInput(
+            label="Average",
+            style=discord.TextStyle.long,
+            placeholder=str(self.config.average),
+            required=False,
+            max_length=2,
+        )
+        self.add_item(threshold)
+        self.add_item(toxicity)
+        self.add_item(severe_toxicity)
+        self.add_item(obscene)
+        self.add_item(identity_attack)
+        self.add_item(insult)
+        self.add_item(threat)
+        self.add_item(sexual_explicit)
+        self.add_item(average)
 
     async def verify_input(self, config: str) -> bool:
         """
@@ -480,8 +574,8 @@ class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
 
     async def on_submit(self, interaction: discord.Interaction):
         embed = discord.Embed(
-            title=f"",
-            description=f"""""",
+            title=f"Success",
+            description=f"""Config successfully saved""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
@@ -517,9 +611,10 @@ class SentinelConfigView(discord.ui.View):
     The Sentinel Config View
     """
 
-    def __init__(self):
+    def __init__(self, config: SentinelConfig):
         """Init"""
         super().__init__()
+        self.config = config
 
     @discord.ui.button(
         label="Update Config", emoji=":setting:", style=discord.ButtonStyle.grey
@@ -527,7 +622,7 @@ class SentinelConfigView(discord.ui.View):
     async def update_config(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await interaction.send_modal(SentinelConfigModal())
+        await interaction.send_modal(SentinelConfigModal(self.config))
 
 
 class Sentinel(commands.Cog):
@@ -685,7 +780,7 @@ class Sentinel(commands.Cog):
         name="default",
         description="""Set default command config""",
         help="""Set sentinel config to default values.""",
-        brief="You should also use this to setup",
+        brief="Use this to setup sentinel config to it's default values",
         aliases=[],
         enabled=True,
         hidden=False,
@@ -694,6 +789,20 @@ class Sentinel(commands.Cog):
     async def sentinel_default_cmd(self, ctx: commands.Context) -> None:
         """Set default command config"""
         await self.sm.save_default_config(ctx)
+
+    @sentinel_cmd.command(
+        name="config",
+        description="""View and edit sentinel config""",
+        help="""Set sentinel config to whatever you want""",
+        brief="View sentinel config values",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def sentinel_config_cmd(self, ctx: commands.Context) -> None:
+        """View and edit sentinel config"""
+        await self.sm.send_config(ctx)
 
     @commands.hybrid_group()
     @commands.guild_only()
