@@ -125,7 +125,7 @@ async def start_bot() -> None:
         await bot.wait_until_ready()
         bot.dispatch("load_prefixes")
         bot.dispatch("connect_wavelink")
-        bot.dispatch("load_decancer_manager")
+        bot.dispatch("load_sentinel_managers")
         await bot.printer.p_bot_update("LOGGED IN")
 
     async with bot:

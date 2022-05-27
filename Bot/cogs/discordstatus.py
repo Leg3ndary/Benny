@@ -12,7 +12,7 @@ class Page:
     """
     Discord summary page response
     """
-    
+
     def __init__(self) -> None:
         """
         Discord summary, page attribute
@@ -30,11 +30,12 @@ class Page:
         self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
         return self
 
+
 class Status:
     """
     Discord summary status response
     """
-    
+
     def __init__(self) -> None:
         """
         Discord summary, status attribute
@@ -47,6 +48,7 @@ class Status:
         self.description = data.get("description")
         self.indicator = data.get("indicator")
         return self
+
 
 class Component:
     """Summary components, can have multiple"""
@@ -76,11 +78,12 @@ class Component:
         self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
         return self
 
+
 class Incident:
     """
     Summary incident class
     """
-    
+
     def __init__(self) -> None:
         """
         Init the incident class with atributes
@@ -104,7 +107,9 @@ class Incident:
         self.impact = data.get("impact")
         if data.get("incident_updates"):
             for incident_update in data.get("incident_updates"):
-                self.incident_updates.append(IncidentUpdate().from_data(incident_update))
+                self.incident_updates.append(
+                    IncidentUpdate().from_data(incident_update)
+                )
         self.monitoring_at = datetime.datetime.fromisoformat(data.get("monitoring_at"))
         self.name = data.get("name")
         self.page_id = data.get("page_id")
@@ -114,9 +119,10 @@ class Incident:
         self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
         return self
 
+
 class IncidentUpdate:
     """Summary incident update class"""
-    
+
     def __init__(self) -> None:
         """Summary incident update init"""
         self.body = None
@@ -138,11 +144,12 @@ class IncidentUpdate:
         self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
         return self
 
+
 class ScheduledMaintenance:
     """
     A Scheduled Maintenance
     """
-    
+
     def __init__(self) -> None:
         """init the scheduled maintenance class"""
         self.created_at = None
@@ -166,7 +173,9 @@ class ScheduledMaintenance:
         self.impact = data.get("impact")
         if data.get("incident_updates"):
             for incident_update in data.get("incident_updates"):
-                self.incident_updates.append(IncidentUpdate().from_data(incident_update))
+                self.incident_updates.append(
+                    IncidentUpdate().from_data(incident_update)
+                )
         self.monitoring_at = datetime.datetime.fromisoformat(data.get("monitoring_at"))
         self.name = data.get("name")
         self.page_id = data.get("page_id")
@@ -177,6 +186,7 @@ class ScheduledMaintenance:
         self.status = data.get("status")
         self.updated_at = datetime.datetime.fromisoformat(data.get("updated_at"))
         return self
+
 
 class Summary:
     """
@@ -192,7 +202,7 @@ class Summary:
         self.components = []
         self.incidents = []
         self.scheduled_maintenances = []
-    
+
     def from_data(self, data: dict) -> Self:
         """
         Construct a summary object from data
@@ -207,7 +217,9 @@ class Summary:
                 self.incidents.append(Incident().from_data(incident))
         if data.get("scheduled_maintenances"):
             for scheduled_maintenance in data.get("scheduled_maintenances"):
-                self.scheduled_maintenances.append(ScheduledMaintenance().from_data(scheduled_maintenance))
+                self.scheduled_maintenances.append(
+                    ScheduledMaintenance().from_data(scheduled_maintenance)
+                )
         return self
 
 
@@ -218,22 +230,22 @@ class DiscordStatusClient:
         """Init the client"""
         self.session = session
         self.api_url = "https://discordstatus.com/api/v2"
-        self.cache = {
-            "summary": {
-                "data": None,
-                "last_fetched": 0
-            }
-        }
+        self.cache = {"summary": {"data": None, "last_fetched": 0}}
 
     async def get_summary(self) -> Summary:
         """
         To limit overall requests to the api, this will save the latest object and only request
         a new object if it's been over 3000 seconds (5 Minutes)
         """
-        if round(datetime.datetime.now().timestamp()) > self.cache["summary"]["last_fetched"] + 3000:
+        if (
+            round(datetime.datetime.now().timestamp())
+            > self.cache["summary"]["last_fetched"] + 3000
+        ):
             self.cache["summary"]["data"] = await self.fetch_summary()
             print(self.cache["summary"]["data"])
-            self.cache["summary"]["last_fetched"] = round(datetime.datetime.now().timestamp())
+            self.cache["summary"]["last_fetched"] = round(
+                datetime.datetime.now().timestamp()
+            )
 
         return self.cache["summary"]["data"]
 
@@ -262,6 +274,7 @@ class SummaryView(discord.ui.View):
     """
     Class for viewing a discord summary
     """
+
     pass
 
 
@@ -288,7 +301,7 @@ class DiscordStatus(commands.Cog):
         brief="Discord Status Summary",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def discord_summary_cmd(self, ctx: commands.Context) -> None:
@@ -299,7 +312,7 @@ class DiscordStatus(commands.Cog):
             url=summary.page.url,
             description=f"""Last updated: <t:{round(summary.page.updated_at.timestamp())}:F> (<t:{round(summary.page.updated_at.timestamp())}:R>)""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.AQUA
+            color=style.Color.AQUA,
         )
         embed.add_field(
             name=f"Status - {summary.status.indicator}",
@@ -307,6 +320,7 @@ class DiscordStatus(commands.Cog):
         )
         embed.add_field
         await ctx.send(embed=embed)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(DiscordStatus(bot))

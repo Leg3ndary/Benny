@@ -1,12 +1,371 @@
+import asyncio
+import aiohttp
 import asqlite
+import cleantext
+from colorama import Style, Fore
 import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
 from detoxify import Detoxify
 import io
-import cleantext
 
+
+class Toxicity:
+    """
+    Toxicity info for easy access
+
+    Attributes
+    ----------
+    toxicity: float
+        Toxic level
+    severe_toxicity: float
+
+    """
+
+    def __init__(self, prediction: dict) -> None:
+        """
+        Init
+
+        Parameters
+        ----------
+        prediction: dict
+            The prediction dict to build the Toxicity object off of
+        """
+        self.toxicity = round(prediction.get("toxicity"), 5) * 100
+        self.severe_toxicity = round(prediction.get("severe_toxicity"), 5) * 100
+        self.obscene = round(prediction.get("obscene"), 5) * 100
+        self.identity_attack = round(prediction.get("identity_attack"), 5) * 100
+        self.insult = round(prediction.get("insult"), 5) * 100
+        self.threat = round(prediction.get("threat"), 5) * 100
+        self.sexual_explicit = round(prediction.get("sexual_explicit"), 5) * 100
+        self.average = round(
+            self.toxicity
+            + self.severe_toxicity
+            + self.obscene
+            + self.identity_attack
+            + self.insult
+            + self.threat
+            + self.sexual_explicit, 5
+        ) / 7
+
+
+class SentinelConfig:
+    """
+    Config object
+    """
+
+    def __init__(
+        self,
+        channels: str,
+        premium: bool,
+        webhook: str,
+        username: str,
+        avatar: str,
+        toxicity: int,
+        severe_toxicity: int,
+        obscene: int,
+        identity_attack: int,
+        insult: int,
+        threat: int,
+        sexual_explicit: int,
+    ) -> None:
+        """
+        Init for config
+        """
+        self.channels = channels.split("-")
+        self.premium = premium
+        self.webhook = webhook
+        self.username = username
+        self.avatar = avatar
+        self.toxicity = toxicity
+        self.severe_toxicity = severe_toxicity
+        self.obscene = obscene
+        self.identity_attack = identity_attack
+        self.insult = insult
+        self.threat = threat
+        self.sexual_explicit = sexual_explicit
+        self.average = (
+            toxicity
+            + severe_toxicity
+            + obscene
+            + identity_attack
+            + insult
+            + threat
+            + sexual_explicit
+        ) / 7
+
+class SentinelManager:
+    """
+    Class for managing sentinels
+    """
+
+    def __init__(self, session: aiohttp.ClientSession, db: asqlite.Connection, loop: asyncio.AbstractEventLoop, avatar: str) -> None:
+        """
+        Init the sentinel manager with everything it needs
+        """
+        self.sentinel = Detoxify(model_type="unbiased")
+        self.loop = loop
+        self.db = db
+        self.sentinels = {}
+        self.session = session
+        self.username = "Benny Sentinel"
+        self.avatar = avatar
+    
+    async def process(self, msg: discord.Message) -> None:
+        """
+        Process a message and everything
+        """
+        if msg.author.bot:
+            return
+
+        sentinel = self.sentinels.get(str(msg.guild.id))
+        if not sentinel or str(msg.channel.id) not in sentinel.channels:
+            pass
+
+        else:
+            toxicity = await self.check(msg.clean_content)
+            if (
+                toxicity.toxicity > sentinel.toxicity
+                or toxicity.severe_toxicity > sentinel.severe_toxicity
+                or toxicity.obscene > sentinel.obscene
+                or toxicity.identity_attack > sentinel.identity_attack
+                or toxicity.insult > sentinel.insult
+                or toxicity.threat > sentinel.threat
+                or toxicity.sexual_explicit > sentinel.sexual_explicit
+                or toxicity.average > sentinel.average
+            ):
+                webhook = discord.Webhook.from_url(
+                    url=sentinel.webhook,
+                    session=self.session,
+                )
+
+                values = []
+
+                values.append(
+                    f"{toxicity.toxicity}-{sentinel.toxicity}"
+                )
+                values.append(
+                    f"{toxicity.severe_toxicity}-{sentinel.severe_toxicity}"
+                )
+                values.append(
+                    f"{toxicity.obscene}-{sentinel.obscene}"
+                )
+                values.append(
+                    f"{toxicity.identity_attack}-{sentinel.identity_attack}"
+                )
+                values.append(
+                    f"{toxicity.insult}-{sentinel.insult}"
+                )
+                values.append(
+                    f"{toxicity.threat}-{sentinel.threat}"
+                )
+                values.append(
+                    f"{toxicity.sexual_explicit}-{sentinel.sexual_explicit}"
+                )
+                values.append(
+                    f"{toxicity.average}-{sentinel.average}"
+                )
+
+                embed = discord.Embed(
+                    title=f"Sentinel Alert",
+                    description=await self.gen_toxicity_bar(values),
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.RED,
+                )
+
+                for msg in reversed(
+                    [message async for message in msg.channel.history(limit=5)]
+                ):
+                    preview = msg.content
+                    if not preview:
+                        preview = "No message content."
+                    elif len(msg.content) > 500:
+                        preview = f"{msg.content[:497]}..."
+                    embed.add_field(
+                        name=f"{msg.author.name}#{msg.author.discriminator} - {msg.author.id}",
+                        value=preview,
+                        inline=False,
+                    )
+                await webhook.send(embed=embed)
+
+
+    async def check(self, msg: str) -> Toxicity:
+        """
+        Check a message and return a toxicity class
+        """
+        return Toxicity(await self.loop.run_in_executor(None, self.sentinel.predict, msg))
+
+    async def gen_toxicity_bar(self, values: list) -> str:
+        """
+        Generate a nice loading bar based on the stuff we output, custom built to show progress bars
+        """
+        bars = []
+        for value in values:
+            val1 = float(value.split("-")[0])
+            val2 = float(value.split("-")[1])
+
+            posneg = val1 > val2
+
+            if posneg:
+                bar_color = Fore.RED
+            elif val2 - val1 > val2 / 2:
+                bar_color = Fore.YELLOW
+            else:
+                bar_color = Fore.GREEN
+
+            bar_num = round(val1 / (100 / 50))
+
+            bars.append(f"""{bar_color}{bar_num * "█"}{Fore.WHITE}{(50 - bar_num) * "█"}""")
+
+        view = f"""```ansi
+{Fore.WHITE}Toxicity                                    {round(float(values[0].split("-")[0]), 2)}%
+{bars[0]}
+Severe Toxicity                             {round(float(values[1].split("-")[0]), 2)}%
+{bars[1]}
+Obscene                                     {round(float(values[2].split("-")[0]), 2)}%
+{bars[2]}
+Identity Attack                             {round(float(values[3].split("-")[0]), 2)}%
+{bars[3]}
+Insult                                      {round(float(values[4].split("-")[0]), 2)}%
+{bars[4]}
+Threat                                      {round(float(values[5].split("-")[0]), 2)}%
+{bars[5]}
+Sexual Explicit                             {round(float(values[6].split("-")[0]), 2)}%
+{bars[6]}
+Average                                     {round(float(values[7].split("-")[0]), 2)}%
+{bars[7]}
+```"""
+
+        return view
+
+    async def load_sentinels(self) -> None:
+        """
+        Load all sentinels objects into a cache so we can retrieve it quickly
+        """
+        async with self.db.cursor() as cursor:
+            query = """SELECT * FROM config;"""
+            data = await cursor.execute(query)
+            data = await data.fetchall()
+            if data:
+                for config in data:
+                    self.sentinels[config[0]] = SentinelConfig(
+                        config[1],
+                        config[2],
+                        config[3],
+                        config[4],
+                        config[5],
+                        config[6],
+                        config[7],
+                        config[8],
+                        config[9],
+                        config[10],
+                        config[11],
+                        config[12]
+                    )
+
+    async def load_sentinel(self, guild: str) -> None:
+        """
+        Load a single sentinel quickly, can be used to update old models if for some reason they didn't update
+        """
+        async with self.db.cursor() as cursor:
+            async with await cursor.execute(
+                """SELECT * FROM config WHERE guild = ?;""", (str(guild),)
+            ) as data:
+                config = await data.fetchone()
+                self.sentinels[config[0]] = SentinelConfig(
+                    config[1],
+                    config[2],
+                    config[3],
+                    config[4],
+                    config[5],
+                    config[6],
+                    config[7],
+                    config[8],
+                    config[9],
+                    config[10],
+                    config[11],
+                    config[12]
+                )
+
+    async def save_default_config(self, ctx: commands.Context) -> None:
+        """
+        Generate default config
+        """
+        await ctx.defer()
+
+        sentinel = self.sentinels.get(str(ctx.guild.id))
+
+        if not sentinel:
+            overwrites = {
+                ctx.guild.default_role: discord.PermissionOverwrite(
+                    read_messages=False
+                ),
+                ctx.guild.me: discord.PermissionOverwrite(
+                    read_messages=True, send_messages=True
+                ),
+            }
+            channel = await ctx.guild.create_text_channel(
+                "sentinel", overwrites=overwrites
+            )
+
+            async with self.session.get(self.avatar) as raw:
+                avatar_bytes = io.BytesIO(await raw.content.read())
+
+            webhook = await channel.create_webhook(
+                name=self.username,
+                avatar=avatar_bytes.getvalue(),
+                reason="BennyBot Sentinel Webhook"
+            )
+            webhook_success = discord.Embed(
+                title=f"Successfully created channel and webhook!",
+                description=f"""Sentinel Alerts will now be sent here""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.GREEN
+            )
+            await channel.send(embed=webhook_success)
+
+            await self.new_guild(ctx.guild.id, ctx.channel.id, webhook.url)
+
+            embed = discord.Embed(
+                title=f"Success",
+                description=f"""Set default sentinel config.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.GREEN,
+            )
+            await ctx.send(embed=embed)
+
+        else:
+            raise commands.BadArgument(
+                "You already have a sentinel config setup for this server"
+            )
+
+    async def new_guild(self, guild: str, channel: str, webhook: str) -> None:
+        """
+        Ensure a guild actually has a config
+        """
+        await self.db.execute(
+            """
+            INSERT INTO config VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            """,
+            (
+                str(guild),
+                str(channel),
+                False,
+                webhook,
+                self.username,
+                self.avatar,
+                75,
+                75,
+                75,
+                75,
+                75,
+                75,
+                75
+            )
+        )
+        await self.db.commit()
+        await self.load_sentinel(guild)
 
 class DecancerManager:
     """
@@ -93,92 +452,6 @@ class DecancerManager:
             return (await results.fetchone())["decancer"]
 
 
-class Toxicity:
-    """
-    Toxicity info for easy access
-
-    Attributes
-    ----------
-    toxicity: float
-        Toxic level
-    severe_toxicity: float
-
-    """
-
-    def __init__(self, prediction: dict) -> None:
-        """
-        Init
-
-        Parameters
-        ----------
-        prediction: dict
-            The prediction dict to build the Toxicity object off of
-        """
-        self.toxicity = round(prediction.get("toxicity"), 5) * 100
-        self.severe_toxicity = round(prediction.get("severe_toxicity"), 5) * 100
-        self.obscene = round(prediction.get("obscene"), 5) * 100
-        self.identity_attack = round(prediction.get("identity_attack"), 5) * 100
-        self.insult = round(prediction.get("insult"), 5) * 100
-        self.threat = round(prediction.get("threat"), 5) * 100
-        self.sexual_explicit = round(prediction.get("sexual_explicit"), 5) * 100
-        self.average = (
-            (
-                self.toxicity
-                + self.severe_toxicity
-                + self.obscene
-                + self.identity_attack
-                + self.insult
-                + self.threat
-                + self.sexual_explicit
-            )
-            / 7
-        ) * 100
-
-
-class Config:
-    """
-    Config object
-    """
-
-    def __init__(
-        self,
-        channels: str,
-        premium: bool,
-        webhook: str,
-        username: str,
-        avatar: str,
-        toxicity: int,
-        severe_toxicity: int,
-        obscene: int,
-        identity_attack: int,
-        insult: int,
-        threat: int,
-        sexual_explicit: int,
-    ) -> None:
-        """
-        Init for config
-        """
-        self.channels = channels.split("-")
-        self.premium = premium
-        self.webhook = webhook
-        self.username = username
-        self.avatar = avatar
-        self.toxicity = toxicity
-        self.severe_toxicity = severe_toxicity
-        self.obscene = obscene
-        self.identity_attack = identity_attack
-        self.insult = insult
-        self.threat = threat
-        self.sexual_explicit = sexual_explicit
-        self.average = (
-            self.toxicity
-            + self.severe_toxicity
-            + self.obscene
-            + self.identity_attack
-            + self.insult
-            + self.threat
-            + self.sexual_explicit
-        ) / 7
 
 
 class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
@@ -199,7 +472,7 @@ class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
         Verify that the config is actually valid
         """
 
-    async def pull_config(self, config: str) -> Config:
+    async def pull_config(self, config: str) -> SentinelConfig:
         """
         Pull a config from a config str"""
 
@@ -263,50 +536,45 @@ class Sentinel(commands.Cog):
     def __init__(self, bot: commands.Bot):
         """Init the detoxify models and get sessions ready!"""
         self.bot = bot
-        self.sentinel = Detoxify(model_type="unbiased")
-        self.sentinels = {}
-        self.session = bot.sessions.get("sentinel")
 
     async def cog_load(self) -> None:
         """
         On cog load setup db
         """
         self.db = await asqlite.connect("Databases/sentinel.db")
-        async with self.db.cursor() as cur:
-            await cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS config (
-                    guild           TEXT NOT NULL
-                                        PRIMARY KEY,
-                    channels        TEXT,
-                    premium         BOOL NOT NULL,
-                    webhook_url     TEXT NOT NULL,
-                    username        TEXT,
-                    avatar          TEXT,
-                    webhook         INT NOT NULL,
-                    toxicity        INT NOT NULL,
-                    severe_toxicity INT NOT NULL,
-                    obscene         INT NOT NULL,
-                    identity_attack INT NOT NULL,
-                    insult          INT NOT NULL,
-                    threat          INT NOT NULL,
-                    sexual_explicit INT NOT NULL
-                );
-                """
-            )
-            await cur.execute(
-                """
-                CREATE TABLE IF NOT EXISTS decancer (
-                    guild           TEXT NOT NULL
-                                        PRIMARY KEY,
-                    webhook_url     TEXT,
-                    decancer        BOOL NOT NULL,
-                    premium         BOOL NOT NULL,
-                    username        TEXT NOT NULL,
-                    avatar          TEXT NOT NULL
-                );
-                """
-            )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS config (
+                guild           TEXT PRIMARY KEY
+                                     NOT NULL,
+                channels        TEXT NOT NULL,
+                premium         BOOL NOT NULL,
+                webhook         TEXT NOT NULL,
+                username        TEXT NOT NULL,
+                avatar          TEXT NOT NULL,
+                toxicity        INT  NOT NULL,
+                severe_toxicity INT  NOT NULL,
+                obscene         INT  NOT NULL,
+                identity_attack INT  NOT NULL,
+                insult          INT  NOT NULL,
+                threat          INT  NOT NULL,
+                sexual_explicit INT  NOT NULL
+            );
+            """
+        )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS decancer (
+                guild           TEXT NOT NULL
+                                    PRIMARY KEY,
+                webhook_url     TEXT,
+                decancer        BOOL NOT NULL,
+                premium         BOOL NOT NULL,
+                username        TEXT NOT NULL,
+                avatar          TEXT NOT NULL
+            );
+            """
+        )
         await self.bot.printer.p_load("Sentinel Config")
 
     async def clean_username(self, username: str) -> str:
@@ -343,96 +611,24 @@ class Sentinel(commands.Cog):
         )
         return new_username
 
-    async def load_sentinels(self) -> None:
-        """
-        Load all sentinels objects into a cache so we can retrieve it quickly
-        """
-        async with self.db.cursor() as cursor:
-            query = """SELECT * FROM config;"""
-            data = await cursor.execute(query)
-            if data:
-                for config in data:
-                    self.sentinels[config[0]] = Config(
-                        config[1],
-                        config[2],
-                        config[3],
-                        config[4],
-                        config[5],
-                        config[6],
-                        config[7],
-                        config[8],
-                        config[9],
-                        config[10],
-                        config[11],
-                        config[12],
-                        config[13],
-                    )
-
-    async def sentinel_check(self, msg: str) -> Toxicity:
-        """
-        Check for toxification
-        """
-        return Toxicity(self.sentinel.predict(msg))
-
     @commands.Cog.listener()
-    async def on_load_decancer_manager(self) -> None:
+    async def on_load_sentinel_managers(self) -> None:
         """Load decancer manager when bots loaded"""
+        self.sm = SentinelManager(
+            self.bot.sessions.get("sentinel"), self.db, self.bot.loop, self.bot.user.avatar.url
+        )
+        await self.sm.load_sentinels()
         self.decancer = DecancerManager(self.db, self.bot.user.avatar.url)
 
     @commands.Cog.listener()
-    async def on_message(self, msg):
+    async def on_message(self, msg: discord.Message):
         """
         Sentinels time :)
         """
-        if msg.author.bot:
-            return
-        sentinel = self.sentinels.get(str(msg.guild.id))
-        if not sentinel or msg.channel.id not in sentinel.channels:
-            pass
-        else:
-            toxicness = await self.sentinel_check(msg.clean_content)
-            if (
-                toxicness.toxicity > sentinel.toxicity
-                or toxicness.severe_toxicity > sentinel.severe_toxicity
-                or toxicness.obscene > sentinel.obscene
-                or toxicness.identity_attack > sentinel.identity_attack
-                or toxicness.insult > sentinel.insult
-                or toxicness.threat > sentinel.threat
-                or toxicness.sexual_explicit > sentinel.sexual_explicit
-                or toxicness.average > sentinel.average
-            ):
-                webhook = discord.Webhook.from_url(
-                    sentinel.webhook_url,
-                    adapter=discord.AsyncWebhookAdapter(self.session),
-                )
-                embed = discord.Embed(
-                    title=f"Are you being toxic?",
-                    description=f"""So rude.
-                    toxicity: {toxicness.toxicity}%
-                    severe_toxicity: {toxicness.severe_toxicity}
-                    obscene: {toxicness.obscene}
-                    identity_attack: {toxicness.identity_attack}
-                    insult: {toxicness.insult}
-                    threat: {toxicness.threat}
-                    sexual_explicit: {toxicness.sexual_explicit}
-                    average: {toxicness.average}""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED,
-                )
-                await webhook.send(embed=embed)
-
-        """
-        if msg.author.bot:
-            pass
-        elif msg.guild.id == 839605885700669441:
-            toxic = await self.sentinel_check(msg.clean_content)
-            if toxic.toxicity > 0.6:
-                
-                await msg.channel.send(embed=embed, delete_after=10)
-        """
+        await self.sm.process(msg)
 
     @commands.Cog.listener()
-    async def on_member_join(self, member) -> None:
+    async def on_member_join(self, member: discord.Member) -> None:
         """
         On member join check if we have to decancer the user
         """
@@ -495,6 +691,7 @@ class Sentinel(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def sentinel_default_cmd(self, ctx: commands.Context) -> None:
         """Set default command config"""
+        await self.sm.save_default_config(ctx)
 
     @commands.hybrid_group()
     @commands.guild_only()
@@ -579,24 +776,24 @@ class Sentinel(commands.Cog):
         async with self.session.get(self.decancer.avatar) as raw:
             avatar_bytes = io.BytesIO(await raw.content.read())
 
-            webhook = await channel.create_webhook(
-                name=self.decancer.username,
-                avatar=avatar_bytes.getvalue(),
-                reason="BennyBot Decancer Logs Webhook",
+        webhook = await channel.create_webhook(
+            name=self.decancer.username,
+            avatar=avatar_bytes.getvalue(),
+            reason="BennyBot Decancer Logs Webhook",
+        )
+        await self.decancer.set_webhook(ctx.message.guild.id, webhook.url)
+        embed = discord.Embed(
+            title=f"Decancer Logs Channel Updated",
+            description=f"""Set Decancer Logs to {channel.mention}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        if not await self.decancer.decancer_user(ctx.message.guild.id):
+            embed.set_footer(
+                text="Reminder: You need to enable the decancer feature!",
+                icon_url=ctx.guild.icon.url,
             )
-            await self.decancer.set_webhook(ctx.message.guild.id, webhook.url)
-            embed = discord.Embed(
-                title=f"Decancer Logs Channel Updated",
-                description=f"""Set Decancer Logs to {channel.mention}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN,
-            )
-            if not await self.decancer.decancer_user(ctx.message.guild.id):
-                embed.set_footer(
-                    text="Reminder: You need to enable the decancer feature!",
-                    icon_url=ctx.guild.icon.url,
-                )
-            await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
     @decancer.command(
         name="auto",

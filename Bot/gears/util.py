@@ -48,13 +48,7 @@ class BotUtil:
         """
         files = []
         if directory:
-            if directory in [
-                "__pycache__",
-                "Databases",
-                "Logs",
-                ".vscode",
-                "Docs"
-            ]:
+            if directory in ["__pycache__", "Databases", "Logs", ".vscode", "Docs"]:
                 directories = []
             else:
                 directories = os.listdir(directory)
@@ -109,8 +103,7 @@ class BotUtil:
                 try:
                     filename = file.split("/")[-1][:-3]
                     if file.endswith(".py") and (
-                        filename
-                        not in ["cog_template", "snipe", "ipc"]
+                        filename not in ["cog_template", "snipe", "ipc"]
                     ):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
                         await self.bot.printer.p_cog_update(file[:-3], "LOAD")
