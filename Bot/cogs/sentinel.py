@@ -201,6 +201,7 @@ class SentinelManager:
         Generate a nice loading bar based on the stuff we output, custom built to show progress bars
         """
         bars = []
+        bars_colors = []
         for value in values:
             val1 = float(value.split("-")[0])
             val2 = float(value.split("-")[1])
@@ -209,7 +210,7 @@ class SentinelManager:
 
             if posneg:
                 bar_color = Fore.RED
-            elif val1 < val2 / 2:
+            elif val1 > val2 / 2:
                 bar_color = Fore.YELLOW
             else:
                 bar_color = Fore.GREEN
@@ -217,23 +218,24 @@ class SentinelManager:
             bar_num = round(val1 / (100 / 50))
 
             bars.append(f"""{bar_color}{bar_num * "█"}{Fore.WHITE}{(50 - bar_num) * "█"}""")
+            bars_colors.append(bar_color)
 
         view = f"""```ansi
-{Fore.WHITE}Toxicity                                    {posneg}{round(float(values[0].split("-")[0]), 2)}%
+{Fore.WHITE}Toxicity                                    {bars_colors[0]}{round(float(values[0].split("-")[0]), 2)}%
 {bars[0]}
-Severe Toxicity                             {posneg}{round(float(values[1].split("-")[0]), 2)}%
+Severe Toxicity                             {bars_colors[1]}{round(float(values[1].split("-")[0]), 2)}%
 {bars[1]}
-Obscene                                     {posneg}{round(float(values[2].split("-")[0]), 2)}%
+Obscene                                     {bars_colors[2]}{round(float(values[2].split("-")[0]), 2)}%
 {bars[2]}
-Identity Attack                             {posneg}{round(float(values[3].split("-")[0]), 2)}%
+Identity Attack                             {bars_colors[3]}{round(float(values[3].split("-")[0]), 2)}%
 {bars[3]}
-Insult                                      {posneg}{round(float(values[4].split("-")[0]), 2)}%
+Insult                                      {bars_colors[4]}{round(float(values[4].split("-")[0]), 2)}%
 {bars[4]}
-Threat                                      {posneg}{round(float(values[5].split("-")[0]), 2)}%
+Threat                                      {bars_colors[5]}{round(float(values[5].split("-")[0]), 2)}%
 {bars[5]}
-Sexual Explicit                             {posneg}{round(float(values[6].split("-")[0]), 2)}%
+Sexual Explicit                             {bars_colors[6]}{round(float(values[6].split("-")[0]), 2)}%
 {bars[6]}
-Average                                     {posneg}{round(float(values[7].split("-")[0]), 2)}%
+Average                                     {bars_colors[7]}{round(float(values[7].split("-")[0]), 2)}%
 {bars[7]}
 ```"""
 
