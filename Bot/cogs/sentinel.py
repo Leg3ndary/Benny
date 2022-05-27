@@ -209,7 +209,7 @@ class SentinelManager:
 
             if posneg:
                 bar_color = Fore.RED
-            elif val2 - val1 > val2 / 2:
+            elif val1 < val2 / 2:
                 bar_color = Fore.YELLOW
             else:
                 bar_color = Fore.GREEN
@@ -219,21 +219,21 @@ class SentinelManager:
             bars.append(f"""{bar_color}{bar_num * "█"}{Fore.WHITE}{(50 - bar_num) * "█"}""")
 
         view = f"""```ansi
-{Fore.WHITE}Toxicity                                    {round(float(values[0].split("-")[0]), 2)}%
+{Fore.WHITE}Toxicity                                    {posneg}{round(float(values[0].split("-")[0]), 2)}%
 {bars[0]}
-Severe Toxicity                             {round(float(values[1].split("-")[0]), 2)}%
+Severe Toxicity                             {posneg}{round(float(values[1].split("-")[0]), 2)}%
 {bars[1]}
-Obscene                                     {round(float(values[2].split("-")[0]), 2)}%
+Obscene                                     {posneg}{round(float(values[2].split("-")[0]), 2)}%
 {bars[2]}
-Identity Attack                             {round(float(values[3].split("-")[0]), 2)}%
+Identity Attack                             {posneg}{round(float(values[3].split("-")[0]), 2)}%
 {bars[3]}
-Insult                                      {round(float(values[4].split("-")[0]), 2)}%
+Insult                                      {posneg}{round(float(values[4].split("-")[0]), 2)}%
 {bars[4]}
-Threat                                      {round(float(values[5].split("-")[0]), 2)}%
+Threat                                      {posneg}{round(float(values[5].split("-")[0]), 2)}%
 {bars[5]}
-Sexual Explicit                             {round(float(values[6].split("-")[0]), 2)}%
+Sexual Explicit                             {posneg}{round(float(values[6].split("-")[0]), 2)}%
 {bars[6]}
-Average                                     {round(float(values[7].split("-")[0]), 2)}%
+Average                                     {posneg}{round(float(values[7].split("-")[0]), 2)}%
 {bars[7]}
 ```"""
 
