@@ -1,7 +1,4 @@
 import asyncio
-from msilib.schema import InstallExecuteSequence
-from time import thread_time
-from xmlrpc.client import SERVER_ERROR
 import aiohttp
 import asqlite
 import cleantext
@@ -9,7 +6,6 @@ from colorama import Style, Fore
 import discord
 import discord.utils
 from discord.ext import commands
-from numpy import identity
 from gears import style
 from detoxify import Detoxify
 import io
@@ -383,11 +379,13 @@ Average                                     {bars_colors[7]}{round(float(values[
 
         embed = discord.Embed(
             title=f"Sentinel Config",
-            description=f"""This server is marked as """,
+            description=f"""This server is {"marked Premium" if sentinel.premium else "not marked Premium."}
+            """,
             timestamp=discord.utils.utcnow(),
-            color=style.Color.RED
+            color=style.Color.RED,
         )
-        await ctx.send(embed=embed)
+        embed.add_field(name="Current Config", value="Stuff")
+        await ctx.send(embed=embed, view=SentinelConfigView(sentinel))
 
     async def edit_config(self, ctx: commands.Context) -> None:
         """
@@ -400,7 +398,7 @@ class DecancerManager:
     Class for managing decancer states and info
     """
 
-    def __init__(self, db, avatar) -> None:
+    def __init__(self, db: asqlite.Connection, avatar: str) -> None:
         """
         Init the manager
         """
@@ -611,17 +609,26 @@ class SentinelConfigView(discord.ui.View):
     The Sentinel Config View
     """
 
-    def __init__(self, config: SentinelConfig):
+    def __init__(self, config: SentinelConfig, omsg: discord.Message):
         """Init"""
         super().__init__()
         self.config = config
+        self.omsg = omsg
 
     @discord.ui.button(
         label="Update Config", emoji=":setting:", style=discord.ButtonStyle.grey
     )
     async def update_config(
         self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    ) -> None:
+        await interaction.send_modal(SentinelConfigModal(self.config))
+
+    @discord.ui.button(
+        label="Update Watched Channels", emoji=":eyes:", style=discord.ButtonStyle.grey
+    )
+    async def update_config(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         await interaction.send_modal(SentinelConfigModal(self.config))
 
 
@@ -766,15 +773,7 @@ class Sentinel(commands.Cog):
         """
         Sentinel command, very cool
         """
-        embed = discord.Embed(
-            title=f"Sentinel Config",
-            description=f"""
-            """,
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.RED,
-        )
-        embed.add_field(name="Current Config", value="Stuff")
-        await ctx.send(embed=embed, view=SentinelConfigView())
+
 
     @sentinel_cmd.command(
         name="default",
