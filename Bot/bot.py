@@ -153,5 +153,8 @@ async def start_bot() -> None:
                     # bot.ipc.start()
                     await bot.start(bot.config.get("Bot").get("Token"))
 
+if not config.get("Bot").get("UVLoop"):
+    import uvloop
+    uvloop.install()
 
 asyncio.run(start_bot())
