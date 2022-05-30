@@ -152,6 +152,7 @@ async def start_bot() -> None:
                     # bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
                     # bot.ipc.start()
                     await bot.start(bot.config.get("Bot").get("Token"))
+    
 
 if not config.get("Bot").get("UVLoop"):
     import uvloop
