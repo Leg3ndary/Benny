@@ -65,7 +65,6 @@ class Tags(commands.Cog):
             tse.ReplaceBlock(),
             tse.PythonBlock(),
             tse.URLEncodeBlock(),
-            tse.URLDecodeBlock(),
             tse.RequireBlock(),
             tse.BlacklistBlock(),
             tse.CommandBlock(),

@@ -119,8 +119,8 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (
-                case    TEXT    NOT NULL
-                                PRIMARY KEY,
+                case    TEXT    PRIMARY KEY
+                                    NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT    NOT NULL,
@@ -132,8 +132,8 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS bans (
-                case    TEXT    NOT NULL
-                                PRIMARY KEY,
+                case    TEXT    PRIMARY KEY
+                                    NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT    NOT NULL,
@@ -145,8 +145,8 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS mutes (
-                case    TEXT    NOT NULL
-                                PRIMARY KEY,
+                case    TEXT    PRIMARY KEY
+                                    NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT    NOT NULL,
