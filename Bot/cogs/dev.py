@@ -2,6 +2,7 @@ import discord
 import discord.utils
 import io
 import os
+import subprocess
 import re
 import textwrap
 import traceback
@@ -71,7 +72,7 @@ class Dev(commands.Cog):
         description="None",
         hidden=True,
     )
-    async def load(self, ctx: commands.Context, *, cog: str):
+    async def load(self, ctx: commands.Context, *, cog: str) -> None:
         try:
             await self.bot.load_extension(cog)
             await self.bot.printer.p_cog_update(cog, "LOAD")
@@ -104,10 +105,12 @@ class Dev(commands.Cog):
         description="None",
         hidden=True,
     )
-    async def unload(self, ctx: commands.Context, *, cog: str):
+    async def unload(self, ctx: commands.Context, *, cog: str) -> None:
+        """Unload a cog"""
         try:
             await self.bot.unload_extension(cog)
             await self.bot.printer.p_cog_update(cog, "UNLOAD")
+
         except Exception as e:
             embed_fail = discord.Embed(
                 title=f"__{cog}__ Unload Fail",
@@ -242,7 +245,7 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @dev.command(
         name="syncs",
         description="""Syncs slash commands""",
         help="""Syncs slash commands""",
