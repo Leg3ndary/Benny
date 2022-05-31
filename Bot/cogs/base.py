@@ -108,12 +108,11 @@ class IMGReader:
         self.bot = bot
         self.loop = bot.loop
 
-        if bot.PLATFORM.lower() == "linux":
-            ptt = "/usr/share/tesseract-ocr/4.00/tessdata"
-        else:
+        if not bot.PLATFORM.lower() == "linux":
             ptt = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+            pytesseract.pytesseract.tesseract_cmd = ptt
 
-        pytesseract.pytesseract.tesseract_cmd = ptt
+        
     
     async def read_img(self, bytes_: bytes) -> str:
         """Read an image and return the text in it"""
