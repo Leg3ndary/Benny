@@ -1,3 +1,4 @@
+from tkinter import N
 import asqlite
 import asyncio
 import discord
@@ -23,7 +24,39 @@ class WelcomeManager:
         """
         Convert a discord embed object into a string to save to our db
         """
-        await self.bot.loop.run_in_executor(None, json.dumps(), embed.to_dict())
+        data = await self.bot.loop.run_in_executor(None, json.dumps(), embed.to_dict())
+        return data
+
+    async def to_embed(self, data: str) -> discord.Embed:
+        """
+        Convert a json serializable string into a discord embed
+        """
+        embed = discord.Embed.from_dict(await self.bot.loop.run_in_executor(None, json.loads(), data))
+        return embed
+
+    async def welcome(self, member: discord.Member) -> None:
+        """
+        Welcome a user!
+        """
+        guild = member.guild.id
+
+        async with self.db.cursor() as cur:
+            result = await (await cur.execute("""SELECT welcome_channel FROM welcome WHERE guild = ?;""", (str(guild)))).fetchone()
+  
+        if not result:
+            pass
+
+        channel = self.bot.get_channel(result) or (await self.bot.fetch_channel(result))
+
+        embed = await self.to_embed(result)
+        await channel.send(embed=embed)
+
+    async def goodbye(self, member: discord.Member) -> None:
+        """
+        Say goodbye to a user!
+        """
+
+        
 
 
 class Welcome(commands.Cog):
@@ -33,7 +66,7 @@ class Welcome(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Init for the bot"""
         self.bot = bot
-'''
+        
     async def cog_load(self) -> None:
         """
         On cog load create a connection because
@@ -42,20 +75,42 @@ class Welcome(commands.Cog):
         
         await self.db.execute("""
             CREATE TABLE IF NOT EXISTS welcome (
-                guild   TEXT    NOT NULL
-                                    PRIMARY KEY,
-                welcome TEXT,
-                leave   TEXT
+                guild           TEXT    PRIMARY KEY
+                                            NOT NULL,
+                welcome         TEXT,
+                welcome_channel TEXT,
+                goodbye         TEXT,
+                goodbye_channel TEXT,
             );
         """)
 
+        self.wm = WelcomeManager(self.bot, self.db)
 
     async def cog_unload(self) -> None:
         """
         On cog unload, close connection
         """
         await self.db.close()
-'''
+
+    @commands.Cog.listener()
+    async def on__member_join(self, member: discord.Member) -> None:
+        """
+        On a member joining, welcome them!
+        """
+
+        await self.wm.welcome(member)
+
+    @commands.Cog.listener()
+    async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
+        """
+        On member remove check if we have the user cached and move on accordingly
+        """
+        guild = self.bot.get_guild(payload.guild_id) or (await self.bot.fetch_guild(payload.guild_id))
+
+        member = guild.get_member(payload.user.id) or (await guild.fetch_member(payload.user.id))
+
+        await self.wm.goodbye(member)
+
     
     
 

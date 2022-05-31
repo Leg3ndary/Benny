@@ -1,5 +1,6 @@
 import time
-
+import PIL as pil
+import pytesseract
 import discord
 import discord.utils
 import json
@@ -9,6 +10,7 @@ import unicodedata
 from discord.ext import commands
 from gears import cviews, style
 from motor.motor_asyncio import AsyncIOMotorClient
+import io
 
 
 """@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
@@ -96,14 +98,42 @@ class AFKManager:
                     await message.channel.send(embed=embed)
 
 
+class IMGReader:
+    """
+    Read images
+    """
+    
+    def __init__(self, bot: commands.Bot) -> None:
+        """Init"""
+        self.bot = bot
+        self.loop = bot.loop
+
+        if bot.PLATFORM.lower() == "linux":
+            ptt = "/usr/share/tesseract-ocr/4.00/tessdata"
+        else:
+            ptt = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+
+        pytesseract.pytesseract.tesseract_cmd = ptt
+    
+    async def read_img(self, bytes_: bytes) -> str:
+        """Read an image and return the text in it"""
+        img = await self.loop.run_in_executor(None, pil.Image.open, io.BytesIO(bytes_))
+
+        text = await self.loop.run_in_executor(None, pytesseract.pytesseract.image_to_string, img)
+        
+        return text
+
+
 class Base(commands.Cog):
     """Basic commands that you would use with no specific category"""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """Init"""
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
         self.afk = AFKManager(bot)
-        self.session = bot.sessions.get("main")
+        self.session = bot.sessions.get("base")
+        self.imgr = IMGReader(bot)
 
     def get_size(bytes, suffix="B") -> str:
         """Return the correct data from bytes"""
@@ -560,7 +590,7 @@ Total Uptime: {resolved_rel}"""
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     @commands.guild_only()
-    async def afk_set_cmd(self, ctx: commands.Context, *, message: str):
+    async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
         """Set your afk"""
         await self.afk.set_afk(ctx, message)
 
@@ -570,6 +600,29 @@ Total Uptime: {resolved_rel}"""
         On a message, check if that user is either pinging an afk user or is an afk user with an active afk
         """
         await self.afk.manage_afk(message)
+
+    @commands.command(
+        name="imgread",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def my_command(self, ctx: commands.Context, url: str = None) -> None:
+        """Command description"""
+        if url:
+            async with self.session as session:
+                async with session.get(url) as response:
+                    image_bytes = await response.read()
+
+        else:
+            image_bytes = await ctx.message.attachments[0].read()
+        
+        text = await self.imgr.read_img(image_bytes)
+        await ctx.send(text)
 
 
 async def setup(bot: commands.Bot) -> None:

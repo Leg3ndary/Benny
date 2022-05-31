@@ -1,3 +1,4 @@
+from email.mime import base
 import time
 import aiohttp
 import asyncio
@@ -10,6 +11,7 @@ from dotenv import load_dotenv
 from gears import util
 from gears.cprinter import InfoPrinter
 import logging
+import sys
 
 load_dotenv()
 
@@ -75,6 +77,7 @@ bot.START_TIME = datetime.datetime.now(datetime.timezone.utc)
 bot.LOADED_PREFIXES = False
 bot.MUSIC_ENABLED = True
 bot.PREFIX = config.get("Bot").get("Prefix")
+bot.PLATFORM = sys.platform
 
 
 @bot.check
@@ -130,31 +133,33 @@ async def start_bot() -> None:
 
     async with bot:
         async with aiohttp.ClientSession() as main_session:
-            async with aiohttp.ClientSession() as sentinel_session:
-                async with aiohttp.ClientSession() as discordstatus_session:
-                    bot.sessions = {
-                        "main": main_session,
-                        "sentinel": sentinel_session,
-                        "discordstatus": discordstatus_session,
-                    }
-                    await bot.printer.p_connect("AIOHTTP Sessions")
+            async with aiohttp.ClientSession() as base_session:
+                async with aiohttp.ClientSession() as sentinel_session:
+                    async with aiohttp.ClientSession() as discordstatus_session:
+                        bot.sessions = {
+                            "main": main_session,
+                            "base": base_session,
+                            "sentinel": sentinel_session,
+                            "discordstatus": discordstatus_session,
+                        }
+                        await bot.printer.p_connect("AIOHTTP Sessions")
 
-                    await bot.util.load_cogs(os.listdir("Bot/cogs"))
+                        await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
-                    end = time.monotonic()
+                        end = time.monotonic()
 
-                    await bot.printer.p_bot(
-                        "",
-                        f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
-                    )
+                        await bot.printer.p_bot(
+                            "",
+                            f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+                        )
 
-                    bot.loop.create_task(when_bot_ready())
-                    # bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
-                    # bot.ipc.start()
-                    await bot.start(bot.config.get("Bot").get("Token"))
+                        bot.loop.create_task(when_bot_ready())
+                        # bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                        # bot.ipc.start()
+                        await bot.start(bot.config.get("Bot").get("Token"))
     
 
-if not config.get("Bot").get("UVLoop"):
+if bot.PLATFORM.lower() == "linux":
     import uvloop
     uvloop.install()
 
