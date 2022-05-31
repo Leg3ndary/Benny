@@ -1,5 +1,5 @@
 import sys
-
+import math
 import discord
 import discord.utils
 import traceback
@@ -10,21 +10,31 @@ from gears import style, util
 class Errors(commands.Cog):
     """Handling all our bots errors"""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        init the thing
+        """
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error):
-        """The event triggered when an error is raised while invoking a command.
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        """
+        The event triggered when an error is raised while invoking a command.
+
         Parameters
-        ------------
+        ----------
         ctx: commands.Context
             The context used for command invocation.
         error: commands.CommandError
             The Exception raised.
+
+        Returns
+        -------
+        None
         """
         if hasattr(ctx.command, "on_error"):
             return
+
         cog = ctx.cog
         if cog:
             if cog._get_overridden_method(cog.cog_command_error) is not None:
@@ -46,39 +56,15 @@ class Errors(commands.Cog):
             return await ctx.send(embed=embed)
 
         elif isinstance(error, commands.ConversionError):
-            url = self.bot.dispatch(
-                "create_error_pastebin", "ConversionError", ctx.message.id, error
-            )
-
-            conversion_error = discord.Embed(
-                title=f"Error",
-                description=f"""This error has been reported to the dev successfully.
-Please do not spam this command as it will now likely not work.
-```yaml
-Error ID: {ctx.message.id}
-Type: {error.converter}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            conversion_error.set_thumbnail(url=style.get_emoji("image", "cancel"))
-            await util.report_error(
-                self.bot,
-                f"""
-[Error Report]({url})
-```yaml
-Error ID: {ctx.message.id}
-Type: {error.converter}
-```""",
-            )
-            await ctx.send(embed=conversion_error)
+            # unfinished
+            pass
 
         elif isinstance(error, commands.MissingRequiredArgument):
             missing_argument = discord.Embed(
                 title=f"Error",
                 description=f"""Missing parameter:
 ```md
-[Command](Error)
+Command Error
 [{ctx.command}]({str(error.param).split(":")[0]})
 ```""",
                 timestamp=discord.utils.utcnow(),
@@ -99,20 +85,19 @@ Type: {error.converter}
                 pass
 
         elif isinstance(error, commands.ChannelNotFound):
-            if ctx.command.qualified_name == "modlogs channel":
-                no_channel = discord.Embed(
-                    title=f"Error",
-                    description=f"""Channel `{error.argument}` was not found""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED,
-                )
-                no_channel.set_thumbnail(url=style.get_emoji("image", "cancel"))
-                return await ctx.send(embed=no_channel)
+            no_channel = discord.Embed(
+                title=f"Error",
+                description=f"""Channel `{error.argument}` was not found""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            no_channel.set_thumbnail(url=style.get_emoji("image", "cancel"))
+            return await ctx.send(embed=no_channel)
 
         elif isinstance(error, commands.CommandOnCooldown):
             embed = discord.Embed(
                 title=f"{ctx.command} is on Cooldown",
-                description=f"""Please retry this command after {int(error.retry_after)} seconds""",
+                description=f"""Please retry this command in {math.ceil(error.retry_after)} seconds""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
