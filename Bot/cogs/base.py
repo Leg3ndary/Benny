@@ -109,17 +109,26 @@ class IMGReader:
         self.loop = bot.loop
 
         if not bot.PLATFORM.lower() == "linux":
-            ptt = "C:/Program Files/Tesseract-OCR/tesseract.exe"
-            pytesseract.pytesseract.tesseract_cmd = ptt
+            pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
 
-        
-    
-    async def read_img(self, bytes_: bytes) -> str:
-        """Read an image and return the text in it"""
-        img = await self.loop.run_in_executor(None, pil.Image.open, io.BytesIO(bytes_))
+    async def read_img(self, image_bytes: bytes) -> str:
+        """
+        Read an image and return the text in it
 
+        Parameters
+        ----------
+        image_bytes: bytes
+            Image bytes
+
+        Returns
+        -------
+        str
+            The actual text found
+        """
+
+        img = await self.loop.run_in_executor(None, pil.Image.open, io.BytesIO(image_bytes))
         text = await self.loop.run_in_executor(None, pytesseract.pytesseract.image_to_string, img)
-        
+
         return text
 
 
