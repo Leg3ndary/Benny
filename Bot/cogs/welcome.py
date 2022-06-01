@@ -74,14 +74,14 @@ class Welcome(commands.Cog):
         self.db: asqlite.Connection = await asqlite.connect("Databases/server.db")
         
         await self.db.execute("""
-            CREATE TABLE IF NOT EXISTS welcome (
-                guild           TEXT    PRIMARY KEY
-                                            NOT NULL,
-                welcome         TEXT,
-                welcome_channel TEXT,
-                goodbye         TEXT,
-                goodbye_channel TEXT,
-            );
+        CREATE TABLE IF NOT EXISTS welcome (
+            guild           TEXT    PRIMARY KEY
+                                        NOT NULL,
+            welcome         TEXT,
+            welcome_channel TEXT,
+            goodbye         TEXT,
+            goodbye_channel TEXT
+        );
         """)
 
         self.wm = WelcomeManager(self.bot, self.db)
