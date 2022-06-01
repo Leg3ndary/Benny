@@ -2,6 +2,7 @@ import asyncio
 import discord
 import discord.utils
 from discord.ext import commands
+import discord.app_commands as app_commands
 from gears import style
 import googletrans
 
@@ -62,6 +63,31 @@ class Translator:
         result = await self.loop.run_in_executor(None, self.translator.detect, text)
         return result
 
+    async def process(self, channel: discord.TextChannel, text: str) -> None:
+        """
+        Process a translation
+        """
+
+        translated = await self.translate(text)
+
+        embed = discord.Embed(
+            title=f"Translating Text",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PINK
+        )
+        embed.add_field(
+            name=f"Original: {googletrans.LANGUAGES.get(translated.src).capitalize()}",
+            value=translated.origin[:1000]
+        )
+        embed.add_field(
+            name=f"Translated: {googletrans.LANGUAGES.get(translated.dest).capitalize()}",
+            value=translated.text[:1000]
+        )
+
+        view = TranslateView(translated)
+
+        await channel.send(embed=embed, view=view)
+
 
 class TranslateView(discord.ui.View):
     """
@@ -103,6 +129,17 @@ class Translate(commands.Cog):
         """Init the translate cog"""
         self.bot = bot
         self.translator = Translator(bot.loop)
+        self.translate_menu = app_commands.ContextMenu(
+            name="Translate",
+            callback=self.translate_context_menu
+        )
+        self.bot.tree.add_command(self.translate_menu)
+
+    async def cog_unload(self) -> None:
+        """
+        On cog unload remove the menu
+        """
+        self.bot.tree.remove_command(self.translate_menu.name, type=self.translate_menu.type)
 
     @commands.hybrid_command(
         name="translate",
@@ -116,26 +153,14 @@ class Translate(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def translate_cmd(self, ctx: commands.Context, *, text: str) -> None:
         """Translate text"""
-        translated = await self.translator.translate(text)
+        await self.translator.process(ctx.channel, text)
 
-        embed = discord.Embed(
-            title=f"Translating Text",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.PINK
-        )
-        embed.add_field(
-            name=f"Original: {googletrans.LANGUAGES.get(translated.src).capitalize()}",
-            value=translated.origin[:1000]
-        )
-        embed.add_field(
-            name=f"Translated: {googletrans.LANGUAGES.get(translated.dest).capitalize()}",
-            value=translated.text[:1000]
-        )
-
-        view = TranslateView(translated)
-
-        await ctx.send(embed=embed, view=view)
-
+    async def translate_context_menu(self, interaction: discord.Interaction, msg: discord.Message) -> None:
+        """
+        Translate context menu
+        """
+        await self.translator.process(msg.channel, msg.content)
+        
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Translate(bot))
