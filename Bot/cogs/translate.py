@@ -7,36 +7,6 @@ from gears import style
 import googletrans
 
 
-class gm_Translated:
-    """
-    Empty Model because for some reason googletrans didn't make models part of the package?
-    """
-
-    def __init__(self, src: str, dest: str, origin: str, text: str, pronunciation: str, extra_data=None, **kwargs) -> None:
-        """
-        Empty Model
-        """
-        super().__init__(**kwargs)
-        self.src = src
-        self.dest = dest
-        self.origin = origin
-        self.text = text
-        self.pronunciation = pronunciation
-        self.extra_data = extra_data
-
-
-class gm_Detected:
-    """Empty model for language detection"""
-
-    def __init__(self, lang: str, confidence: float, **kwargs) -> None:
-        """
-        Empty Model
-        """
-        super().__init__(**kwargs)
-        self.lang = lang
-        self.confidence = confidence
-
-
 class Translator:
     """
     Custom class to provide async translate responses and more stuff
@@ -49,26 +19,12 @@ class Translator:
         self.loop = loop
         self.translator = googletrans.Translator()
 
-    async def translate(self, text: str) -> gm_Translated:
-        """
-        Translate text with an asynchronously
-        """
-        result = await self.loop.run_in_executor(None, self.translator.translate, text)
-        return result
-
-    async def detect(self, text: str) -> gm_Detected:
-        """
-        Detect language asynchronously
-        """
-        result = await self.loop.run_in_executor(None, self.translator.detect, text)
-        return result
-
     async def process(self, channel: discord.TextChannel, text: str) -> None:
         """
         Process a translation
         """
 
-        translated = await self.translate(text)
+        translated = await self.translator.translate(text)
 
         embed = discord.Embed(
             title=f"Translating Text",
@@ -94,7 +50,7 @@ class TranslateView(discord.ui.View):
     TranslateView that shows a few more options
     """
 
-    def __init__(self, translated: gm_Translated) -> None:
+    def __init__(self, translated: googletrans.Translated) -> None:
         """Init"""
         super().__init__()
         self.translated = translated
