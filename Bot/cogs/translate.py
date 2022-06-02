@@ -4,7 +4,7 @@ import discord.utils
 from discord.ext import commands
 import discord.app_commands as app_commands
 from gears import style
-import googletrans
+import aiogtrans
 
 
 class Translator:
@@ -15,9 +15,8 @@ class Translator:
     def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
         """
         Init with stuff we need mmhm
-        """
-        self.loop = loop
-        self.translator = googletrans.Translator()
+        """ 
+        self.translator = aiogtrans.Translator(loop)
 
     async def process(self, channel: discord.TextChannel, text: str) -> None:
         """
@@ -32,11 +31,11 @@ class Translator:
             color=style.Color.PINK
         )
         embed.add_field(
-            name=f"Original: {googletrans.LANGUAGES.get(translated.src).capitalize()}",
+            name=f"Original: {aiogtrans.LANGUAGES.get(translated.src).capitalize()}",
             value=translated.origin[:1000]
         )
         embed.add_field(
-            name=f"Translated: {googletrans.LANGUAGES.get(translated.dest).capitalize()}",
+            name=f"Translated: {aiogtrans.LANGUAGES.get(translated.dest).capitalize()}",
             value=translated.text[:1000]
         )
 
@@ -50,7 +49,7 @@ class TranslateView(discord.ui.View):
     TranslateView that shows a few more options
     """
 
-    def __init__(self, translated: googletrans.Translated) -> None:
+    def __init__(self, translated: aiogtrans.Translated) -> None:
         """Init"""
         super().__init__()
         self.translated = translated
@@ -59,7 +58,7 @@ class TranslateView(discord.ui.View):
     async def original_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Show the original translation and related info"""
         embed = discord.Embed(
-            title=f"Original: {googletrans.LANGUAGES.get(self.translated.src).capitalize()}",
+            title=f"Original: {aiogtrans.LANGUAGES.get(self.translated.src).capitalize()}",
             description=self.translated.origin[:4000],
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK
@@ -70,7 +69,7 @@ class TranslateView(discord.ui.View):
     async def translated_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         """Show the translated translation and related info"""
         embed = discord.Embed(
-            title=f"Translated: {googletrans.LANGUAGES.get(self.translated.dest).capitalize()}",
+            title=f"Translated: {aiogtrans.LANGUAGES.get(self.translated.dest).capitalize()}",
             description=self.translated.text[:4000],
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK
@@ -91,7 +90,7 @@ class Translate(commands.Cog):
         )
         self.bot.tree.add_command(self.translate_menu)
 
-    async def cog_unload(self) -> None:
+    async def cog_load(self) -> None:
         """
         On cog unload remove the menu
         """

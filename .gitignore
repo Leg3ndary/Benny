@@ -160,6 +160,4 @@ env__/
 .vscode/symbols.json
 app/db.sqlite3
 
-private.key
-
-Dashboard/
+.DS_Store
