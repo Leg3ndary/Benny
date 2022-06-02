@@ -130,7 +130,6 @@
         </div>
       </div>
       <a href="https://www.creative-tim.com/learning-lab/bootstrap/license/argon-dashboard" target="_blank" class="btn btn-dark btn-sm w-100 mb-3">Documentation</a>
-      <a class="btn btn-primary btn-sm mb-0 w-100" href="https://www.creative-tim.com/product/argon-dashboard-pro?ref=sidebarfree" type="button">Upgrade to pro</a>
     </div>
   </aside>
   <main class="main-content position-relative border-radius-lg ">
@@ -261,13 +260,14 @@
                     <p class="text-sm mb-0 text-uppercase font-weight-bold">Server Count</p>
                     <h5 class="font-weight-bolder">
                       <py-script>
-from discord.ext-ipc
+from pyodide.http import pyfetch
 import asyncio
 
 response = await pyfetch(url="https://api.isevenapi.xyz/api/iseven/6/", method="GET")
 
-output = f"GET request=> status:{response.status}, json:{await response.json()}"
-print(output)
+#output = f"GET request=> status:{response.status}, json:{await response.json()}"
+
+print((await response.json()).get("iseven"))
                       </py-script>
                     </h5>
                     <p class="mb-0">
