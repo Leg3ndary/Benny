@@ -14,13 +14,12 @@ class IpcRoutes(commands.Cog):
         """Called upon the IPC Server being ready"""
         await self.bot.printer.p_connect("IPC")
 
-    """
     @ipc.server.route()
-    async def test_endpoint(self, data):
-        guild = self.bot.get_guild(data.guild_id)
-
-        return guild.member_count
-    """
+    async def len_bot_guilds(self):
+        """
+        Amount of guilds the bot is in
+        """
+        return len(self.bot.guilds)
 
 
 async def setup(bot: commands.Bot) -> None:
