@@ -91,7 +91,7 @@ class Events(commands.Cog):
         """
         await thread.join()
 
-    @tasks.loop(seconds=16.0)
+    @tasks.loop(seconds=60.0)
     async def ltd_loop(self) -> None:
         """the ltd loop that checks if any updates need to be sent"""
         await self.bot.blogger.ltd()
