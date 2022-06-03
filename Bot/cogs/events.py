@@ -3,7 +3,7 @@ import math
 import discord
 import discord.utils
 from colorama import Fore
-from discord.ext import commands
+from discord.ext import commands, tasks
 from gears import style
 
 
@@ -12,8 +12,16 @@ class Events(commands.Cog):
     Events that I wanna receive but don't really have a cog for
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init for events
+        """
         self.bot = bot
+        self.ltd_loop.start()
+
+    async def cog_unload(self) -> None:
+        """on unload unload timers"""
+        self.ltd_loop.cancel()
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -32,8 +40,8 @@ class Events(commands.Cog):
 
         bot_percentage = math.trunc((guild_bots / len(guild.members)) * 10000) / 100
 
-        await self.bot.printer.p_bot(
-            await self.bot.printer.generate_category(f"{Fore.GREEN}JOINED"),
+        await self.bot.blogger.bot_info(
+            self.bot.blogger.gen_category(f"{Fore.GREEN}JOINED"),
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
 
@@ -61,8 +69,8 @@ class Events(commands.Cog):
                 except:
                     pass
             await guild.leave()
-            await self.bot.printer.p_bot(
-                await self.bot.printer.generate_category(f"{Fore.MAGENTA}AUTOLEFT"),
+            await self.bot.blogger.bot_info(
+                self.bot.blogger.gen_category(f"{Fore.MAGENTA}AUTOLEFT"),
                 f" {guild.name} {guild.id}",
             )
 
@@ -71,8 +79,8 @@ class Events(commands.Cog):
         """
         When we leave a guild
         """
-        await self.bot.printer.p_bot(
-            await self.bot.printer.generate_category(f"{Fore.RED}LEFT"),
+        await self.bot.blogger.bot_info(
+            self.bot.blogger.gen_category(f"{Fore.RED}LEFT"),
             f" {guild.name} {guild.id}",
         )
 
@@ -82,6 +90,17 @@ class Events(commands.Cog):
         Whenever possible, join threads
         """
         await thread.join()
+
+    @tasks.loop(seconds=10.0)
+    async def ltd_loop(self) -> None:
+        """the ltd loop that checks if any updates need to be sent"""
+        print("requested ltd")
+        await self.bot.blogger.ltd()
+
+    @ltd_loop.before_loop
+    async def before_ltd_loop(self):
+        """Waiting until the bots ready to dispatch the loop"""
+        await self.bot.wait_until_ready()
 
 
 async def setup(bot: commands.Bot) -> None:

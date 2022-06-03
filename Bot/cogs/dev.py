@@ -75,7 +75,7 @@ class Dev(commands.Cog):
     async def load(self, ctx: commands.Context, *, cog: str) -> None:
         try:
             await self.bot.load_extension(cog)
-            await self.bot.printer.p_cog_update(cog, "LOAD")
+            await self.bot.blogger.cog_update(cog, "LOAD")
         except Exception as e:
             embed_fail = discord.Embed(
                 title=f"__{cog}__ Load Fail",
@@ -109,7 +109,7 @@ class Dev(commands.Cog):
         """Unload a cog"""
         try:
             await self.bot.unload_extension(cog)
-            await self.bot.printer.p_cog_update(cog, "UNLOAD")
+            await self.bot.blogger.cog_update(cog, "UNLOAD")
 
         except Exception as e:
             embed_fail = discord.Embed(
@@ -144,7 +144,7 @@ class Dev(commands.Cog):
         try:
             await self.bot.unload_extension(cog)
             await self.bot.load_extension(cog)
-            await self.bot.printer.p_cog_update(cog, "RELOAD")
+            await self.bot.blogger.cog_update(cog, "RELOAD")
         except Exception as e:
             embed_fail = discord.Embed(
                 title=f"__{cog}__ Reload Fail",
@@ -217,7 +217,7 @@ class Dev(commands.Cog):
             try:
                 await self.bot.unload_extension(cog)
                 await self.bot.load_extension(cog)
-                await self.bot.printer.p_cog_update(cog, "RELOAD")
+                await self.bot.blogger.cog_update(cog, "RELOAD")
 
             except Exception as e:
                 cog_statuslist.append(f"- {cog} failed\n- {e}")

@@ -32,7 +32,7 @@ class Profile(commands.Cog):
             );
             """
         )
-        await self.bot.printer.p_load("Profiles")
+        await self.bot.blogger.load("Profiles")
 
 
 async def setup(bot: commands.Bot) -> None:

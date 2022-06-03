@@ -389,7 +389,7 @@ class Music(commands.Cog):
             """
         )
         self.playlistmanager = PlaylistManager(self.playlist_db)
-        await self.bot.printer.p_load("Playlist")
+        await self.bot.blogger.load("Playlist")
 
     async def connect_nodes(self):
         """Connect to our wavelink nodes."""
@@ -470,12 +470,12 @@ class Music(commands.Cog):
                 );
                 """
             )
-        await self.bot.printer.p_load("Recently Played")
+        await self.bot.blogger.load("Recently Played")
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node):
         """Event fired when a node has finished connecting."""
-        await self.bot.printer.p_connect(f"{node.identifier} is ready.")
+        await self.bot.blogger.connect(f"{node.identifier} is ready.")
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, player, track, reason):

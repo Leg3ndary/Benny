@@ -31,7 +31,7 @@ class Databases(commands.Cog):
             password=self.bot.config.get("Redis").get("Pass"),
             decode_responses=True,
         )
-        await self.bot.printer.p_load("Redis")
+        await self.bot.blogger.load("Redis")
         mongo_uri = (
             self.bot.config.get("Mongo")
             .get("URL")
@@ -39,7 +39,7 @@ class Databases(commands.Cog):
             .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
         )
         self.bot.mongo = AsyncIOMotorClient(mongo_uri)
-        await self.bot.printer.p_connect("MONGODB")
+        await self.bot.blogger.connect("MONGODB")
 
     async def cog_unload(self):
         """

@@ -12,7 +12,7 @@ class IpcRoutes(commands.Cog):
     @commands.Cog.listener()
     async def on_ipc_ready(self):
         """Called upon the IPC Server being ready"""
-        await self.bot.printer.p_connect("IPC")
+        await self.bot.blogger.connect("IPC")
 
     @ipc.server.route()
     async def len_bot_guilds(self):

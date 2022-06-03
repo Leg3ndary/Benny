@@ -1,4 +1,3 @@
-from email.mime import base
 import time
 import aiohttp
 import asyncio
@@ -101,62 +100,68 @@ async def start_bot() -> None:
     """
     Start the bot with everything it needs
     """
-    bot.printer = util.Printer(bot)
-    await bot.printer.p_load("Printer")
-
-    bot.config = config
-    await bot.printer.p_load("Config")
-
-    bot.util = util.BotUtil(bot)
-    await bot.printer.p_load("Bot Util")
-
-    file_list = {}
-    total = 0
-
-    for file in await bot.util.get_files():
-        file_len = await bot.util.len_file(file)
-        file_list[file] = file_len
-        total += file_len
-    file_list["total"] = total
-    bot.file_list = file_list
-
-    async def when_bot_ready():
-        """
-        On ready dispatch and print stuff
-        """
-        await bot.wait_until_ready()
-        bot.dispatch("load_prefixes")
-        bot.dispatch("connect_wavelink")
-        bot.dispatch("load_sentinel_managers")
-        await bot.printer.p_bot_update("LOGGED IN")
-
     async with bot:
-        async with aiohttp.ClientSession() as main_session:
-            async with aiohttp.ClientSession() as base_session:
-                async with aiohttp.ClientSession() as sentinel_session:
-                    async with aiohttp.ClientSession() as discordstatus_session:
-                        bot.sessions = {
-                            "main": main_session,
-                            "base": base_session,
-                            "sentinel": sentinel_session,
-                            "discordstatus": discordstatus_session,
-                        }
-                        await bot.printer.p_connect("AIOHTTP Sessions")
+        async with aiohttp.ClientSession() as blogger_session:
+            bot.config = config
 
-                        await bot.util.load_cogs(os.listdir("Bot/cogs"))
+            bot.blogger = util.BotLogger(bot, blogger_session)
+            await bot.blogger.load("BotLogger")
 
-                        end = time.monotonic()
+            
+            await bot.blogger.load("Config")
 
-                        await bot.printer.p_bot(
-                            "",
-                            f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
-                        )
+            bot.util = util.BotUtil(bot)
+            await bot.blogger.load("Bot Util")
 
-                        bot.loop.create_task(when_bot_ready())
-                        bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
-                        bot.ipc.start()
-                        await bot.start(bot.config.get("Bot").get("Token"))
-    
+            file_list = {}
+            total = 0
+
+            for file in await bot.util.get_files():
+                file_len = await bot.util.len_file(file)
+                file_list[file] = file_len
+                total += file_len
+            file_list["total"] = total
+            bot.file_list = file_list
+
+            async def when_bot_ready():
+                """
+                On ready dispatch and print stuff
+                """
+                await bot.wait_until_ready()
+                bot.dispatch("load_prefixes")
+                bot.dispatch("connect_wavelink")
+                bot.dispatch("load_sentinel_managers")
+                await bot.blogger.bot_update("LOGGED IN")
+
+        
+            # Yes I know this is stupid but now I don't have to close anything when I want too
+            async with aiohttp.ClientSession() as main_session:
+                async with aiohttp.ClientSession() as base_session:
+                    async with aiohttp.ClientSession() as sentinel_session:
+                        async with aiohttp.ClientSession() as discordstatus_session:
+                            bot.sessions = {
+                                "main": main_session,
+                                "base": base_session,
+                                "sentinel": sentinel_session,
+                                "discordstatus": discordstatus_session,
+                                "blogger": blogger_session
+                            }
+                            await bot.blogger.connect("AIOHTTP Sessions")
+
+                            await bot.util.load_cogs(os.listdir("Bot/cogs"))
+
+                            end = time.monotonic()
+
+                            await bot.blogger.bot_info(
+                                "",
+                                f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+                            )
+
+                            bot.loop.create_task(when_bot_ready())
+                            bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                            bot.ipc.start()
+                            await bot.start(bot.config.get("Bot").get("Token"))
+            
 
 if bot.PLATFORM.lower() == "linux":
     import uvloop

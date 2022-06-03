@@ -155,7 +155,7 @@ class Mod(commands.Cog):
             );
             """
         )
-        await self.bot.printer.p_load("Mod")
+        await self.bot.blogger.load("Mod")
         self.mm = ModerationManager(self.bot, self.db)
 
     async def cog_unload(self) -> None:

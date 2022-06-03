@@ -679,7 +679,7 @@ class Sentinel(commands.Cog):
             );
             """
         )
-        await self.bot.printer.p_load("Sentinel Config")
+        await self.bot.blogger.load("Sentinel Config")
 
     async def clean_username(self, username: str) -> str:
         """

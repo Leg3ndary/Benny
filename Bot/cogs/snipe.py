@@ -43,7 +43,7 @@ class Snipe(commands.Cog):
             .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
         )
         self.snipe = AsyncIOMotorClient(mongo_uri)["Snipe"]
-        await self.bot.printer.p_connect("SNIPE MONGODB")
+        await self.bot.blogger.connect("SNIPE MONGODB")
 
     @commands.Cog.listener()
     async def on_message_delete(self, message):

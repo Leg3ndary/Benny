@@ -44,7 +44,7 @@ class LoggingManager:
             );
             """
         )
-        await self.bot.printer.p_load("Logging")
+        await self.bot.blogger.load("Logging")
 
     async def create_webhook(
         self, channel: discord.TextChannel, username: str = None, avatar: str = None

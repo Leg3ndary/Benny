@@ -84,7 +84,7 @@ class Dictionary(commands.Cog):
         self.con = AsyncIOMotorClient(mongo_uri)
         self.db = self.con["Dictionary"]
         self.dict = self.db["Dict"]
-        await self.bot.printer.p_connect("DICTIONARY MONGO")
+        await self.bot.blogger.connect("DICTIONARY MONGO")
 
     async def fetch_word(self, word: str) -> dict:
         """

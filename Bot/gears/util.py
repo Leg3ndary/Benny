@@ -1,9 +1,10 @@
+import aiohttp
+import datetime
+import time
+import discord
 import math
 import os
-import discord
-import discord.utils
 from discord.ext import commands
-from gears import style
 from colorama import Style, Fore
 
 
@@ -92,11 +93,11 @@ class BotUtil:
             for file in cogs:
                 try:
                     await self.bot.load_extension(f"cogs.{file[:-3]}")
-                    await self.bot.printer.p_cog_update(file[:-3], "LOAD")
+                    await self.bot.blogger.cog_update(file[:-3], "LOAD")
                     cog_list.append(f"cogs.{file[:-3]}")
 
                 except Exception as e:
-                    await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                    await self.bot.blogger.cog_update(f"{file[:-3]}\n{e}", "FAIL")
                     print(e.with_traceback)
 
         else:
@@ -107,11 +108,11 @@ class BotUtil:
                         filename not in ["cog_template", "snipe", "ipc"]
                     ):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
-                        await self.bot.printer.p_cog_update(file[:-3], "LOAD")
+                        await self.bot.blogger.cog_update(file[:-3], "LOAD")
                         cog_list.append(f"cogs.{file[:-3]}")
 
                 except Exception as e:
-                    await self.bot.printer.p_cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                    await self.bot.blogger.cog_update(f"{file[:-3]}\n{e}", "FAIL")
                     print(e.with_traceback)
 
         self.bot.cog_list = cog_list
@@ -234,13 +235,59 @@ def ansi(color, background=None, style=None, style2=None) -> str:
     return origin
 
 
-class Printer:
+class BotLogger:
     """Printing info to our terminal from our bot in a nice way"""
 
-    def __init__(self, bot: commands.Bot) -> None:
+    def __init__(self, bot: commands.Bot, session: aiohttp.ClientSession) -> None:
+        """Init for the printer"""
         self.bot = bot
+        self.webhook_url = bot.config.get("Bot").get("Webhook")
+        self.last_sent = int(time.time()) - 13
+        self.updates = []
+        self.session = session
+        self.webhook = discord.Webhook.from_url(
+            url=self.webhook_url,
+            session=session
+        )
 
-    async def generate_category(self, category: str) -> str:
+    async def atu(self, ttl: str) -> None:
+        """
+        Load to disc
+
+        Things to load
+        """
+        self.updates.append(ttl)
+        await self.ltd()
+        
+    async def ltd(self) -> None:
+        """Check if we need to load to disc"""
+        if self.last_sent < int(time.time()) - 15:
+            batches = []
+            new = ""
+            total_len = 0
+            for update in self.updates:
+                if total_len > 1920:
+                    batches.append(f"""```ansi
+{new}
+```""")
+                    new = ""
+                    total_len = 0
+
+                new += f"\n{update}"
+                total_len += len(update)
+            
+            batches.append(f"""```ansi
+{new}
+```""")
+
+            for batch in batches:
+                self.bot.loop.create_task(self.webhook.send(content=batch))
+
+            self.last_sent = int(time.time())
+            self.batches = []
+
+
+    def gen_category(self, category: str) -> str:
         """
         Generate a category and return so this looks cool
 
@@ -253,12 +300,11 @@ class Printer:
         -------
         str
         """
-        brackets = (
-            f"{Fore.WHITE}[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"
-        )
-        return brackets
+        time_str = datetime.datetime.now().strftime("%x | %X")
+        generated = f"""{Fore.WHITE}[{Style.RESET_ALL} {time_str} {Fore.WHITE}]{Style.RESET_ALL} {Fore.WHITE}[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"""
+        return generated
 
-    async def p_load(self, info: str):
+    async def load(self, info: str) -> None:
         """
         [LOAD] When something has loaded.
 
@@ -267,9 +313,11 @@ class Printer:
         info: str
             The info you want to print out after
         """
-        print(f"{await self.generate_category(f'{Fore.BLUE}LOADED')} {info}")
+        msg = f"{self.gen_category(f'{Fore.BLUE}LOADED')} {info}"
+        print(msg)
+        self.bot.loop.create_task(self.atu(msg))
 
-    async def p_cog_update(self, cog: str, update: str):
+    async def cog_update(self, cog: str, update: str) -> None:
         """
         [COG LOAD|UNLOAD|RELOAD] When a cog is loaded or unloaded (ALSO ON SYNC)
 
@@ -281,16 +329,18 @@ class Printer:
             The update kind, LOAD|UNLOAD|RELOAD
         """
         if update == "LOAD":
-            category = f"{Fore.GREEN}COG LOAD"
+            category = f"{Fore.GREEN}Cog Load"
         elif update == "UNLOAD":
-            category = f"{Fore.RED}COG UNLOAD"
+            category = f"{Fore.RED}Cog Unload"
         elif update == "RELOAD":
-            category = f"{Fore.MAGENTA}COG RELOAD"
+            category = f"{Fore.MAGENTA}Cog Reload"
         elif update == "FAIL":
-            category = f"{Fore.RED}COG FAIL"
-        print(f"{await self.generate_category(category)} {cog}")
+            category = f"{Fore.RED}Cog Failed"
+        msg = f"{self.gen_category(category)} {cog}"
+        print(msg)
+        self.bot.loop.create_task(self.atu(msg))
 
-    async def p_bot_update(self, status: str):
+    async def bot_update(self, status: str) -> None:
         """
         [LOGGED IN|LOGGED OUT] When the bots logged in or logged out with relevant info
 
@@ -299,11 +349,11 @@ class Printer:
         status: str
             The status to print in the category
         """
-        print(
-            f"{await self.generate_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}"
-        )
+        msg = f"{self.gen_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}"
+        print(msg)
+        self.bot.loop.create_task(self.atu(msg))
 
-    async def p_connect(self, info: str) -> None:
+    async def connect(self, info: str) -> None:
         """
         [CONNECTED] When the bot has connected successfully to something
 
@@ -312,9 +362,11 @@ class Printer:
         info: str
             The info to add and print
         """
-        print(f"{await self.generate_category(f'{Fore.YELLOW}CONNECTED')} {info}")
+        msg = f"{self.gen_category(f'{Fore.YELLOW}CONNECTED')} {info}"
+        print(msg)
+        self.bot.loop.create_task(self.atu(msg))
 
-    async def p_bot(self, categories: str, info: str):
+    async def bot_info(self, categories: str, info: str):
         """
         [BOT] Bot related info that needs to be printed
 
@@ -325,21 +377,11 @@ class Printer:
         info: str
             The info to add or print
         """
-        print(f"{await self.generate_category(f'{Fore.CYAN}BOT')}{categories} {info}")
+        msg = f"{self.gen_category(f'{Fore.CYAN}BOT')}{categories} {info}"
+        print(msg)
+        self.bot.loop.create_task(self.atu(msg))
 
-    async def p_update_db(self, dbtype: str, name: str, info: str):
-        """
-        [DB] DB related info that needs to be printed
-
-        Parameters
-        ----------
-        dbtype
-        info: str
-            The info to add or print
-        """
-        print(f"{await self.generate_category(f'{Fore.MAGENTA}DB')} {info}")
-
-    async def p_cog(self, categories: str, info: str):
+    async def cog(self, categories: str, info: str):
         """
         [COG] Cog related info that needs to be printed
 
@@ -350,15 +392,7 @@ class Printer:
         info: str
             The info to add or print
         """
-        print(f"{await self.generate_category(f'{Fore.RED}COG')}{categories} {info}")
+        msg = f"{self.gen_category(f'{Fore.RED}COG')}{categories} {info}"
+        print(msg)
+        self.bot.loop.create_task(self.atu(msg))
 
-    async def p_save(self, info: str):
-        """
-        [SAVE] Save info
-
-        Parameters
-        ----------
-        info: str
-            The info to add or print
-        """
-        print(f"{await self.generate_category(f'{Fore.GREEN}SAVE')} {info}")
