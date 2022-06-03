@@ -9,7 +9,6 @@ import os
 from discord.ext import commands, ipc
 from dotenv import load_dotenv
 from gears import util
-from gears.cprinter import InfoPrinter
 import logging
 import sys
 
@@ -102,7 +101,7 @@ async def start_bot() -> None:
     """
     Start the bot with everything it needs
     """
-    bot.printer = InfoPrinter(bot)
+    bot.printer = util.Printer(bot)
     await bot.printer.p_load("Printer")
 
     bot.config = config
