@@ -262,11 +262,11 @@ class BotLogger:
     async def ltd(self) -> None:
         """Check if we need to load to disc"""
         if self.last_sent < int(time.time()) - 15:
-            self.batches = []
+            batches = []
             new = ""
             total_len = 0
             for update in self.updates:
-                if total_len > 1920:
+                if total_len > 1900:
                     self.batches.append(f"""```ansi
 {new}
 ```""")
@@ -276,15 +276,15 @@ class BotLogger:
                 new += f"\n{update}"
                 total_len += len(update)
             
-            self.batches.append(f"""```ansi
+            batches.append(f"""```ansi
 {new}
 ```""")
 
-            for batch in self.batches:
+            for batch in batches:
                 self.bot.loop.create_task(self.webhook.send(content=batch))
 
             self.last_sent = int(time.time())
-
+            self.updates = []
 
     def gen_category(self, category: str) -> str:
         """
