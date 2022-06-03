@@ -261,13 +261,13 @@ class BotLogger:
         
     async def ltd(self) -> None:
         """Check if we need to load to disc"""
-        if self.last_sent < int(time.time()) - 15:
+        if self.last_sent < int(time.time()) - 15 and self.updates:
             batches = []
             new = ""
             total_len = 0
             for update in self.updates:
                 if total_len > 1900:
-                    self.batches.append(f"""```ansi
+                    batches.append(f"""```ansi
 {new}
 ```""")
                     new = ""

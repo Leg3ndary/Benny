@@ -12,11 +12,11 @@ class Translator:
     Custom class to provide async translate responses and more stuff
     """
 
-    def __init__(self, loop: asyncio.AbstractEventLoop) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
         """
         Init with stuff we need mmhm
         """ 
-        self.translator = aiogtrans.Translator(loop)
+        self.translator = aiogtrans.AiohttpTranslator(bot.loop, bot.sessions.get("translate"))
 
     async def process(self, channel: discord.TextChannel, text: str) -> None:
         """
@@ -83,7 +83,7 @@ class Translate(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Init the translate cog"""
         self.bot = bot
-        self.translator = Translator(bot.loop)
+        self.translator = Translator(bot)
         self.translate_menu = app_commands.ContextMenu(
             name="Translate",
             callback=self.translate_context_menu

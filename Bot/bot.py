@@ -1,3 +1,4 @@
+from fnmatch import translate
 import time
 import aiohttp
 import asyncio
@@ -133,34 +134,34 @@ async def start_bot() -> None:
                 bot.dispatch("load_sentinel_managers")
                 await bot.blogger.bot_update("LOGGED IN")
 
-        
-            # Yes I know this is stupid but now I don't have to close anything when I want too
             async with aiohttp.ClientSession() as main_session:
                 async with aiohttp.ClientSession() as base_session:
                     async with aiohttp.ClientSession() as sentinel_session:
                         async with aiohttp.ClientSession() as discordstatus_session:
-                            bot.sessions = {
-                                "main": main_session,
-                                "base": base_session,
-                                "sentinel": sentinel_session,
-                                "discordstatus": discordstatus_session,
-                                "blogger": blogger_session
-                            }
-                            await bot.blogger.connect("AIOHTTP Sessions")
+                            async with aiohttp.ClientSession() as translate_session:
+                                bot.sessions = {
+                                    "main": main_session,
+                                    "base": base_session,
+                                    "sentinel": sentinel_session,
+                                    "discordstatus": discordstatus_session,
+                                    "blogger": blogger_session,
+                                    "translate": translate_session
+                                }
+                                await bot.blogger.connect("AIOHTTP Sessions")
 
-                            await bot.util.load_cogs(os.listdir("Bot/cogs"))
+                                await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
-                            end = time.monotonic()
+                                end = time.monotonic()
 
-                            await bot.blogger.bot_info(
-                                "",
-                                f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
-                            )
+                                await bot.blogger.bot_info(
+                                    "",
+                                    f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+                                )
 
-                            bot.loop.create_task(when_bot_ready())
-                            bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
-                            bot.ipc.start()
-                            await bot.start(bot.config.get("Bot").get("Token"))
+                                bot.loop.create_task(when_bot_ready())
+                                bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                                bot.ipc.start()
+                                await bot.start(bot.config.get("Bot").get("Token"))
             
 
 if bot.PLATFORM.lower() == "linux":
