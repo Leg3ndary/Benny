@@ -119,8 +119,7 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (
-                case    TEXT    PRIMARY KEY
-                                    NOT NULL,
+                case    TEXT    PRIMARY KEY,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT    NOT NULL,
@@ -132,8 +131,7 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS bans (
-                case    TEXT    PRIMARY KEY
-                                    NOT NULL,
+                case    TEXT    NOT NULL    PRIMARY KEY,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT    NOT NULL,
@@ -145,8 +143,7 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS mutes (
-                case    TEXT    PRIMARY KEY
-                                    NOT NULL,
+                case    TEXT    NOT NULL    PRIMARY KEY,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
                 reason  TEXT    NOT NULL,
@@ -366,4 +363,6 @@ class Mod(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Mod(bot))
+    """not working as of now"""
+    pass
+    #await bot.add_cog(Mod(bot))
