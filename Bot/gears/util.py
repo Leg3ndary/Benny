@@ -264,17 +264,17 @@ class BotLogger:
         if self.last_sent < int(time.time()) - 15 and self.updates:
             batches = []
             new = ""
-            total_len = 0
+            total_len = 16
             for update in self.updates:
-                if total_len > 1900:
+                if total_len > 2000:
                     batches.append(f"""```ansi
 {new}
 ```""")
                     new = ""
-                    total_len = 0
+                    total_len = 16
 
                 new += f"\n{update}"
-                total_len += len(update)
+                total_len += len(update) + 2
             
             batches.append(f"""```ansi
 {new}
