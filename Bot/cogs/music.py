@@ -497,7 +497,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def play(self, ctx: commands.Context, *, song: str):
+    async def play_cmd(self, ctx: commands.Context, *, song: str):
         """
         Play a song with the given search query.
 
@@ -907,6 +907,88 @@ class Music(commands.Cog):
             )
             await ctx.send(embed=embed)
 
+    @commands.hybrid_command(
+        name="pause",
+        description="""Pause the current song""",
+        help="""Pause the current song""",
+        brief="Pause the current song",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def pause_cmd(self, ctx: commands.Context) -> None:
+        """Pause the queue"""
+        player = await self.get_player(ctx)
+        try:
+            if player.is_paused:
+                embed = discord.Embed(
+                    title=f"Error",
+                    description=f"""The player is already paused!""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.YELLOW
+                )
+                await ctx.send(embed=embed)
+            else:
+                await player.pause()
+                embed = discord.Embed(
+                    title=f"Paused",
+                    description=f"""Paused the queue""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.GREEN
+                )
+                await ctx.send(embed=embed)
+
+        except QueueEmpty as e:
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""{e}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            await ctx.send(embed=embed)
+
+    @commands.hybrid_command(
+        name="unpause",
+        description="""Unpause the current song""",
+        help="""Unpause the current song""",
+        brief="Unpause the current song",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def unpause_cmd(self, ctx: commands.Context) -> None:
+        """Unause the queue"""
+        player = await self.get_player(ctx)
+        try:
+            if not player.is_paused:
+                embed = discord.Embed(
+                    title=f"Error",
+                    description=f"""The player isn't paused!""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.YELLOW
+                )
+                await ctx.send(embed=embed)
+            else:
+                await player.set_pause(False)
+                embed = discord.Embed(
+                    title=f"Unpaused",
+                    description=f"""Unpaused the queue""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.GREEN
+                )
+                await ctx.send(embed=embed)
+
+        except QueueEmpty as e:
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""{e}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            await ctx.send(embed=embed)
+
     @commands.group(
         name="playlist",
         description="""Manage playlists""",
@@ -1008,7 +1090,7 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def playlist_list_cmd(self, ctx: commands.Context) -> None:
-        """Command description"""
+        """List playlists"""
 
         playlists = await self.playlistmanager.get_playlists(ctx.author.id)
 
