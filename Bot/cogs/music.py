@@ -185,14 +185,14 @@ class Music(commands.Cog):
             token=app_token, asynchronous=True, max_limits_on=True
         )
 
-    async def connect_nodes(self):
+    async def connect_nodes(self) -> None:
         """Connect to our wavelink nodes."""
         if not self.bot.MUSIC_ENABLED:
             return
 
-        # Making sure cog loads and unloads don't stop this
         if hasattr(self.bot, "wavelink"):
             self.wavelink = self.bot.wavelink
+
         else:
             self.bot.wavelink = await wavelink.NodePool.create_node(
                 bot=self.bot,
