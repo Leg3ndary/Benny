@@ -102,14 +102,16 @@ class IMGReader:
     """
     Read images
     """
-    
+
     def __init__(self, bot: commands.Bot) -> None:
         """Init"""
         self.bot = bot
         self.loop = bot.loop
 
         if not bot.PLATFORM.lower() == "linux":
-            pytesseract.pytesseract.tesseract_cmd = "C:/Program Files/Tesseract-OCR/tesseract.exe"
+            pytesseract.pytesseract.tesseract_cmd = (
+                "C:/Program Files/Tesseract-OCR/tesseract.exe"
+            )
 
     async def read_img(self, image_bytes: bytes) -> str:
         """
@@ -126,8 +128,12 @@ class IMGReader:
             The actual text found
         """
 
-        img = await self.loop.run_in_executor(None, pil.Image.open, io.BytesIO(image_bytes))
-        text = await self.loop.run_in_executor(None, pytesseract.pytesseract.image_to_string, img)
+        img = await self.loop.run_in_executor(
+            None, pil.Image.open, io.BytesIO(image_bytes)
+        )
+        text = await self.loop.run_in_executor(
+            None, pytesseract.pytesseract.image_to_string, img
+        )
 
         return text
 
@@ -616,7 +622,7 @@ Total Uptime: {resolved_rel}"""
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def my_command(self, ctx: commands.Context, url: str = None) -> None:
@@ -628,7 +634,7 @@ Total Uptime: {resolved_rel}"""
 
         else:
             image_bytes = await ctx.message.attachments[0].read()
-        
+
         text = await self.imgr.read_img(image_bytes)
         await ctx.send(text)
 

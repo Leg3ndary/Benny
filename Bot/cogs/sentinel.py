@@ -39,15 +39,19 @@ class Toxicity:
         self.insult = round(prediction.get("insult"), 5) * 100
         self.threat = round(prediction.get("threat"), 5) * 100
         self.sexual_explicit = round(prediction.get("sexual_explicit"), 5) * 100
-        self.average = round(
-            self.toxicity
-            + self.severe_toxicity
-            + self.obscene
-            + self.identity_attack
-            + self.insult
-            + self.threat
-            + self.sexual_explicit, 5
-        ) / 7
+        self.average = (
+            round(
+                self.toxicity
+                + self.severe_toxicity
+                + self.obscene
+                + self.identity_attack
+                + self.insult
+                + self.threat
+                + self.sexual_explicit,
+                5,
+            )
+            / 7
+        )
 
 
 class SentinelConfig:
@@ -95,12 +99,19 @@ class SentinelConfig:
             + sexual_explicit
         ) / 7
 
+
 class SentinelManager:
     """
     Class for managing sentinels
     """
 
-    def __init__(self, session: aiohttp.ClientSession, db: asqlite.Connection, loop: asyncio.AbstractEventLoop, avatar: str) -> None:
+    def __init__(
+        self,
+        session: aiohttp.ClientSession,
+        db: asqlite.Connection,
+        loop: asyncio.AbstractEventLoop,
+        avatar: str,
+    ) -> None:
         """
         Init the sentinel manager with everything it needs
         """
@@ -111,7 +122,7 @@ class SentinelManager:
         self.session = session
         self.username = "Benny Sentinel"
         self.avatar = avatar
-    
+
     async def process(self, msg: discord.Message) -> None:
         """
         Process a message and everything
@@ -142,30 +153,14 @@ class SentinelManager:
 
                 values = []
 
-                values.append(
-                    f"{toxicity.toxicity}-{sentinel.toxicity}"
-                )
-                values.append(
-                    f"{toxicity.severe_toxicity}-{sentinel.severe_toxicity}"
-                )
-                values.append(
-                    f"{toxicity.obscene}-{sentinel.obscene}"
-                )
-                values.append(
-                    f"{toxicity.identity_attack}-{sentinel.identity_attack}"
-                )
-                values.append(
-                    f"{toxicity.insult}-{sentinel.insult}"
-                )
-                values.append(
-                    f"{toxicity.threat}-{sentinel.threat}"
-                )
-                values.append(
-                    f"{toxicity.sexual_explicit}-{sentinel.sexual_explicit}"
-                )
-                values.append(
-                    f"{toxicity.average}-{sentinel.average}"
-                )
+                values.append(f"{toxicity.toxicity}-{sentinel.toxicity}")
+                values.append(f"{toxicity.severe_toxicity}-{sentinel.severe_toxicity}")
+                values.append(f"{toxicity.obscene}-{sentinel.obscene}")
+                values.append(f"{toxicity.identity_attack}-{sentinel.identity_attack}")
+                values.append(f"{toxicity.insult}-{sentinel.insult}")
+                values.append(f"{toxicity.threat}-{sentinel.threat}")
+                values.append(f"{toxicity.sexual_explicit}-{sentinel.sexual_explicit}")
+                values.append(f"{toxicity.average}-{sentinel.average}")
 
                 embed = discord.Embed(
                     title=f"Sentinel Alert",
@@ -189,12 +184,13 @@ class SentinelManager:
                     )
                 await webhook.send(embed=embed)
 
-
     async def check(self, msg: str) -> Toxicity:
         """
         Check a message and return a toxicity class
         """
-        return Toxicity(await self.loop.run_in_executor(None, self.sentinel.predict, msg))
+        return Toxicity(
+            await self.loop.run_in_executor(None, self.sentinel.predict, msg)
+        )
 
     async def gen_toxicity_bar(self, values: list) -> str:
         """
@@ -217,7 +213,9 @@ class SentinelManager:
 
             bar_num = round(val1 / (100 / 50))
 
-            bars.append(f"""{bar_color}{bar_num * "█"}{Fore.WHITE}{(50 - bar_num) * "█"}""")
+            bars.append(
+                f"""{bar_color}{bar_num * "█"}{Fore.WHITE}{(50 - bar_num) * "█"}"""
+            )
             bars_colors.append(bar_color)
 
         view = f"""```ansi
@@ -263,7 +261,7 @@ Average                                     {bars_colors[7]}{round(float(values[
                         config[9],
                         config[10],
                         config[11],
-                        config[12]
+                        config[12],
                     )
 
     async def load_sentinel(self, guild: str) -> None:
@@ -287,7 +285,7 @@ Average                                     {bars_colors[7]}{round(float(values[
                     config[9],
                     config[10],
                     config[11],
-                    config[12]
+                    config[12],
                 )
 
     async def save_default_config(self, ctx: commands.Context) -> None:
@@ -317,13 +315,13 @@ Average                                     {bars_colors[7]}{round(float(values[
             webhook = await channel.create_webhook(
                 name=self.username,
                 avatar=avatar_bytes.getvalue(),
-                reason="BennyBot Sentinel Webhook"
+                reason="BennyBot Sentinel Webhook",
             )
             webhook_success = discord.Embed(
                 title=f"Successfully created channel and webhook!",
                 description=f"""Sentinel Alerts will now be sent here""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN
+                color=style.Color.GREEN,
             )
             await channel.send(embed=webhook_success)
 
@@ -363,8 +361,8 @@ Average                                     {bars_colors[7]}{round(float(values[
                 75,
                 75,
                 75,
-                75
-            )
+                75,
+            ),
         )
         await self.db.commit()
         await self.load_sentinel(guild)
@@ -375,7 +373,9 @@ Average                                     {bars_colors[7]}{round(float(values[
         """
         sentinel = self.sentinel.get(str(ctx.guild.id))
         if not sentinel:
-            raise commands.BadArgument("You need to create a Sentinel config with /sentinel default!")
+            raise commands.BadArgument(
+                "You need to create a Sentinel config with /sentinel default!"
+            )
 
         embed = discord.Embed(
             title=f"Sentinel Config",
@@ -392,6 +392,7 @@ Average                                     {bars_colors[7]}{round(float(values[
         Edit config
         """
         await ctx.send_modal()
+
 
 class DecancerManager:
     """
@@ -482,7 +483,7 @@ class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
     """
     Config for sentinel
     """
-    
+
     def __init__(self, config: SentinelConfig) -> None:
         """
         Init"""
@@ -719,7 +720,10 @@ class Sentinel(commands.Cog):
     async def on_load_sentinel_managers(self) -> None:
         """Load decancer manager when bots loaded"""
         self.sm = SentinelManager(
-            self.bot.sessions.get("sentinel"), self.db, self.bot.loop, self.bot.user.avatar.url
+            self.bot.sessions.get("sentinel"),
+            self.db,
+            self.bot.loop,
+            self.bot.user.avatar.url,
         )
         await self.sm.load_sentinels()
         self.decancer = DecancerManager(self.db, self.bot.user.avatar.url)
@@ -773,7 +777,6 @@ class Sentinel(commands.Cog):
         """
         Sentinel command, very cool
         """
-
 
     @sentinel_cmd.command(
         name="default",

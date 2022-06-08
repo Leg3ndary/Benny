@@ -15,8 +15,10 @@ class Translator:
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init with stuff we need mmhm
-        """ 
-        self.translator = aiogtrans.AiohttpTranslator(bot.loop, bot.sessions.get("translate"))
+        """
+        self.translator = aiogtrans.AiohttpTranslator(
+            bot.loop, bot.sessions.get("translate")
+        )
 
     async def process(self, channel: discord.TextChannel, text: str) -> None:
         """
@@ -28,15 +30,15 @@ class Translator:
         embed = discord.Embed(
             title=f"Translating Text",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.PINK
+            color=style.Color.PINK,
         )
         embed.add_field(
             name=f"Original: {aiogtrans.LANGUAGES.get(translated.src).capitalize()}",
-            value=translated.origin[:1000]
+            value=translated.origin[:1000],
         )
         embed.add_field(
             name=f"Translated: {aiogtrans.LANGUAGES.get(translated.dest).capitalize()}",
-            value=translated.text[:1000]
+            value=translated.text[:1000],
         )
 
         view = TranslateView(translated)
@@ -55,24 +57,28 @@ class TranslateView(discord.ui.View):
         self.translated = translated
 
     @discord.ui.button(label="Original", style=discord.ButtonStyle.grey)
-    async def original_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def original_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         """Show the original translation and related info"""
         embed = discord.Embed(
             title=f"Original: {aiogtrans.LANGUAGES.get(self.translated.src).capitalize()}",
             description=self.translated.origin[:4000],
             timestamp=discord.utils.utcnow(),
-            color=style.Color.PINK
+            color=style.Color.PINK,
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @discord.ui.button(label="Translated", style=discord.ButtonStyle.green)
-    async def translated_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+    async def translated_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ):
         """Show the translated translation and related info"""
         embed = discord.Embed(
             title=f"Translated: {aiogtrans.LANGUAGES.get(self.translated.dest).capitalize()}",
             description=self.translated.text[:4000],
             timestamp=discord.utils.utcnow(),
-            color=style.Color.PINK
+            color=style.Color.PINK,
         )
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -85,8 +91,7 @@ class Translate(commands.Cog):
         self.bot = bot
         self.translator = Translator(bot)
         self.translate_menu = app_commands.ContextMenu(
-            name="Translate",
-            callback=self.translate_context_menu
+            name="Translate", callback=self.translate_context_menu
         )
         self.bot.tree.add_command(self.translate_menu)
 
@@ -94,7 +99,9 @@ class Translate(commands.Cog):
         """
         On cog unload remove the menu
         """
-        self.bot.tree.remove_command(self.translate_menu.name, type=self.translate_menu.type)
+        self.bot.tree.remove_command(
+            self.translate_menu.name, type=self.translate_menu.type
+        )
 
     @commands.hybrid_command(
         name="translate",
@@ -110,12 +117,14 @@ class Translate(commands.Cog):
         """Translate text"""
         await self.translator.process(ctx.channel, text)
 
-    async def translate_context_menu(self, interaction: discord.Interaction, msg: discord.Message) -> None:
+    async def translate_context_menu(
+        self, interaction: discord.Interaction, msg: discord.Message
+    ) -> None:
         """
         Translate context menu
         """
         await self.translator.process(msg.channel, msg.content)
-        
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Translate(bot))

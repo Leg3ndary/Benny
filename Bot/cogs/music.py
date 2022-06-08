@@ -57,7 +57,7 @@ class Player(wavelink.Player):
 
     async def loop(self) -> None:
         """Loop the queue?"""
-        if self.queue.is_empty:
+        if self.queue.is_empty and not self.is_playing:
             raise QueueEmpty("The queue is currently empty")
         self.looping = not self.looping
 
@@ -210,15 +210,18 @@ class Music(commands.Cog):
 
     async def get_player(self, ctx) -> wavelink.Player:
         """Create a player and connect cls"""
-        if not ctx.voice_client:
+        if not ctx.author.voice:
+            raise commands.BadArgument(
+                "You need to be connected to a voice channel for this command to work"
+            )
+        elif not ctx.voice_client:
             player: wavelink.Player = await ctx.author.voice.channel.connect(
                 cls=Player(dj=ctx.author)
             )
         else:
             player: wavelink.Player = ctx.voice_client
-
             await ctx.guild.change_voice_state(
-                channel=ctx.message.author.voice.channel,
+                channel=ctx.author.voice.channel,
                 self_mute=False,
                 self_deaf=True,
             )
@@ -271,7 +274,9 @@ class Music(commands.Cog):
         await self.bot.blogger.connect(f"{node.identifier} is ready.")
 
     @commands.Cog.listener()
-    async def on_wavelink_track_end(self, player: Player, track: wavelink.Track, reason) -> None:
+    async def on_wavelink_track_end(
+        self, player: Player, track: wavelink.Track, reason
+    ) -> None:
         """On end, check if the queue has another song to play if not disconnect after 5 min"""
         if player.queue.is_empty:
             self.bot.loop.create_task()
@@ -290,7 +295,8 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def play_cmd(self, ctx: commands.Context, *, song: str):
+    @commands.has_permissions()
+    async def play_cmd(self, ctx: commands.Context, *, song: str) -> None:
         """
         Play a song with the given search query.
 
@@ -298,23 +304,12 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        '''
-        async with self.musicDB as db:
-            is_created = await db.execute(
-                """SELECT id FROM recently_played WHERE id = ?;""",
-                (str(ctx.author.id), )
-            )
-            if not is_created:
-                await db.execute(
-                    f"""INSERT INTO recently_played VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
-                    (str(ctx.author.id), None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None),
-                )
-                await self.db.commit()
-        '''
-
         decoded = spotify.decode_url(song)
+
         if not decoded:
+
             node = wavelink.NodePool.get_node()
+
             query = "ytsearch:" + song
             tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=query)
 
@@ -339,6 +334,7 @@ class Music(commands.Cog):
 
                 if player.queue.is_empty and not player.track:
                     await player.request(track)
+
                 elif player.queue.is_full:
                     embed = discord.Embed(
                         title=f"Max Queue Size Reached",
@@ -583,6 +579,13 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         await player.disconnect()
+        embed = discord.Embed(
+            title=f"Disconnected",
+            description=f"""Disconnected from the vc.""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await ctx.send(embed=embed)
 
     @commands.hybrid_command(
         name="remove",
@@ -707,7 +710,7 @@ class Music(commands.Cog):
         brief="Pause the current song",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def pause_cmd(self, ctx: commands.Context) -> None:
@@ -719,7 +722,7 @@ class Music(commands.Cog):
                     title=f"Error",
                     description=f"""The player is already paused!""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.YELLOW
+                    color=style.Color.YELLOW,
                 )
                 await ctx.send(embed=embed)
             else:
@@ -728,7 +731,7 @@ class Music(commands.Cog):
                     title=f"Paused",
                     description=f"""Paused the queue""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN
+                    color=style.Color.GREEN,
                 )
                 await ctx.send(embed=embed)
 
@@ -748,7 +751,7 @@ class Music(commands.Cog):
         brief="Unpause the current song",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def unpause_cmd(self, ctx: commands.Context) -> None:
@@ -760,7 +763,7 @@ class Music(commands.Cog):
                     title=f"Error",
                     description=f"""The player isn't paused!""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.YELLOW
+                    color=style.Color.YELLOW,
                 )
                 await ctx.send(embed=embed)
             else:
@@ -769,7 +772,7 @@ class Music(commands.Cog):
                     title=f"Unpaused",
                     description=f"""Unpaused the queue""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN
+                    color=style.Color.GREEN,
                 )
                 await ctx.send(embed=embed)
 
@@ -782,12 +785,7 @@ class Music(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.hybrid_group(
-        name="filter",
-        aliases=[],
-        enabled=True,
-        hidden=False
-    )
+    @commands.hybrid_group(name="filter", aliases=[], enabled=True, hidden=False)
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def filter_group(self, ctx: commands.Context) -> None:
         """Filter group"""
@@ -801,7 +799,7 @@ class Music(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def filter_equalizer_group(self, ctx: commands.Context) -> None:
@@ -816,7 +814,7 @@ class Music(commands.Cog):
         brief="Equalizer boost filter",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def filter_equalizer_boost_cmd(self, ctx: commands.Context) -> None:
         """
@@ -833,7 +831,7 @@ class Music(commands.Cog):
             title=f"Set Boost Equalizer",
             description=f"""add something here later idiot""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.AQUA
+            color=style.Color.AQUA,
         )
         await ctx.send(embed=embed)
 

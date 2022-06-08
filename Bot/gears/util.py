@@ -50,7 +50,14 @@ class BotUtil:
         """
         files = []
         if directory:
-            if directory in ["__pycache__", "Databases", "Logs", ".vscode", "Docs", "Website"]:
+            if directory in [
+                "__pycache__",
+                "Databases",
+                "Logs",
+                ".vscode",
+                "Docs",
+                "Website",
+            ]:
                 directories = []
             else:
                 directories = os.listdir(directory)
@@ -245,10 +252,7 @@ class BotLogger:
         self.last_sent = int(time.time()) - 13
         self.updates = []
         self.session = session
-        self.webhook = discord.Webhook.from_url(
-            url=self.webhook_url,
-            session=session
-        )
+        self.webhook = discord.Webhook.from_url(url=self.webhook_url, session=session)
 
     async def atu(self, ttl: str) -> None:
         """
@@ -258,7 +262,7 @@ class BotLogger:
         """
         self.updates.append(ttl)
         await self.ltd()
-        
+
     async def ltd(self) -> None:
         """Check if we need to load to disc"""
         if self.last_sent < int(time.time()) - 15 and self.updates:
@@ -267,18 +271,22 @@ class BotLogger:
             total_len = 16
             for update in self.updates:
                 if total_len > 2000:
-                    batches.append(f"""```ansi
+                    batches.append(
+                        f"""```ansi
 {new}
-```""")
+```"""
+                    )
                     new = ""
                     total_len = 16
 
                 new += f"\n{update}"
                 total_len += len(update) + 2
-            
-            batches.append(f"""```ansi
+
+            batches.append(
+                f"""```ansi
 {new}
-```""")
+```"""
+            )
 
             for batch in batches:
                 self.bot.loop.create_task(self.webhook.send(content=batch))
@@ -394,4 +402,3 @@ class BotLogger:
         msg = f"{self.gen_category(f'{Fore.RED}COG')}{categories} {info}"
         print(msg)
         self.bot.loop.create_task(self.atu(msg))
-

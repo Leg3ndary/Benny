@@ -32,10 +32,7 @@ class ModerationManager:
         doc = await guild_coll.find_one(query)
 
         if not doc:
-            doc = {
-                "_id": str(guild),
-                "count": 1
-            }
+            doc = {"_id": str(guild), "count": 1}
             await guild_coll.insert_one(doc)
         count = doc.get("count")
         await guild_coll.update_one(query, {"$set": {"count": count + 1}})
@@ -365,4 +362,4 @@ class Mod(commands.Cog):
 async def setup(bot: commands.Bot) -> None:
     """not working as of now"""
     pass
-    #await bot.add_cog(Mod(bot))
+    # await bot.add_cog(Mod(bot))

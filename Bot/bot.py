@@ -108,7 +108,6 @@ async def start_bot() -> None:
             bot.blogger = util.BotLogger(bot, blogger_session)
             await bot.blogger.load("BotLogger")
 
-            
             await bot.blogger.load("Config")
 
             bot.util = util.BotUtil(bot)
@@ -145,7 +144,7 @@ async def start_bot() -> None:
                                     "sentinel": sentinel_session,
                                     "discordstatus": discordstatus_session,
                                     "blogger": blogger_session,
-                                    "translate": translate_session
+                                    "translate": translate_session,
                                 }
                                 await bot.blogger.connect("AIOHTTP Sessions")
 
@@ -159,13 +158,16 @@ async def start_bot() -> None:
                                 )
 
                                 bot.loop.create_task(when_bot_ready())
-                                bot.ipc = ipc.Server(bot, secret_key=config.get("IPC").get("Secret"))
+                                bot.ipc = ipc.Server(
+                                    bot, secret_key=config.get("IPC").get("Secret")
+                                )
                                 bot.ipc.start()
                                 await bot.start(bot.config.get("Bot").get("Token"))
-            
+
 
 if bot.PLATFORM.lower() == "linux":
     import uvloop
+
     uvloop.install()
 
 asyncio.run(start_bot())

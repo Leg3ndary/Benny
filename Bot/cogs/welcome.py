@@ -31,7 +31,9 @@ class WelcomeManager:
         """
         Convert a json serializable string into a discord embed
         """
-        embed = discord.Embed.from_dict(await self.bot.loop.run_in_executor(None, json.loads(), data))
+        embed = discord.Embed.from_dict(
+            await self.bot.loop.run_in_executor(None, json.loads(), data)
+        )
         return embed
 
     async def welcome(self, member: discord.Member) -> None:
@@ -41,8 +43,13 @@ class WelcomeManager:
         guild = member.guild.id
 
         async with self.db.cursor() as cur:
-            result = await (await cur.execute("""SELECT welcome_channel FROM welcome WHERE guild = ?;""", (str(guild)))).fetchone()
-  
+            result = await (
+                await cur.execute(
+                    """SELECT welcome_channel FROM welcome WHERE guild = ?;""",
+                    (str(guild)),
+                )
+            ).fetchone()
+
         if not result:
             pass
 
@@ -56,8 +63,6 @@ class WelcomeManager:
         Say goodbye to a user!
         """
 
-        
-
 
 class Welcome(commands.Cog):
     """
@@ -66,14 +71,15 @@ class Welcome(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         """Init for the bot"""
         self.bot = bot
-        
+
     async def cog_load(self) -> None:
         """
         On cog load create a connection because
         """
         self.db: asqlite.Connection = await asqlite.connect("Databases/server.db")
-        
-        await self.db.execute("""
+
+        await self.db.execute(
+            """
         CREATE TABLE IF NOT EXISTS welcome (
             guild           TEXT    PRIMARY KEY
                                         NOT NULL,
@@ -82,7 +88,8 @@ class Welcome(commands.Cog):
             goodbye         TEXT,
             goodbye_channel TEXT
         );
-        """)
+        """
+        )
 
         self.wm = WelcomeManager(self.bot, self.db)
 
@@ -105,14 +112,15 @@ class Welcome(commands.Cog):
         """
         On member remove check if we have the user cached and move on accordingly
         """
-        guild = self.bot.get_guild(payload.guild_id) or (await self.bot.fetch_guild(payload.guild_id))
+        guild = self.bot.get_guild(payload.guild_id) or (
+            await self.bot.fetch_guild(payload.guild_id)
+        )
 
-        member = guild.get_member(payload.user.id) or (await guild.fetch_member(payload.user.id))
+        member = guild.get_member(payload.user.id) or (
+            await guild.fetch_member(payload.user.id)
+        )
 
         await self.wm.goodbye(member)
-
-    
-    
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -17,7 +17,9 @@ class Errors(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+    async def on_command_error(
+        self, ctx: commands.Context, error: commands.CommandError
+    ) -> None:
         """
         The event triggered when an error is raised while invoking a command.
 
