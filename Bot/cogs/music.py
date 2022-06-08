@@ -827,7 +827,7 @@ class Music(commands.Cog):
         equalizer = wavelink.Equalizer.boost()
         wfilter = wavelink.Filter(equalizer=equalizer)
 
-        await player.set_filter(wfilter, True)
+        await player.set_filter(wfilter, seek=True)
 
         embed = discord.Embed(
             title=f"Set Boost Equalizer",
