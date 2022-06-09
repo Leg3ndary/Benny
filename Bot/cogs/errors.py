@@ -106,23 +106,13 @@ Command Error
             return await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadArgument):
-            if ctx.command.qualified_name == "":
-                embed = discord.Embed(
-                    title=f"",
-                    description=f"""""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.random(),
-                )
-                return await ctx.send(embed=embed)
-
-            else:
-                embed = discord.Embed(
-                    title=f"Not found",
-                    description=f"""Conversion Error""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED,
-                )
-                return await ctx.send(embed=embed)
+            embed = discord.Embed(
+                title=f"Not found",
+                description=f"""{error.with_traceback}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            return await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadInviteArgument):
             pass
