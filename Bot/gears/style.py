@@ -1,13 +1,6 @@
 import random
 
 
-def get_emoji(kind: str, emoji: str):
-    """Get an emoji from tenshis emoji dict..."""
-    return emojis.get(kind, f"ERROR [Styles - TYPE: {kind}]").get(
-        emoji, f"ERROR [Styles - Emoji {emoji}]"
-    )
-
-
 class Color:
     """
     Our base colors
@@ -101,47 +94,62 @@ color_list = [
     "white",
 ]
 
-emojis = {
-    "regular": {
-        "check": "<:check:891088754176036885>",
-        "cancel": "<:cancel:891088754599682059>",
-        "left": "<:left:923972333360775228>",
-        "right": "<:right:923972333461458944>",
-        "pauseplay": "<:pp:923972333599866912>",
-        "stop": "<:stop:923972333885091860>",
-        "search": "<:search:923972333742469130> ",
-        "loop": "<:loop:923972333343997962>",
-        "shuffle": "<:shuffle:923972333612433548>",
-        "spotify": "<:spotify:922245976226402306>",
-        "soundcloud": "<:soundcloud:927006460834111518>",
-        "youtube": "<:youtube:927005602964729887>",
-    },
-    "id": {
-        "check": "891088754176036885",
-        "cancel": "891088754599682059",
-        "left": "923972333360775228",
-        "right": "923972333461458944",
-        "pauseplay": "923972333599866912",
-        "stop": "923972333885091860",
-        "search": "923972333742469130",
-        "loop": "923972333343997962",
-        "shuffle": "923972333612433548",
-        "spotify": "922245976226402306",
-        "soundcloud": "927006460834111518",
-        "youtube": "927005602964729887",
-    },
-    "image": {
-        "check": "https://cdn.discordapp.com/emojis/891088754176036885.png?size=256",
-        "cancel": "https://cdn.discordapp.com/emojis/891088754599682059.png?size=256",
-        "left": "https://cdn.discordapp.com/emojis/923972333360775228.png?size=256",
-        "right": "https://cdn.discordapp.com/emojis/923972333461458944.png?size=256",
-        "pauseplay": "https://cdn.discordapp.com/emojis/923972333599866912.png?size=256",
-        "stop": "https://cdn.discordapp.com/emojis/923972333885091860.png?size=256",
-        "search": "https://cdn.discordapp.com/emojis/923972333742469130.png?size=256",
-        "loop": "https://cdn.discordapp.com/emojis/923972333343997962.png?size=256",
-        "shuffle": "https://cdn.discordapp.com/emojis/923972333612433548?size=256",
-        "spotify": "https://cdn.discordapp.com/emojis/922245976226402306.png?size=256",
-        "soundcloud": "https://cdn.discordapp.com/emojis/927006460834111518?size=256",
-        "youtube": "https://cdn.discordapp.com/emojis/927005602964729887?size=256",
-    },
-}
+
+class RegularEmojis:
+    """
+    Regular emoji class
+    """
+    check = "<:check:891088754176036885>"
+    cancel = "<:cancel:891088754599682059>"
+    left = "<:left:923972333360775228>"
+    right = "<:right:923972333461458944>"
+    pauseplay = "<:pp:923972333599866912>"
+    stop = "<:stop:923972333885091860>"
+    search = "<:search:923972333742469130>"
+    loop = "<:loop:923972333343997962>"
+    shuffle = "<:shuffle:923972333612433548>"
+    spotify = "<:spotify:922245976226402306>"
+    soundcloud = "<:soundcloud:927006460834111518>"
+    youtube = "<:youtube:927005602964729887>"
+
+class IDEmojis:
+    """
+    Emojis ID's
+    """
+    check = "891088754176036885"
+    cancel = "891088754599682059"
+    left = "923972333360775228"
+    right = "923972333461458944"
+    pauseplay = "923972333599866912"
+    stop = "923972333885091860"
+    search = "923972333742469130"
+    loop = "923972333343997962"
+    shuffle = "923972333612433548"
+    spotify = "922245976226402306"
+    soundcloud = "927006460834111518"
+    youtube = "927005602964729887"
+
+class ImageEmojis:
+    """
+    Image urls for all our emojis
+    """
+    check = "https://cdn.discordapp.com/emojis/891088754176036885.png?size=256"
+    cancel = "https://cdn.discordapp.com/emojis/891088754599682059.png?size=256"
+    left = "https://cdn.discordapp.com/emojis/923972333360775228.png?size=256"
+    right = "https://cdn.discordapp.com/emojis/923972333461458944.png?size=256"
+    pauseplay = "https://cdn.discordapp.com/emojis/923972333599866912.png?size=256"
+    stop = "https://cdn.discordapp.com/emojis/923972333885091860.png?size=256"
+    search = "https://cdn.discordapp.com/emojis/923972333742469130.png?size=256"
+    loop = "https://cdn.discordapp.com/emojis/923972333343997962.png?size=256"
+    shuffle = "https://cdn.discordapp.com/emojis/923972333612433548?size=256"
+    spotify = "https://cdn.discordapp.com/emojis/922245976226402306.png?size=256"
+    soundcloud = "https://cdn.discordapp.com/emojis/927006460834111518?size=256"
+    youtube = "https://cdn.discordapp.com/emojis/927005602964729887?size=256"
+
+class Emojis:
+    """
+    Base class for all emojis
+    """
+    REGULAR = RegularEmojis
+    ID = IDEmojis
+    IMAGE = ImageEmojis

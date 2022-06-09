@@ -366,7 +366,7 @@ class Dev(commands.Cog):
         else:
             value = stdout.getvalue()
             try:
-                await ctx.message.add_reaction(style.get_emoji("regular", "check"))
+                await ctx.message.add_reaction(style.Emojis.REGULAR.check)
             except:
                 pass
 
@@ -405,7 +405,7 @@ class Dev(commands.Cog):
     )
     async def end_bot(self, ctx: commands.Context) -> None:
         """Stopping the bot"""
-        await ctx.message.add_reaction(style.get_emoji("regular", "check"))
+        await ctx.message.add_reaction(style.Emojis.REGULAR.check)
         embed = discord.Embed(
             title=f"Shutting Down Bot",
             description=f"""```diff

@@ -327,7 +327,7 @@ class Mod(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
             )
-            modlogs_set.set_thumbnail(url=style.get_emoji("image", "check"))
+            modlogs_set.set_thumbnail(url=style.Emojis.IMAGE.check)
             await ctx.send(embed=modlogs_set)
 
         if data.get("channel") == channel.id:
@@ -350,7 +350,7 @@ class Mod(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
             )
-            modlogs_changed.set_thumbnail(url=style.get_emoji("image", "check"))
+            modlogs_changed.set_thumbnail(url=style.Emojis.IMAGE.check)
             await ctx.send(embed=modlogs_changed)
 
     @commands.Cog.listener()

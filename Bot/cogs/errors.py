@@ -72,7 +72,7 @@ Command Error
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            missing_argument.set_thumbnail(url=style.get_emoji("image", "cancel"))
+            missing_argument.set_thumbnail(url=style.Emojis.IMAGE.cancel)
             await ctx.send(embed=missing_argument)
 
         elif isinstance(error, commands.DisabledCommand):
@@ -93,7 +93,7 @@ Command Error
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            no_channel.set_thumbnail(url=style.get_emoji("image", "cancel"))
+            no_channel.set_thumbnail(url=style.Emojis.IMAGE.cancel)
             return await ctx.send(embed=no_channel)
 
         elif isinstance(error, commands.CommandOnCooldown):
