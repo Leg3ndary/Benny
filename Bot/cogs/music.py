@@ -164,6 +164,119 @@ class PlayerSelector(discord.ui.View):
         await interaction.response.send_message("Cancelled", ephemeral=True)
 
 
+class FilterSpinView(discord.ui.View):
+    """Display a ui for spinning!"""
+
+    def __init__(self, ctx: commands.Context, player: wavelink.Player) -> None:
+        """
+        Init
+        """
+        self.ctx = ctx
+        self.player = player
+        self.spin: float = 0.0
+        super().__init__()
+
+    async def interaction_check(self, interaction) -> None:
+        """If the interaction isn't by the user, return a fail."""
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        """On timeout make this look cool"""
+
+        for item in self.children:
+            item.disabled = True
+
+        embed = discord.Embed(
+            title=f"Spin Mode",
+            description=f"""Timed out""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await self.play_embed.edit(embed=embed, view=self)
+
+    async def set_spin(self) -> None:
+        """
+        Set the spin to the self value
+        """
+        rotation = wavelink.Rotation(speed=self.spin)
+
+        await self.player.set_filter(wavelink.Filter(rotation=rotation), seek=True)
+
+    async def edit_spin_embed(self, interaction: discord.Interaction) -> None:
+        """
+        Edit the spin embed
+        """
+        if self.spin > 5.0:
+            self.spin = 5.0
+        if self.spin < -5.0:
+            self.spin = -5.0
+        await self.set_spin()
+        embed = discord.Embed(
+            title=f"Spin Mode",
+            description=f"""Set a spin mode below!
+            
+            Note the max values of this are 5 and -5, don't get too dizzy!
+            
+            **Spinning:** {"No direction" if self.spin == 0 else ("Clockwise" if self.spin > 0 else "Counter ClockWise")}
+            **Speed** {str(self.spin)}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PURPLE,
+        )
+        await interaction.response.edit_message(embed=embed)
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "left"),
+        label="-1",
+        style=discord.ButtonStyle.danger
+    )
+    async def button2_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+        """-1 button"""
+        self.spin -= 1
+        await self.edit_spin_embed(interaction)
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "left"),
+        label="-0.1",
+        style=discord.ButtonStyle.danger
+    )
+    async def button1_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+        """-0.1 button"""
+        self.spin -= 0.1
+        await self.edit_spin_embed(interaction)
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "stop"),
+        label="Reset",
+        style=discord.ButtonStyle.grey
+    )
+    async def button3_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+        """Reset button"""
+        self.spin = 0.0
+        await self.edit_spin_embed(interaction)
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "right"),
+        label="+0.1",
+        style=discord.ButtonStyle.green
+    )
+    async def button4_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+        """+0.1 button"""
+        self.spin += 0.1
+        await self.edit_spin_embed(interaction)
+
+    @discord.ui.button(
+        emoji=style.get_emoji("regular", "right"),
+        label="+1",
+        style=discord.ButtonStyle.green
+    )
+    async def button5_callback(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        """+1 button"""
+        self.spin += 1
+        await self.edit_spin_embed(interaction)
+
+
 def duration(seconds: float) -> str:
     """Return a human readable duration because"""
     return util.remove_zcs(str(datetime.timedelta(seconds=seconds)))
@@ -200,7 +313,7 @@ class Music(commands.Cog):
                 port=2333,
                 region="na",
                 password="BennyBotRoot",
-                identifier="Benny1",
+                identifier="BennyMusic",
                 spotify_client=spotify.SpotifyClient(
                     client_id=self.bot.config.get("Spotify").get("ID"),
                     client_secret=self.bot.config.get("Spotify").get("Secret"),
@@ -792,12 +905,37 @@ class Music(commands.Cog):
         if not ctx.invoked_subcommand:
             pass
 
+    @filter_group.command(
+        name="reset",
+        description="""Remove all filters and reset""",
+        help="""Remove all filters and reset""",
+        brief="Remove all filters and reset",
+        aliases=["r"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def filter_reset_cmd(self, ctx: commands.Context) -> None:
+        """
+        Remove all filters and reset
+        """
+        player = await self.get_player(ctx)
+        await player.set_filter(wavelink.Filter(), seek=True)
+
+        embed = discord.Embed(
+            title=f"Success",
+            description=f"""Successfully removed all filters!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await ctx.send(embed=embed)
+
     @filter_group.group(
         name="equalizer",
-        description="""Set an equalizer""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
-        aliases=[],
+        description="""Set an equalizer, provides 4 different types""",
+        help="""Set an equalizer, provides 4 different types""",
+        brief="Set an equalizer, provides 4 different types",
+        aliases=["eq"],
         enabled=True,
         hidden=False,
     )
@@ -822,18 +960,72 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        equalizer = wavelink.Equalizer.boost()
-        wfilter = wavelink.Filter(equalizer=equalizer)
+        boost = wavelink.Equalizer.boost()
 
-        await player.set_filter(wfilter, seek=True)
+        await player.set_filter(wavelink.Filter(equalizer=boost), seek=True)
 
         embed = discord.Embed(
             title=f"Set Boost Equalizer",
-            description=f"""add something here later idiot""",
+            description=f"""Successfully set a boost equalizer""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
         await ctx.send(embed=embed)
+
+    @filter_group.command(
+        name="karaoke",
+        description="""Karaoke filter""",
+        help="""Karaoke filter""",
+        brief="Karaoke",
+        aliases=["sing"],
+        enabled=True,
+        hidden=False,
+    )
+    async def filter_karaoke_cmd(self, ctx: commands.Context) -> None:
+        """
+        karaoke filter
+        """
+        player = await self.get_player(ctx)
+
+        karaoke = wavelink.Karaoke(level=5.0)
+
+        await player.set_filter(wavelink.Filter(karaoke=karaoke), seek=True)
+
+        embed = discord.Embed(
+            title=f"Karaoke Mode Enabled",
+            description=f"""Successfully set track to Karaoke mode""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PINK,
+        )
+        await ctx.send(embed=embed)
+
+    @filter_group.command(
+        name="spin",
+        description="""Rotate 3d audio filter""",
+        help="""Rotate 3d audio filter""",
+        brief="Rotate 3d audio filter",
+        aliases=["rotate", "3d"],
+        enabled=True,
+        hidden=False,
+    )
+    async def filter_spin_cmd(self, ctx: commands.Context) -> None:
+        """
+        Spinning filter
+        """
+        player = await self.get_player(ctx)
+
+        view = FilterSpinView(ctx, player)
+
+        embed = discord.Embed(
+            title=f"Spin Mode",
+            description=f"""Set a spin mode below!
+            
+            Note the max values of this are 5 and -5, don't get too dizzy!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PURPLE
+        )
+        await ctx.send(embed=embed, view=view)
+        
 
 
 async def setup(bot: commands.Bot) -> None:
