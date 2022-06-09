@@ -336,9 +336,13 @@ class Music(commands.Cog):
     async def get_player(self, ctx: commands.Context) -> wavelink.Player:
         """Create a player and connect cls"""
         if not ctx.author.voice:
-            raise commands.BadArgument(
-                "You need to be connected to a voice channel for this command to work"
+            embed = discord.Embed(
+                title=f"Error",
+                description=f"""You need to be connected to a voice channel for this command to work""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED
             )
+            return await ctx.send(embed=embed)
         elif not ctx.voice_client:
             player: wavelink.Player = await ctx.author.voice.channel.connect(
                 cls=Player(dj=ctx.author)
