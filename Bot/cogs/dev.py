@@ -317,7 +317,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def dev_leave_cmd(self, ctx: commands.Context, *, guild: discord.Guild):
+    async def dev_leave_cmd(self, ctx: commands.Context, *, guild: discord.Guild) -> None:
         """
         Leave a guild.
         """

@@ -567,7 +567,9 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def queue_cmd(self, ctx: commands.Context) -> None:
-        """Command description"""
+        """
+        View player queue
+        """
         player = await self.get_player(ctx)
 
         if not player.track:
