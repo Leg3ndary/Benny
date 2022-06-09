@@ -55,7 +55,7 @@ class Errors(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
         elif isinstance(error, commands.ConversionError):
             # unfinished
@@ -94,7 +94,7 @@ Command Error
                 color=style.Color.RED,
             )
             no_channel.set_thumbnail(url=style.Emojis.IMAGE.cancel)
-            return await ctx.send(embed=no_channel)
+            await ctx.send(embed=no_channel)
 
         elif isinstance(error, commands.CommandOnCooldown):
             embed = discord.Embed(
@@ -103,7 +103,7 @@ Command Error
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadArgument):
             embed = discord.Embed(
@@ -112,7 +112,7 @@ Command Error
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadInviteArgument):
             pass

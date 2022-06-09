@@ -204,7 +204,7 @@ class Mod(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            return await ctx.send(embed=same_user_embed)
+            await ctx.send(embed=same_user_embed)
 
         elif not user and re.match(r"[0-9]{15,19}", str(user)):
             try:
@@ -219,7 +219,7 @@ class Mod(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            return await ctx.send(embed=none_mentioned)
+            await ctx.send(embed=none_mentioned)
 
         elif user.id == self.bot.user.id:
             ban_bot = discord.Embed(
@@ -228,7 +228,7 @@ class Mod(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.YELLOW,
             )
-            return await ctx.send(embed=ban_bot)
+            await ctx.send(embed=ban_bot)
 
         else:
             try:
@@ -251,7 +251,7 @@ class Mod(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.GREEN,
                 )
-                return await ctx.send(embed=banned_embed)
+                await ctx.send(embed=banned_embed)
 
             except Exception as e:
                 error = discord.Embed(
@@ -284,21 +284,23 @@ class Mod(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            return await ctx.send(embed=embed)
-        try:
-            member = await ctx.guild.fetch_ban(discord.Object(id=member))
-        except discord.NotFound:
-            embed = discord.Embed(
-                title=f"Not Banned",
-                description=f"""This user doesn't seem to be banned...""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.YELLOW,
-            )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
+        else:
+            try:
+                member = await ctx.guild.fetch_ban(discord.Object(id=member))
+            except discord.NotFound:
+                embed = discord.Embed(
+                    title=f"Not Banned",
+                    description=f"""This user doesn't seem to be banned...""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.YELLOW,
+                )
+                await ctx.send(embed=embed)
+                return
 
-        reason = f"Unbanned by: "
+            reason = f"Unbanned by: "
 
-        await ctx.guild.unban(discord.Object(id=member), reason)
+            await ctx.guild.unban(discord.Object(id=member), reason)
 
     @commands.group(name="modlogs")
     async def modlogs(self, ctx: commands.Context) -> None:

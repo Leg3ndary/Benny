@@ -65,17 +65,18 @@ class Databases(commands.Cog):
                 description="""
                 """,
             )
-            return await ctx.send(embed=not_found)
+            await ctx.send(embed=not_found)
 
-        embed = discord.Embed(
-            title="Redis Key Data",
-            description=f"""```
+        else:
+            embed = discord.Embed(
+                title="Redis Key Data",
+                description=f"""```
 {data}
 ```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
-        )
-        await ctx.send(embed=embed)
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.random(),
+            )
+            await ctx.send(embed=embed)
 
     @redis.command()
     async def add(self, ctx: commands.Context, key, value):
@@ -88,7 +89,7 @@ class Databases(commands.Cog):
 [{key}]({value})
 ```""",
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
         except Exception as e:
             unable = discord.Embed(

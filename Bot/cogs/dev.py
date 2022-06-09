@@ -2,21 +2,12 @@ import discord
 import discord.utils
 import io
 import os
-import subprocess
 import re
 import textwrap
 import traceback
 from contextlib import redirect_stdout
 from discord.ext import commands
 from gears import style
-
-
-async def cleanup_code(content: str) -> str:
-    """
-    Automatically removes code blocks from code
-    """
-    if content.startswith("```") and content.endswith("```"):
-        return "\n".join(content.split("\n")[1:-1])
 
 
 async def format_git_msg(content: str) -> str:
@@ -47,15 +38,20 @@ class Dev(commands.Cog):
     All commands in this cog are owner only, they are meant for bot development
     """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init for the bot
+        """
         self.bot = bot
 
     async def cog_check(self, ctx: commands.Context) -> None:
         """Check if the user is the owner."""
         return await self.bot.is_owner(ctx.author)
 
-    @commands.group()
-    async def dev(self, ctx: commands.Context) -> None:
+    @commands.group(
+        name="dev"
+    )
+    async def dev_group(self, ctx: commands.Context) -> None:
         """Commands thats sole purpose is for me to experiment."""
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
@@ -66,13 +62,19 @@ class Dev(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @dev.command(
-        help="Load a cog",
-        brief="Loading Cogs",
-        description="None",
-        hidden=True,
+    @dev_group.command(
+        name="load",
+        description="""Load a cog""",
+        help="""Load a cog""",
+        brief="Load a cog",
+        aliases=[],
+        enabled=True,
+        hidden=True
     )
-    async def load(self, ctx: commands.Context, *, cog: str) -> None:
+    async def load_cmd(self, ctx: commands.Context, *, cog: str) -> None:
+        """
+        Load a cog
+        """
         try:
             await self.bot.load_extension(cog)
             await self.bot.blogger.cog_update(cog, "LOAD")
@@ -86,7 +88,7 @@ class Dev(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
-            return await ctx.send(embed=embed_fail)
+            await ctx.send(embed=embed_fail)
 
         else:
             embed = discord.Embed(
@@ -99,14 +101,19 @@ class Dev(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @dev.command(
-        help="Unload a cog",
-        brief="Unloading Cogs",
-        description="None",
-        hidden=True,
+    @dev_group.command(
+        name="unload",
+        description="""Unload a cog""",
+        help="""Unload a cog""",
+        brief="Unload a cog",
+        aliases=[],
+        enabled=True,
+        hidden=True
     )
-    async def unload(self, ctx: commands.Context, *, cog: str) -> None:
-        """Unload a cog"""
+    async def unload_cmd(self, ctx: commands.Context, *, cog: str) -> None:
+        """
+        Unload a cog
+        """
         try:
             await self.bot.unload_extension(cog)
             await self.bot.blogger.cog_update(cog, "UNLOAD")
@@ -121,7 +128,7 @@ class Dev(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
-            return await ctx.send(embed=embed_fail)
+            await ctx.send(embed=embed_fail)
 
         else:
             embed = discord.Embed(
@@ -134,13 +141,19 @@ class Dev(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @dev.command(
-        help="Unload then Load a cog",
-        brief="Reloading Cogs",
-        description="None",
-        hidden=True,
+    @dev_group.command(
+        name="reload",
+        description="""Reload a cog""",
+        help="""Reload a cog""",
+        brief="Reload a cog",
+        aliases=[],
+        enabled=True,
+        hidden=True
     )
-    async def reload(self, ctx: commands.Context, *, cog: str):
+    async def reload_cmd(self, ctx: commands.Context, *, cog: str) -> None:
+        """
+        Reload a cog
+        """
         try:
             await self.bot.unload_extension(cog)
             await self.bot.load_extension(cog)
@@ -155,7 +168,7 @@ class Dev(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
-            return await ctx.send(embed=embed_fail)
+            await ctx.send(embed=embed_fail)
 
         else:
             embed = discord.Embed(
@@ -166,21 +179,27 @@ class Dev(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
 
-    @dev.command(
-        help="Shows a list of all servers that Tenshi is in.",
-        brief="Servers List",
-        description="None",
-        hidden=True,
+    @dev_group.command(
+        name="servers",
+        description="""Show the bots servers""",
+        help="""Show the bots servers""",
+        brief="Show the bots servers",
+        aliases=[],
+        enabled=True,
+        hidden=True
     )
-    async def servers(self, ctx: commands.Context) -> None:
+    async def dev_servers_cmd(self, ctx: commands.Context) -> None:
+        """
+        Show every server the bots actually in
+        """
         servers = self.bot.guilds
         servers_var = ""
         for guild in servers:
             servers_var = f"{servers_var}\n{guild.name}"
         embed = discord.Embed(
-            title=f"Tenshi Server List ============== {len(self.bot.guilds)}",
+            title=f"{self.bot.user.name} Server List {len(self.bot.guilds)}",
             description=f"""```
 {servers_var}
 ```""",
@@ -189,16 +208,19 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @dev.command(
-        name="sync",
-        description="""Runs git pull and syncs cogs""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+    @dev_group.command(
+        name="pull",
+        description="""Run the git pull command for the bot""",
+        help="""Run the git pull command for the bot""",
+        brief="Run the git pull command for the bot",
         aliases=[],
         enabled=True,
-        hidden=True,
+        hidden=True
     )
-    async def sync_cmd(self, ctx: commands.Context) -> None:
+    async def dev_pull_cmd(self, ctx: commands.Context) -> None:
+        """
+        Run the git pull command for the bot
+        """
         cmd = os.popen("git pull").read()
 
         embed = discord.Embed(
@@ -210,6 +232,25 @@ class Dev(commands.Cog):
             color=style.Color.AQUA,
         )
         await ctx.send(embed=embed)
+
+    @dev_group.command(
+        name="sync",
+        description="""Runs git pull and syncs all cogs""",
+        help="""Runs git pull and syncs all cogs""",
+        brief="Runs git pull and syncs all cogs",
+        aliases=[],
+        enabled=True,
+        hidden=True,
+    )
+    async def dev_sync_cmd(self, ctx: commands.Context) -> None:
+        """
+        Sync command
+
+        Runs git pull and syncs all cogs
+        """
+        cmd = self.bot.get_command("dev pull")
+        await cmd(ctx)
+
         cog_statuslist = []
         fails = 0
         success = 0
@@ -235,7 +276,7 @@ class Dev(commands.Cog):
         cog_visual = f"\n".join(cog_statuslist)
 
         embed = discord.Embed(
-            title=f"{self.bot.user.name} Sync ============================",
+            title=f"{self.bot.user.name} Sync",
             description=f"""```diff
 {cog_visual}```
             `{success}` cogs have been reloaded.
@@ -245,7 +286,7 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @dev.command(
+    @dev_group.command(
         name="syncs",
         description="""Syncs slash commands""",
         help="""Syncs slash commands""",
@@ -254,7 +295,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def syncs_cmd(self, ctx: commands.Context) -> None:
+    async def dev_syncs_cmd(self, ctx: commands.Context) -> None:
         """
         Syncs the bots command tree
         """
@@ -267,17 +308,19 @@ class Dev(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @dev.command(
+    @dev_group.command(
         name="leave",
         description="""Leave a guild""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        help="""Leave a guild""",
+        brief="Leave a guild",
         aliases=[],
         enabled=True,
         hidden=True,
     )
-    async def leave_cmd(self, ctx: commands.Context, *, guild: discord.Guild):
-        """Leave a guild."""
+    async def dev_leave_cmd(self, ctx: commands.Context, *, guild: discord.Guild):
+        """
+        Leave a guild.
+        """
         try:
             await ctx.guild.leave()
             embed = discord.Embed(
@@ -310,22 +353,16 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def eval_cmd(self, ctx: commands.Context, *, code: str):
-        """Evaluates code given"""
-        if "```py" not in code:
-            no_cb = discord.Embed(
-                title="Error",
-                description="Include a code block dumb fuck",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            return await ctx.send(embed=no_cb)
-
+    async def eval_cmd(self, ctx: commands.Context, *, code: str) -> None:
+        """
+        Evaluates code given, I stole this from r danny, ty rapptz...
+        """
         env = {"bot": self.bot, "ctx": ctx}
 
         env.update(globals())
 
-        code = await cleanup_code(code)
+        if code.startswith("```") and code.endswith("```"):
+            code = "\n".join(code.split("\n")[1:-1])
         stdout = io.StringIO()
 
         to_compile = f"""async def func():\n{textwrap.indent(code, "  ")}"""
@@ -342,7 +379,8 @@ class Dev(commands.Cog):
                 color=style.Color.RED,
             )
             print(f"{e.__class__.__name__}: {e}")
-            return await ctx.send(embed=embed_e1)
+            await ctx.send(embed=embed_e1)
+            return
 
         func = env["func"]
 
@@ -361,7 +399,7 @@ class Dev(commands.Cog):
                 color=style.Color.RED,
             )
             print(value + traceback.format_exc())
-            return await ctx.send(embed=embed_e2)
+            await ctx.send(embed=embed_e2)
 
         else:
             value = stdout.getvalue()
@@ -370,7 +408,7 @@ class Dev(commands.Cog):
             except:
                 pass
 
-            if out is None:
+            if not out:
                 if value:
                     evaluated = discord.Embed(
                         title="Evaluated",
@@ -380,7 +418,7 @@ class Dev(commands.Cog):
                         timestamp=discord.utils.utcnow(),
                         color=style.Color.GREEN,
                     )
-                    return await ctx.send(embed=evaluated)
+                    await ctx.send(embed=evaluated)
 
             else:
                 embed_e3 = discord.Embed(
@@ -392,9 +430,9 @@ class Dev(commands.Cog):
                     color=style.Color.RED,
                 )
                 print(value + out)
-                return await ctx.send(embed=embed_e3)
+                await ctx.send(embed=embed_e3)
 
-    @dev.command(
+    @dev_group.command(
         name="close",
         description="""Immediately stops the bot""",
         help="""Stop the bot immediately""",
@@ -403,13 +441,15 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def end_bot(self, ctx: commands.Context) -> None:
-        """Stopping the bot"""
+    async def dev_close_bot(self, ctx: commands.Context) -> None:
+        """
+        Stopping the bot
+        """
         await ctx.message.add_reaction(style.Emojis.REGULAR.check)
         embed = discord.Embed(
             title=f"Shutting Down Bot",
             description=f"""```diff
-Add stuff here later...
+Shutting down the bot...
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
