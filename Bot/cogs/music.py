@@ -1,3 +1,4 @@
+import asyncio
 import asqlite
 import datetime
 import discord
@@ -321,7 +322,18 @@ class Music(commands.Cog):
             )
             self.wavelink: wavelink.Node = self.bot.wavelink
 
-    async def get_player(self, ctx) -> wavelink.Player:
+    async def self_deafen(self, ctx: commands.Context) -> None:
+        """
+        Deafen ourself
+        """
+        await asyncio.sleep(0.5) # the bot sometimes needs a second?
+        await ctx.guild.change_voice_state(
+                channel=ctx.author.voice.channel,
+                self_mute=False,
+                self_deaf=True,
+            )
+
+    async def get_player(self, ctx: commands.Context) -> wavelink.Player:
         """Create a player and connect cls"""
         if not ctx.author.voice:
             raise commands.BadArgument(
@@ -333,11 +345,8 @@ class Music(commands.Cog):
             )
         else:
             player: wavelink.Player = ctx.voice_client
-            await ctx.guild.change_voice_state(
-                channel=ctx.author.voice.channel,
-                self_mute=False,
-                self_deaf=True,
-            )
+            await self.bot.loop.create_task(self.self_deafen(ctx))
+            
         return player
 
     @commands.Cog.listener()
