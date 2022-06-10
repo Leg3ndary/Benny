@@ -716,29 +716,31 @@ class Sentinel(commands.Cog):
         )
         return new_username
 
-    @commands.Cog.listener()
-    async def on_load_sentinel_managers(self) -> None:
-        """Load decancer manager when bots loaded"""
+    async def cog_load(self) -> None:
+        """
+        On cog load check if the bot had a sm and re-add if so
+        """
         if hasattr(self.bot, "sentinel_manager"):
             self.sm = self.bot.sentinel_manager
-
-
-        else:
-            self.sm = SentinelManager(
-                self.bot.sessions.get("sentinel"),
-                self.db,
-                self.bot.loop,
-                self.bot.user.avatar.url,
-            )
-            self.bot.sentinel_manager = self.sm
-            await self.sm.load_sentinels()
-
+            await self.load_sentinels()
+        
         if hasattr(self.bot, "decancer_manager"):
             self.decancer = self.bot.decancer_manager
 
-        else:
-            self.decancer = DecancerManager(self.db, self.bot.user.avatar.url)
-            self.bot.decancer_manager = self.decancer
+    @commands.Cog.listener()
+    async def on_load_sentinel_managers(self) -> None:
+        """Load decancer manager when bots loaded"""
+        self.sm = SentinelManager(
+            self.bot.sessions.get("sentinel"),
+            self.db,
+            self.bot.loop,
+            self.bot.user.avatar.url,
+        )
+        self.bot.sentinel_manager = self.sm
+        await self.sm.load_sentinels()
+
+        self.decancer = DecancerManager(self.db, self.bot.user.avatar.url)
+        self.bot.decancer_manager = self.decancer
 
     @commands.Cog.listener()
     async def on_message(self, msg: discord.Message):
