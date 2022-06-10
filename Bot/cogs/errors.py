@@ -1,10 +1,10 @@
 import sys
 import math
+import traceback
 import discord
 import discord.utils
-import traceback
 from discord.ext import commands
-from gears import style, util
+from gears import style
 
 
 class Errors(commands.Cog):
@@ -50,7 +50,7 @@ class Errors(commands.Cog):
 
         if isinstance(error, commands.MemberNotFound):
             embed = discord.Embed(
-                title=f"Member Not Found",
+                title="Member Not Found",
                 description=f"""The member {error.argument} was not found""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -63,11 +63,11 @@ class Errors(commands.Cog):
 
         elif isinstance(error, commands.MissingRequiredArgument):
             missing_argument = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""Missing parameter:
 ```md
 Command Error
-[{ctx.command}]({str(error.param).split(":")[0]})
+[{ctx.command}]({str(error.param).split(":", maxsplit=1)[0]})
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -88,7 +88,7 @@ Command Error
 
         elif isinstance(error, commands.ChannelNotFound):
             no_channel = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""Channel `{error.argument}` was not found""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -99,7 +99,7 @@ Command Error
         elif isinstance(error, commands.CommandOnCooldown):
             embed = discord.Embed(
                 title=f"{ctx.command} is on Cooldown",
-                description=f"""Please retry this command in {math.ceil(error.retry_after)} seconds""",
+                description=f"Please retry this command in {math.ceil(error.retry_after)} seconds",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -107,7 +107,7 @@ Command Error
 
         elif isinstance(error, commands.BadArgument):
             embed = discord.Embed(
-                title=f"Not found",
+                title="Not found",
                 description=f"""{error.with_traceback}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -123,7 +123,7 @@ Command Error
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
             print(
-                "Ignoring exception in command {}:".format(ctx.command), file=sys.stderr
+                f"Ignoring exception in command {ctx.command}:", file=sys.stderr
             )
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr

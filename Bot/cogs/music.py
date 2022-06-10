@@ -124,7 +124,7 @@ class PlayerDropdown(discord.ui.Select):
 class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
-    def __init__(self, ctx: commands.Context, player, songs: list) -> None:
+    def __init__(self, ctx: commands.Context, player:wavelink.Player, songs: list) -> None:
         """
         Init
         """
@@ -163,6 +163,54 @@ class PlayerSelector(discord.ui.View):
         """Delete the message if clicked"""
         await self.play_embed.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
+
+
+class QueueView(discord.ui.View):
+    """
+    Display all items in our queue, let you skip to any song
+    """
+
+    def __init__(self, ctx: commands.Context, player: wavelink.Player, songs: list) -> None:
+        """
+        Init
+        """
+        self.ctx = ctx
+        self.play_embed = None
+        super().__init__(timeout=60)
+
+        self.add_item(PlayerDropdown(ctx, player, songs))
+
+    async def interaction_check(self, interaction) -> None:
+        """If the interaction isn't by the user, return a fail."""
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        """On timeout make this look cool"""
+        for item in self.children:
+            item.disabled = True
+
+        embed = discord.Embed(
+            title=f"Select a Song to Play",
+            description=f"""Timed out""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await self.play_embed.edit(embed=embed, view=self)
+
+    @discord.ui.button(
+        emoji=style.Emojis.REGULAR.cancel,
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+        row=2,
+    )
+    async def button_callback(self, button, interaction) -> None:
+        """Delete the message if clicked"""
+        await self.play_embed.delete()
+        await interaction.response.send_message("Cancelled", ephemeral=True)
+
+
 
 
 class FilterSpinView(discord.ui.View):
@@ -300,7 +348,9 @@ class Music(commands.Cog):
         )
 
     async def connect_nodes(self) -> None:
-        """Connect to our wavelink nodes."""
+        """
+        Connect to our wavelink nodes.
+        """
         if not self.bot.MUSIC_ENABLED:
             return
 
@@ -511,7 +561,7 @@ class Music(commands.Cog):
                     )
                     return await ctx.send(embed=embed)
 
-                playlist = await self.spotify.playlist(decoded["id"])
+                playlist: tekore.model.FullPlaylist = await self.spotify.playlist(decoded["id"])
 
                 if playlist.owner:
                     author = playlist.owner.display_name
@@ -532,6 +582,8 @@ class Music(commands.Cog):
                     text=ctx.author.display_name,
                     icon_url=ctx.author.display_avatar.url,
                 )
+                if playlist.images[0].url:
+                    embed.set_thumbnail(url=playlist.images[0].url)
                 msg = await ctx.send(embed=embed)
 
                 total_dur = 0
@@ -681,7 +733,21 @@ class Music(commands.Cog):
                 color=style.Color.ORANGE,
             )
             embed.set_author(name=current.author)
-            await ctx.send(embed=embed)
+
+            current = player.track
+
+            embed2 = discord.Embed(
+                title=f"Now Playing",
+                url=current.uri,
+                description=f"""```asciidoc
+[ {current.title} ]
+= Duration: {duration(current.length)} =
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.random(),
+            )
+            embed2.set_author(name=current.author)
+            await ctx.send(embeds=[embed, embed2])
 
         except NothingPlaying as e:
             embed = discord.Embed(

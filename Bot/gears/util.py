@@ -1,6 +1,6 @@
-import aiohttp
 import datetime
 import time
+import aiohttp
 import discord
 import math
 import os
