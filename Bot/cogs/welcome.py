@@ -66,10 +66,13 @@ class WelcomeManager:
 
 class Welcome(commands.Cog):
     """
-    Anything to deal with welcoming or leaving"""
+    Anything to deal with welcoming or leaving
+    """
 
     def __init__(self, bot: commands.Bot) -> None:
-        """Init for the bot"""
+        """
+        Init for the bot
+        """
         self.bot = bot
 
     async def cog_load(self) -> None:

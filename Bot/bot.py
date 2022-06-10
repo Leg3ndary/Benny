@@ -49,7 +49,7 @@ intents = discord.Intents(
 )
 
 
-async def get_prefix(bot, msg) -> list:
+async def get_prefix(bot: commands.Bot, msg: discord.Message) -> list:
     """
     Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is just pinging the bot
 
