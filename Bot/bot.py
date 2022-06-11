@@ -50,20 +50,21 @@ intents = discord.Intents(
 )
 
 
-async def get_prefix(bot: commands.Bot, msg: discord.Message) -> list:
+async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> list:
     """
-    Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes prefix is just pinging the bot
+    Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes
+    prefix is just pinging the bot
 
     Raises AttributeError when the cache isn't built so we just have this quick fix,
     the bot itself won't respond to anything until prefixes are built but this
     silences noisy errors.
     """
-    prefixes = [f"<@!{bot.user.id}> ", f"<@{bot.user.id}> "]
-    if bot.LOADED_PREFIXES:
+    prefixes = [f"<@!{_bot.user.id}> ", f"<@{_bot.user.id}> "]
+    if _bot.LOADED_PREFIXES:
         if not msg.guild:
-            return prefixes.append(bot.prefix)
+            return prefixes.append(_bot.prefix)
         else:
-            return prefixes + bot.prefixes.get(str(msg.guild.id), "")
+            return prefixes + _bot.prefixes.get(str(msg.guild.id), "")
     else:
         return ""
 
@@ -153,9 +154,11 @@ async def start_bot() -> None:
 
                                 end = time.monotonic()
 
+                                total_load = (round((end - start) * 1000, 2))/1000
+
                                 await bot.blogger.bot_info(
                                     "",
-                                    f"Bot loaded in approximately {(round((end - start) * 1000, 2))/1000} seconds",
+                                    f"Bot loaded in approximately {total_load} seconds",
                                 )
 
                                 bot.loop.create_task(when_bot_ready())
