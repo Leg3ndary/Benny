@@ -205,11 +205,13 @@ class QueueDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        """Callback for the queue"""
+        """
+        Callback for the queue
+        """
         track = self.songs[int(self.values[0])]
 
         embed = discord.Embed(
-            title=f"Track Queued",
+            title=f"Viewing Track {self.values[0]}",
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
@@ -224,9 +226,7 @@ class QueueDropdown(discord.ui.Select):
             icon_url=self.ctx.author.display_avatar.url,
         )
 
-        await self.player.request(track)
         await interaction.response.edit_message(embed=embed, view=None)
-        self.view.stop()
 
 
 class QueueView(discord.ui.View):
