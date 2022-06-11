@@ -4,9 +4,14 @@ param_dict = {"images": ""}
 
 
 class UnsplashClient:
-    """Accessing unsplash"""
+    """
+    Accessing unsplash
+    """
 
-    def __init__(self):
+    def __init__(self) -> None:
+        """
+        Init
+        """
         self.auth = {
             "Authorization": f"Client-ID {self.bot.config('Unsplash').get('ID')}"
         }
@@ -15,8 +20,6 @@ class UnsplashClient:
         )
         self.latest_header = None
 
-    """Cache for latest save data from unsplash NOT FINISHED"""
-
     async def set_latest_header(self, header):
         """Set the latest header"""
         self.latest_header = header
@@ -24,8 +27,6 @@ class UnsplashClient:
     async def get_ratelimit_remaining(self):
         """Get rate limit remaining on requests"""
         return self.latest_header.get("X-Ratelimit-Remaining", -1)
-
-    """Regular methods"""
 
     async def get_random_photo(self, params: dict = {}):
         """Get a completely random photo from unsplash"""
@@ -83,11 +84,11 @@ class UnsplashClient:
 
     async def get_total_stats(self):
         """Return total Unsplash stats"""
-        return await self.request_url(f"""/stats/total""")
+        return await self.request_url("""/stats/total""")
 
     async def get_monthly_stats(self):
         """Return monthly counts (30 days)"""
-        return await self.request_url(f"""/stats/month""")
+        return await self.request_url("""/stats/month""")
 
     # Requesting stuff
     async def to_url(self, dictionary: dict):
