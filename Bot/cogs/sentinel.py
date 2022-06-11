@@ -724,7 +724,7 @@ class Sentinel(commands.Cog):
         if hasattr(self.bot, "sentinel_manager"):
             self.sm = self.bot.sentinel_manager
             await self.load_sentinels()
-        
+
         if hasattr(self.bot, "decancer_manager"):
             self.decancer = self.bot.decancer_manager
 

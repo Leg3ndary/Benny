@@ -130,7 +130,9 @@ class PlayerDropdown(discord.ui.Select):
 class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
-    def __init__(self, ctx: commands.Context, player: wavelink.Player, songs: list) -> None:
+    def __init__(
+        self, ctx: commands.Context, player: wavelink.Player, songs: list
+    ) -> None:
         """
         Init
         """
@@ -176,7 +178,9 @@ class QueueDropdown(discord.ui.Select):
     Shows up to 25 songs in a Select so we can see it and skip to it and stuff
     """
 
-    def __init__(self, ctx: commands.Context, player: wavelink.Player, songs: list, page_num: int) -> None:
+    def __init__(
+        self, ctx: commands.Context, player: wavelink.Player, songs: list, page_num: int
+    ) -> None:
         """
         Init
         """
@@ -235,7 +239,9 @@ class QueueView(discord.ui.View):
     Display all items in our queue, let you skip to any song
     """
 
-    def __init__(self, ctx: commands.Context, player: wavelink.Player, songs: list) -> None:
+    def __init__(
+        self, ctx: commands.Context, player: wavelink.Player, songs: list
+    ) -> None:
         """
         Init
         """
@@ -274,8 +280,6 @@ class QueueView(discord.ui.View):
         """Delete the message if clicked"""
         await self.play_embed.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
-
-
 
 
 class FilterSpinView(discord.ui.View):
@@ -341,51 +345,51 @@ class FilterSpinView(discord.ui.View):
         await interaction.response.edit_message(embed=embed)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.left,
-        label="-1",
-        style=discord.ButtonStyle.danger
+        emoji=style.Emojis.REGULAR.left, label="-1", style=discord.ButtonStyle.danger
     )
-    async def button2_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button2_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """-1 button"""
         self.spin -= 1
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.left,
-        label="-0.1",
-        style=discord.ButtonStyle.danger
+        emoji=style.Emojis.REGULAR.left, label="-0.1", style=discord.ButtonStyle.danger
     )
-    async def button1_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button1_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """-0.1 button"""
         self.spin -= 0.1
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.stop,
-        label="Reset",
-        style=discord.ButtonStyle.grey
+        emoji=style.Emojis.REGULAR.stop, label="Reset", style=discord.ButtonStyle.grey
     )
-    async def button3_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button3_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """Reset button"""
         self.spin = 0.0
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.right,
-        label="+0.1",
-        style=discord.ButtonStyle.green
+        emoji=style.Emojis.REGULAR.right, label="+0.1", style=discord.ButtonStyle.green
     )
-    async def button4_callback(self,interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button4_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """+0.1 button"""
         self.spin += 0.1
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.right,
-        label="+1",
-        style=discord.ButtonStyle.green
+        emoji=style.Emojis.REGULAR.right, label="+1", style=discord.ButtonStyle.green
     )
-    async def button5_callback(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button5_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """+1 button"""
         self.spin += 1
         await self.edit_spin_embed(interaction)
@@ -443,10 +447,10 @@ class Music(commands.Cog):
         """
         await asyncio.sleep(0.5)
         await ctx.guild.change_voice_state(
-                channel=ctx.author.voice.channel,
-                self_mute=False,
-                self_deaf=True,
-            )
+            channel=ctx.author.voice.channel,
+            self_mute=False,
+            self_deaf=True,
+        )
 
     async def get_player(self, ctx: commands.Context) -> wavelink.Player:
         """Create a player and connect cls"""
@@ -455,7 +459,7 @@ class Music(commands.Cog):
                 title=f"Error",
                 description=f"""You need to be connected to a voice channel for this command to work""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.RED
+                color=style.Color.RED,
             )
             return await ctx.send(embed=embed)
         elif not ctx.voice_client:
@@ -465,7 +469,7 @@ class Music(commands.Cog):
         else:
             player: wavelink.Player = ctx.voice_client
             await self.bot.loop.create_task(self.self_deafen(ctx))
-            
+
         return player
 
     @commands.Cog.listener()
@@ -626,7 +630,9 @@ class Music(commands.Cog):
                     )
                     return await ctx.send(embed=embed)
 
-                playlist: tekore.model.FullPlaylist = await self.spotify.playlist(decoded["id"])
+                playlist: tekore.model.FullPlaylist = await self.spotify.playlist(
+                    decoded["id"]
+                )
 
                 if playlist.owner:
                     author = playlist.owner.display_name
@@ -1056,7 +1062,7 @@ class Music(commands.Cog):
         brief="Remove all filters and reset",
         aliases=["r"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def filter_reset_cmd(self, ctx: commands.Context) -> None:
@@ -1166,10 +1172,9 @@ class Music(commands.Cog):
             
             Note the max values of this are 5 and -5, don't get too dizzy!""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.PURPLE
+            color=style.Color.PURPLE,
         )
         await ctx.send(embed=embed, view=view)
-        
 
 
 async def setup(bot: commands.Bot) -> None:

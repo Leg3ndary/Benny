@@ -123,9 +123,7 @@ Command Error
 
         else:
             # All other Errors not returned come here. And we can just print the default TraceBack.
-            print(
-                f"Ignoring exception in command {ctx.command}:", file=sys.stderr
-            )
+            print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr
             )

@@ -49,9 +49,7 @@ class Dev(commands.Cog):
         """Check if the user is the owner."""
         return await self.bot.is_owner(ctx.author)
 
-    @commands.group(
-        name="dev"
-    )
+    @commands.group(name="dev")
     async def dev_group(self, ctx: commands.Context) -> None:
         """Commands thats sole purpose is for me to experiment."""
         if not ctx.invoked_subcommand:
@@ -70,7 +68,7 @@ class Dev(commands.Cog):
         brief="Load a cog",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def load_cmd(self, ctx: commands.Context, *, cog: str) -> None:
         """
@@ -109,7 +107,7 @@ class Dev(commands.Cog):
         brief="Unload a cog",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def unload_cmd(self, ctx: commands.Context, *, cog: str) -> None:
         """
@@ -149,7 +147,7 @@ class Dev(commands.Cog):
         brief="Reload a cog",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def reload_cmd(self, ctx: commands.Context, *, cog: str) -> None:
         """
@@ -189,7 +187,7 @@ class Dev(commands.Cog):
         brief="Show the bots servers",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def dev_servers_cmd(self, ctx: commands.Context) -> None:
         """
@@ -216,7 +214,7 @@ class Dev(commands.Cog):
         brief="Run the git pull command for the bot",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def dev_pull_cmd(self, ctx: commands.Context) -> None:
         """
@@ -318,7 +316,9 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def dev_leave_cmd(self, ctx: commands.Context, *, guild: discord.Guild) -> None:
+    async def dev_leave_cmd(
+        self, ctx: commands.Context, *, guild: discord.Guild
+    ) -> None:
         """
         Leave a guild.
         """

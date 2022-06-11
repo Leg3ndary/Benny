@@ -99,6 +99,7 @@ class RegularEmojis:
     """
     Regular emoji class
     """
+
     check = "<:check:891088754176036885>"
     cancel = "<:cancel:891088754599682059>"
     left = "<:left:923972333360775228>"
@@ -112,10 +113,12 @@ class RegularEmojis:
     soundcloud = "<:soundcloud:927006460834111518>"
     youtube = "<:youtube:927005602964729887>"
 
+
 class IDEmojis:
     """
     Emojis ID's
     """
+
     check = "891088754176036885"
     cancel = "891088754599682059"
     left = "923972333360775228"
@@ -129,10 +132,12 @@ class IDEmojis:
     soundcloud = "927006460834111518"
     youtube = "927005602964729887"
 
+
 class ImageEmojis:
     """
     Image urls for all our emojis
     """
+
     check = "https://cdn.discordapp.com/emojis/891088754176036885.png?size=256"
     cancel = "https://cdn.discordapp.com/emojis/891088754599682059.png?size=256"
     left = "https://cdn.discordapp.com/emojis/923972333360775228.png?size=256"
@@ -146,10 +151,12 @@ class ImageEmojis:
     soundcloud = "https://cdn.discordapp.com/emojis/927006460834111518?size=256"
     youtube = "https://cdn.discordapp.com/emojis/927005602964729887?size=256"
 
+
 class Emojis:
     """
     Base class for all emojis
     """
+
     REGULAR = RegularEmojis
     ID = IDEmojis
     IMAGE = ImageEmojis
