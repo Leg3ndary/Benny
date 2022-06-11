@@ -26,7 +26,7 @@ class Color:
     WHITE = 0xFFFFFF
 
     @classmethod
-    def random(self) -> hex:
+    def random(cls) -> hex:
         """
         Return a random hex
         """
