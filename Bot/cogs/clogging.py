@@ -77,7 +77,7 @@ class Logging(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx: commands.Context) -> None:
+    async def logs_cmd(self, ctx: commands.Context) -> None:
         """View basic log config"""
 
 

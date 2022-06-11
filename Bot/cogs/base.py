@@ -13,10 +13,6 @@ from discord.ext import commands
 from gears import cviews, style
 from motor.motor_asyncio import AsyncIOMotorClient
 
-"""@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
-async def ping(ctx):
-    await ctx.send("pong")"""
-
 
 class AFKManager:
     """
@@ -48,7 +44,7 @@ class AFKManager:
         }
         await self.db[str(ctx.message.guild.id)].replace_one(query, afk_doc, True)
         embed = discord.Embed(
-            title=f"Set AFK",
+            title="Set AFK",
             description=f""">>> {message}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
@@ -57,7 +53,8 @@ class AFKManager:
 
     async def del_afk(self, guild: int, user: int) -> None:
         """
-        Delete an afk from the db, usually called when a user has sent a message showing that they aren't actually afk
+        Delete an afk from the db, usually called when a user has sent a message showing that they
+        aren't actually afk
         """
         query = {"_id": str(user)}
         await self.db[str(guild)].delete_one(query)
@@ -71,7 +68,7 @@ class AFKManager:
         if afk_data:
             await self.del_afk(message.guild.id, message.author.id)
             embed = discord.Embed(
-                title=f"Removed AFK",
+                title="Removed AFK",
                 description=f"""Welcome back {message.author.mention}!
                 
                 You've been afk since <t:{afk_data["unix"]}:R>""",
@@ -149,13 +146,13 @@ class Base(commands.Cog):
         self.session = bot.sessions.get("base")
         self.imgr = IMGReader(bot)
 
-    def get_size(bytes, suffix="B") -> str:
+    def get_size(self, _bytes, suffix="B") -> str:
         """Return the correct data from bytes"""
         factor = 1024
         for unit in ["", "K", "M", "G", "T", "P"]:
-            if bytes < factor:
-                return f"{bytes:.2f}{unit}{suffix}"
-            bytes /= factor
+            if _bytes < factor:
+                return f"{_bytes:.2f}{unit}{suffix}"
+            _bytes /= factor
 
     @commands.command(
         name="about",
@@ -172,14 +169,15 @@ class Base(commands.Cog):
         About command for the bot, just tells you a little bit about the bot
         """
         embed = discord.Embed(
-            title=f"About the Bot",
-            description=f"""A Bot I've made for fun, friends and learning python.""",
+            title="About the Bot",
+            description="""A Bot I've made for fun, friends and learning python.""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
+        avatar = "https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024"
         embed.set_footer(
             text="_Leg3ndary#5759",
-            icon_url="https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024",
+            icon_url=avatar,
         )
         await ctx.send(embed=embed)
 
@@ -317,7 +315,7 @@ class Base(commands.Cog):
         fmt = f"""Started at {resolved_full}
 Total Uptime: {resolved_rel}"""
         embed = discord.Embed(
-            title=f"Benny Uptime",
+            title=f"{self.bot.user.name} Uptime",
             description=f"""{fmt}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.random(),
@@ -340,8 +338,8 @@ Total Uptime: {resolved_rel}"""
         """
         start = time.monotonic()
         embed = discord.Embed(
-            title=f"Pinging...",
-            description=f"""Checking Ping""",
+            title="Pinging...",
+            description="""Checking Ping""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
@@ -372,14 +370,14 @@ Total Uptime: {resolved_rel}"""
 
     @commands.group()
     @commands.cooldown(3.0, 7.0, commands.BucketType.user)
-    async def system(self, ctx: commands.Context) -> None:
+    async def system_group(self, ctx: commands.Context) -> None:
         """
         Actual system info
         """
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 title="System Info",
-                description=f"""**Options:**
+                description="""**Options:**
 ```asciidoc
 [ info ]
 [ boot ]
@@ -392,7 +390,7 @@ Total Uptime: {resolved_rel}"""
             )
             await ctx.send(embed=embed)
 
-    @system.command(
+    @system_group.command(
         name="info",
         description="""Show overall information about our vps""",
         help="""Show information about vps""",
@@ -402,7 +400,7 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def info_cmd(self, ctx: commands.Context) -> None:
+    async def system_info_cmd(self, ctx: commands.Context) -> None:
         """Showing full system information"""
         uname = platform.uname()
         embed = discord.Embed(
@@ -426,7 +424,7 @@ Total Uptime: {resolved_rel}"""
         )
         await ctx.send(embed=embed)
 
-    @system.command(
+    @system_group.command(
         name="cpu",
         description="""Show overall cpu cores and related information""",
         help="""Show cpu information""",
@@ -436,7 +434,7 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def cpu_cmd(self, ctx: commands.Context) -> None:
+    async def system_cpu_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our cpu information
 
@@ -471,7 +469,7 @@ Total Uptime: {resolved_rel}"""
         )
         await ctx.send(embed=embed)
 
-    @system.command(
+    @system_group.command(
         name="memory",
         description="""Show total memory and free percentage""",
         help="""Show total memory and percentages""",
@@ -481,7 +479,7 @@ Total Uptime: {resolved_rel}"""
         hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def memory_cmd(self, ctx: commands.Context) -> None:
+    async def system_memory_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our memory information
         """
@@ -503,7 +501,7 @@ Total Uptime: {resolved_rel}"""
         )
         await ctx.send(embed=embed)
 
-    @system.command(
+    @system_group.command(
         name="disk",
         description="""Show overall disk space and partitions""",
         help="""Show disk space, hidden because eh""",
@@ -513,7 +511,7 @@ Total Uptime: {resolved_rel}"""
         hidden=True,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def disk_cmd(self, ctx: commands.Context) -> None:
+    async def system_disk_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our disk information
         """
@@ -571,7 +569,7 @@ Total Uptime: {resolved_rel}"""
         Send our stuff
         """
         embed = discord.Embed(
-            title=f"File Lines",
+            title="File Lines",
             description=f"""```json
 {json.dumps(self.bot.file_list, indent=4, sort_keys=True)}
 ```""",
@@ -611,7 +609,8 @@ Total Uptime: {resolved_rel}"""
     @commands.Cog.listener()
     async def on_message(self, message) -> None:
         """
-        On a message, check if that user is either pinging an afk user or is an afk user with an active afk
+        On a message, check if that user is either pinging an afk user or is an afk user with an 
+        active afk
         """
         await self.afk.manage_afk(message)
 
