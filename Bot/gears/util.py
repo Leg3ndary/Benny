@@ -1,11 +1,12 @@
 import datetime
-import time
-import aiohttp
-import discord
 import math
 import os
+import time
+
+import aiohttp
+import discord
+from colorama import Fore, Style
 from discord.ext import commands
-from colorama import Style, Fore
 
 
 class BotUtil:

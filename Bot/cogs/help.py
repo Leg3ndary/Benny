@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 from gears import style, util
 
-
 COG_INFO = {
     "Playlist": {"color": style.Color.RED, "emoji": ":notepad_spiral:"},
     "Settings": {"color": style.Color.GREY, "emoji": ":gear:"},

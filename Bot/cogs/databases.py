@@ -1,10 +1,10 @@
-from redis import asyncio as aioredis
 import asyncio
+
 import discord
-from motor.motor_asyncio import AsyncIOMotorClient
 from discord.ext import commands, tasks
 from gears import style
-
+from motor.motor_asyncio import AsyncIOMotorClient
+from redis import asyncio as aioredis
 
 """
 await self.bot.redis.set("Key", "Data") Set a key

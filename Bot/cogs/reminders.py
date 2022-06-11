@@ -1,12 +1,12 @@
-import asqlite
 import asyncio
+from re import L
+from threading import Timer
+
+import asqlite
 import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
-from re import L
-from threading import Timer
-
 
 """
 Reminder Schema

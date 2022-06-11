@@ -1,11 +1,12 @@
-import discord
-import discord.utils
 import io
 import os
 import re
 import textwrap
 import traceback
 from contextlib import redirect_stdout
+
+import discord
+import discord.utils
 from discord.ext import commands
 from gears import style
 

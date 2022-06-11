@@ -1,14 +1,14 @@
 # This entire cog is dicontinued due to message content privacy issues.
 # If it ever resurfaces it will be a lot more restricted.
 
-import time
 import asyncio
+import time
+
 import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
-
 
 """
 Snipe Schema

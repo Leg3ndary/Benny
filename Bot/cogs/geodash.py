@@ -1,9 +1,10 @@
 import asyncio
+
 import discord
 import discord.utils
+import gd
 from discord.ext import commands
 from gears import style
-import gd
 
 client = gd.Client()
 

@@ -1,10 +1,11 @@
-import asqlite
-import time
 import datetime
+import re
+import time
+
+import asqlite
 import discord
 import discord.utils
 import parsedatetime
-import re
 from discord.ext import commands
 from gears import style
 

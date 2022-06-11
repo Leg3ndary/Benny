@@ -1,7 +1,8 @@
-import aiohttp
 import asyncio
-import discord
 import datetime
+
+import aiohttp
+import discord
 import discord.utils
 from discord.ext import commands
 from gears import style

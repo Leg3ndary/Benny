@@ -1,14 +1,15 @@
 import asyncio
+import io
+
 import aiohttp
 import asqlite
 import cleantext
-from colorama import Fore
 import discord
 import discord.utils
+from colorama import Fore
+from detoxify import Detoxify
 from discord.ext import commands
 from gears import style
-from detoxify import Detoxify
-import io
 
 
 class Toxicity:

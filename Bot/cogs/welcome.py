@@ -1,11 +1,11 @@
-from tkinter import N
-import asqlite
 import asyncio
+import json
+
+import asqlite
 import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
-import json
 
 
 class WelcomeManager:

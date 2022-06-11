@@ -1,9 +1,10 @@
-import TagScriptEngine as tse
 import asyncio
+import random
+
 import asqlite
 import discord
 import discord.utils
-import random
+import TagScriptEngine as tse
 from discord.ext import commands
 from gears import style
 

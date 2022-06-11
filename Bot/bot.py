@@ -1,16 +1,16 @@
-from fnmatch import translate
-import time
-import aiohttp
 import asyncio
-import discord
 import datetime
 import json
+import logging
 import os
+import sys
+import time
+
+import aiohttp
+import discord
 from discord.ext import commands, ipc
 from dotenv import load_dotenv
 from gears import util
-import logging
-import sys
 
 load_dotenv()
 
@@ -24,7 +24,8 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-config = json.load(open("config.json"))
+with open("config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
 
 intents = discord.Intents(
     bans=True,

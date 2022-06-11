@@ -1,10 +1,11 @@
 import asyncio
+
+import aiogtrans
 import discord
+import discord.app_commands as app_commands
 import discord.utils
 from discord.ext import commands
-import discord.app_commands as app_commands
 from gears import style
-import aiogtrans
 
 
 class Translator:

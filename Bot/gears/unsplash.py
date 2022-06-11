@@ -1,6 +1,5 @@
 import aiohttp
 
-
 param_dict = {"images": ""}
 
 
