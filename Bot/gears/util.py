@@ -32,9 +32,7 @@ class BotUtil:
         """
         if not file in [".github", ".vscode"]:
             with open(file, encoding="utf8") as f:
-                for i, l in enumerate(f):
-                    pass
-            return i + 1
+                return len(f.readlines())
         else:
             return 0
 
@@ -125,7 +123,7 @@ class BotUtil:
 
         self.bot.cog_list = cog_list
 
-
+# hidden func
 '''
 def match_calc(string1: str, string2: str) -> int:
     """Calculate how much 2 different strings match each other"""
@@ -309,7 +307,8 @@ class BotLogger:
         str
         """
         time_str = datetime.datetime.now().strftime("%x | %X")
-        generated = f"""{Fore.WHITE}[{Style.RESET_ALL} {time_str} {Fore.WHITE}]{Style.RESET_ALL} {Fore.WHITE}[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"""
+        categorystr = f"[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"
+        generated = f"""{Fore.WHITE}[{Style.RESET_ALL} {time_str} {Fore.WHITE}]{categorystr}"""
         return generated
 
     async def load(self, info: str) -> None:
@@ -357,7 +356,8 @@ class BotLogger:
         status: str
             The status to print in the category
         """
-        msg = f"{self.gen_category(f'{Fore.CYAN}{status}')} {self.bot.user.name}#{self.bot.user.discriminator}"
+        discrim = f"{self.bot.user.name}#{self.bot.user.discriminator}"
+        msg = f"{self.gen_category(f'{Fore.CYAN}{status}')} {discrim}"
         print(msg)
         self.bot.loop.create_task(self.atu(msg))
 
