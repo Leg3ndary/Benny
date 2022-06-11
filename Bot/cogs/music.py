@@ -13,12 +13,17 @@ from wavelink.ext import spotify
 
 
 class Player(wavelink.Player):
-    """Our custom player with some attributes"""
+    """
+    Custom player class that we use
+    """
 
-    def __init__(self, dj: discord.Member) -> None:
-        """Dj is the person who started this"""
+    def __init__(self, dj: discord.Member, channel: discord.VoiceChannel) -> None:
+        """
+        Init with stuff
+        """
         super().__init__()
         self.dj = dj
+        self.channel = channel
         self.queue = wavelink.Queue(max_size=250)
         self.looping = False
 
@@ -124,7 +129,7 @@ class PlayerDropdown(discord.ui.Select):
 class PlayerSelector(discord.ui.View):
     """Select a song based on what we show from track results."""
 
-    def __init__(self, ctx: commands.Context, player:wavelink.Player, songs: list) -> None:
+    def __init__(self, ctx: commands.Context, player: wavelink.Player, songs: list) -> None:
         """
         Init
         """
@@ -163,6 +168,65 @@ class PlayerSelector(discord.ui.View):
         """Delete the message if clicked"""
         await self.play_embed.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
+
+
+class QueueDropdown(discord.ui.Select):
+    """
+    Shows up to 25 songs in a Select so we can see it and skip to it and stuff
+    """
+
+    def __init__(self, ctx: commands.Context, player: wavelink.Player, songs: list, page_num: int) -> None:
+        """
+        Init
+        """
+        self.ctx = ctx
+        self.player = player
+        self.songs = songs
+        options = []
+        counter = 0
+        self.page_num = page_num
+        for song in songs:
+            options.append(
+                discord.SelectOption(
+                    emoji=style.Emojis.REGULAR.youtube,
+                    label=song.title,
+                    description=f"""{song.author} - Duration: {duration(song.length)}""",
+                    value=str(counter),
+                )
+            )
+            counter += 1
+
+        super().__init__(
+            placeholder=f"View Queue - Page {self.page_num}",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=music",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """Callback for the queue"""
+        track = self.songs[int(self.values[0])]
+
+        embed = discord.Embed(
+            title=f"Track Queued",
+            url=track.uri,
+            description=f"""```asciidoc
+[ {track.title} ]
+= Duration: {duration(track.length)} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        embed.set_author(name=track.author)
+        embed.set_footer(
+            text=self.ctx.author.display_name,
+            icon_url=self.ctx.author.display_avatar.url,
+        )
+
+        await self.player.request(track)
+        await interaction.response.edit_message(embed=embed, view=None)
+        self.view.stop()
 
 
 class QueueView(discord.ui.View):
@@ -376,7 +440,7 @@ class Music(commands.Cog):
         """
         Deafen ourself
         """
-        await asyncio.sleep(0.5) # the bot sometimes needs a second?
+        await asyncio.sleep(0.5)
         await ctx.guild.change_voice_state(
                 channel=ctx.author.voice.channel,
                 self_mute=False,
@@ -395,7 +459,7 @@ class Music(commands.Cog):
             return await ctx.send(embed=embed)
         elif not ctx.voice_client:
             player: wavelink.Player = await ctx.author.voice.channel.connect(
-                cls=Player(dj=ctx.author)
+                cls=Player(dj=ctx.author, channel=ctx.author.voice.channel)
             )
         else:
             player: wavelink.Player = ctx.voice_client
@@ -773,9 +837,10 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         await player.disconnect()
+
         embed = discord.Embed(
             title=f"Disconnected",
-            description=f"""Disconnected from the vc.""",
+            description=f"""Disconnected from {player.channel.mention}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
         )
@@ -868,7 +933,9 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def loop_cmd(self, ctx: commands.Context) -> None:
-        """Looping command noice"""
+        """
+        Looping command noice
+        """
         player = await self.get_player(ctx)
 
         try:
