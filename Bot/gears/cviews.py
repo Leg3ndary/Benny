@@ -13,7 +13,9 @@ class DeleteView(discord.ui.View):
         super().__init__()
 
     @discord.ui.button(emoji="🗑️", label="Delete", style=discord.ButtonStyle.danger)
-    async def button_callback(self, button, interaction):
+    async def button_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         if not self.slash:
             await self.bctx.delete()
         else:

@@ -123,6 +123,7 @@ class BotUtil:
 
         self.bot.cog_list = cog_list
 
+
 # hidden func
 '''
 def match_calc(string1: str, string2: str) -> int:
@@ -308,7 +309,9 @@ class BotLogger:
         """
         time_str = datetime.datetime.now().strftime("%x | %X")
         categorystr = f"[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"
-        generated = f"""{Fore.WHITE}[{Style.RESET_ALL} {time_str} {Fore.WHITE}]{categorystr}"""
+        generated = (
+            f"""{Fore.WHITE}[{Style.RESET_ALL} {time_str} {Fore.WHITE}]{categorystr}"""
+        )
         return generated
 
     async def load(self, info: str) -> None:

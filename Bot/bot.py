@@ -154,7 +154,7 @@ async def start_bot() -> None:
 
                                 end = time.monotonic()
 
-                                total_load = (round((end - start) * 1000, 2))/1000
+                                total_load = (round((end - start) * 1000, 2)) / 1000
 
                                 await bot.blogger.bot_info(
                                     "",
