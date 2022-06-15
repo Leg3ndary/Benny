@@ -638,5 +638,6 @@ Total Uptime: {resolved_rel}"""
         await ctx.send(text)
 
 
+
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Base(bot))
