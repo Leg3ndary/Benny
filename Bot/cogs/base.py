@@ -639,8 +639,9 @@ Total Uptime: {resolved_rel}"""
             n = 2000
             send_list = [text[i:i+n] for i in range(0, len(text), n)]
 
-        for item in send_list:
-            await ctx.send(item)
+            for item in send_list:
+                await ctx.send(item)
+        await ctx.send(text)
 
 
 
