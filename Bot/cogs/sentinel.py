@@ -643,46 +643,6 @@ class Sentinel(commands.Cog):
         """Init the detoxify models and get sessions ready!"""
         self.bot = bot
 
-    async def cog_load(self) -> None:
-        """
-        On cog load setup db
-        """
-        self.db = await asqlite.connect("Databases/sentinel.db")
-        await self.db.execute(
-            """
-            CREATE TABLE IF NOT EXISTS config (
-                guild           TEXT PRIMARY KEY
-                                     NOT NULL,
-                channels        TEXT NOT NULL,
-                premium         BOOL NOT NULL,
-                webhook         TEXT NOT NULL,
-                username        TEXT NOT NULL,
-                avatar          TEXT NOT NULL,
-                toxicity        INT  NOT NULL,
-                severe_toxicity INT  NOT NULL,
-                obscene         INT  NOT NULL,
-                identity_attack INT  NOT NULL,
-                insult          INT  NOT NULL,
-                threat          INT  NOT NULL,
-                sexual_explicit INT  NOT NULL
-            );
-            """
-        )
-        await self.db.execute(
-            """
-            CREATE TABLE IF NOT EXISTS decancer (
-                guild           TEXT NOT NULL
-                                    PRIMARY KEY,
-                webhook_url     TEXT,
-                decancer        BOOL NOT NULL,
-                premium         BOOL NOT NULL,
-                username        TEXT NOT NULL,
-                avatar          TEXT NOT NULL
-            );
-            """
-        )
-        await self.bot.blogger.load("Sentinel Config")
-
     async def clean_username(self, username: str) -> str:
         """
         Clean a username
@@ -730,7 +690,44 @@ class Sentinel(commands.Cog):
 
     @commands.Cog.listener()
     async def on_load_sentinel_managers(self) -> None:
-        """Load decancer manager when bots loaded"""
+        """
+        Load decancer manager when bots loaded
+        """
+        self.db = await asqlite.connect("Databases/sentinel.db")
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS config (
+                guild           TEXT PRIMARY KEY
+                                     NOT NULL,
+                channels        TEXT NOT NULL,
+                premium         BOOL NOT NULL,
+                webhook         TEXT NOT NULL,
+                username        TEXT NOT NULL,
+                avatar          TEXT NOT NULL,
+                toxicity        INT  NOT NULL,
+                severe_toxicity INT  NOT NULL,
+                obscene         INT  NOT NULL,
+                identity_attack INT  NOT NULL,
+                insult          INT  NOT NULL,
+                threat          INT  NOT NULL,
+                sexual_explicit INT  NOT NULL
+            );
+            """
+        )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS decancer (
+                guild           TEXT NOT NULL
+                                    PRIMARY KEY,
+                webhook_url     TEXT,
+                decancer        BOOL NOT NULL,
+                premium         BOOL NOT NULL,
+                username        TEXT NOT NULL,
+                avatar          TEXT NOT NULL
+            );
+            """
+        )
+        await self.bot.blogger.load("Sentinel Config")
         self.sm = SentinelManager(
             self.bot.sessions.get("sentinel"),
             self.db,
