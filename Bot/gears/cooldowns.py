@@ -1,14 +1,46 @@
-from discord.ext import utils, commands
+"""
+This is never actually imported, just a template
+"""
+
+import discord
+from discord.ext import commands
+
+
+class CogCooldowns:
+    """
+    Data class for related commands and cogs
+    """
+    
+    def __init__(self, cog) -> None:
+        """
+        Init for the cog cooldowns
+        """
+        
+    
+
 
 class CooldownManager:
     """
-    Manage what we return from cooldowns"""
+    Manage cooldowns through this generic cooldown manager.
+    """
 
-def custom_cooldown(message):
-    if message.author.permissions.manage_messages:
-        return None  # no cooldown
-    elif utils.get(message.author.roles, name="Nitro Booster"):
-        return commands.Cooldown(2, 60)  # 2 per minute
-    return commands.Cooldown(1, 60)  # 1 per minute
+    def __init__(self, cc: CogCooldowns) -> None:
+        """
+        Init
+        """
+        self.cc = cc
+    
+    async def __call__(self, msg: discord.Message) -> commands.Cooldown:
+        """
+        The actual cooldown func
+        """
+        if msg.author.id == 360061101477724170:
+            cooldown = None
+        else:
+            cooldown = commands.Cooldown(2.0, 5.0)
+        return cooldown
 
-@commands.dynamic_cooldown(custom_cooldown, commands.BucketType.user)
+"""
+@commands.dynamic_cooldown(CooldownModified(2, 30), type = commands.BucketType.user)
+@commands.dynamic_cooldown(CooldownModified(3, 180), type = commands.BucketType.channel)
+"""
