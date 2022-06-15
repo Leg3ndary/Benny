@@ -624,7 +624,7 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx: commands.Context, url: str = None) -> None:
+    async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
         """Command description"""
         if url:
             async with self.session as session:
@@ -635,7 +635,12 @@ Total Uptime: {resolved_rel}"""
             image_bytes = await ctx.message.attachments[0].read()
 
         text = await self.imgr.read_img(image_bytes)
-        await ctx.send(text)
+        if len(text) > 2000:
+            chunks, chunk_size = len(text), len(text)//4
+            send_list = [text[i:i+chunk_size] for i in range(0, chunks, chunk_size)]
+
+        for item in send_list:
+            await ctx.send(item)
 
 
 
