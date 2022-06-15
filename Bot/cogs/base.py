@@ -636,8 +636,8 @@ Total Uptime: {resolved_rel}"""
 
         text = await self.imgr.read_img(image_bytes)
         if len(text) > 2000:
-            chunks, chunk_size = len(text), len(text)//4
-            send_list = [text[i:i+chunk_size] for i in range(0, chunks, chunk_size)]
+            n = 2000
+            send_list = [text[i:i+n] for i in range(0, len(text), n)]
 
         for item in send_list:
             await ctx.send(item)
