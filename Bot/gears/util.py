@@ -84,11 +84,13 @@ class BotUtil:
 
     async def load_cogs(self, cogs: list) -> None:
         """
-        Print and load a live feed,
+        Print and load a live feed
+
         Parameters
         ----------
         cogs: list
             List of files that are in cogs in src/cogs
+
         Returns
         -------
         None
@@ -111,7 +113,7 @@ class BotUtil:
                 try:
                     filename = file.split("/")[-1][:-3]
                     if file.endswith(".py") and (
-                        filename not in ["cog_template", "snipe", "ipc"]
+                        filename not in ["cog_template", "ipc"]
                     ):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
                         await self.bot.blogger.cog_update(file[:-3], "LOAD")
