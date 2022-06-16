@@ -249,7 +249,7 @@ class QueueView(discord.ui.View):
         self.play_embed = None
         super().__init__(timeout=60)
 
-        self.add_item(PlayerDropdown(ctx, player, songs))
+        self.add_item(QueueDropdown(ctx, player, songs))
 
     async def interaction_check(self, interaction) -> None:
         """If the interaction isn't by the user, return a fail."""
@@ -263,7 +263,7 @@ class QueueView(discord.ui.View):
             item.disabled = True
 
         embed = discord.Embed(
-            title=f"Select a Song to Play",
+            title=f"Viewing Queue",
             description=f"""Timed out""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,

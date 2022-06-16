@@ -1,35 +1,21 @@
-"""
-This is never actually imported, just a template
-"""
-
 import discord
 from discord.ext import commands
 
 
-class CogCooldowns:
-    """
-    Data class for related commands and cogs
-    """
-    
-    def __init__(self, cog) -> None:
-        """
-        Init for the cog cooldowns
-        """
-        
-    
-
-
-class CooldownManager:
+class CustomCooldown:
     """
     Manage cooldowns through this generic cooldown manager.
     """
 
-    def __init__(self, cc: CogCooldowns) -> None:
+    def __init__(
+        self, reg_rate: float, reg_per: float, prem_rate: float, prem_per: float
+    ) -> None:
         """
-        Init
+        Custom Cooldown init
         """
-        self.cc = cc
-    
+        self.reg_rate = reg_rate
+        self.reg_per = reg_per
+
     async def __call__(self, msg: discord.Message) -> commands.Cooldown:
         """
         The actual cooldown func
@@ -39,6 +25,7 @@ class CooldownManager:
         else:
             cooldown = commands.Cooldown(2.0, 5.0)
         return cooldown
+
 
 """
 @commands.dynamic_cooldown(CooldownModified(2, 30), type = commands.BucketType.user)

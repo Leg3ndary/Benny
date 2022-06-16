@@ -609,7 +609,7 @@ Total Uptime: {resolved_rel}"""
     @commands.Cog.listener()
     async def on_message(self, message) -> None:
         """
-        On a message, check if that user is either pinging an afk user or is an afk user with an 
+        On a message, check if that user is either pinging an afk user or is an afk user with an
         active afk
         """
         await self.afk.manage_afk(message)
@@ -637,12 +637,11 @@ Total Uptime: {resolved_rel}"""
         text = await self.imgr.read_img(image_bytes)
         if len(text) > 2000:
             n = 2000
-            send_list = [text[i:i+n] for i in range(0, len(text), n)]
+            send_list = [text[i : i + n] for i in range(0, len(text), n)]
 
             for item in send_list:
                 await ctx.send(item)
         await ctx.send(text)
-
 
 
 async def setup(bot: commands.Bot) -> None:

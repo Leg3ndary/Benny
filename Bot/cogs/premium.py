@@ -20,7 +20,6 @@ class PremiumToken:
         """
         Exchange the token for premium for 30 days
         """
-        
 
 
 class PremiumSubscriber:
@@ -52,7 +51,7 @@ class PremiumManager:
 
     async def get_subscription(self, user: int) -> PremiumSubscriber:
         """
-        Return a users subscription details 
+        Return a users subscription details
         """
 
     async def check_expiry(self, user: int) -> bool:
@@ -67,19 +66,6 @@ class Premium(commands.Cog):
         Init Premium
         """
         self.bot = bot
-
-    @commands.command(
-        name="command",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
-        aliases=[],
-        enabled=True,
-        hidden=False
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx: commands.Context) -> None:
-        """Command description"""
 
 
 async def setup(bot: commands.Bot) -> None:
