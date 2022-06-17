@@ -1,7 +1,7 @@
 git+https://github.com/Rapptz/asqlite
 git+https://github.com/Rapptz/discord.py
 git+https://github.com/Leg3ndary/discord-ext-ipc
-git+https://github.com/Leg3ndary/Tagscript-Fork
+git+https://github.com/Leg3ndary/bTagscript
 git+https://github.com/Leg3ndary/aiogtrans
 aiofiles==0.8.0
 aiohttp==3.8.1

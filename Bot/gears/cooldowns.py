@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from motor import motor_asyncio
 
 
 class CustomCooldown:
@@ -8,13 +9,31 @@ class CustomCooldown:
     """
 
     def __init__(
-        self, reg_rate: float, reg_per: float, prem_rate: float, prem_per: float
+        self,
+        reg_rate: float = 2.0,
+        reg_per: float = 5.0,
+        prem_rate: float = 2.0,
+        prem_per: float = 3.5
     ) -> None:
         """
-        Custom Cooldown init
+        Custom Cooldowns
+
+        Parameters
+        ----------
+        reg_rate: float
+            The regular rate, default 2.0
+        reg_per: float
+            The regular per, default 5.0
+        prem_rate: float
+            The premium rate, default 2.0
+        prem_per: float
+            The premium per, default 3.5
         """
         self.reg_rate = reg_rate
         self.reg_per = reg_per
+        self.prem_rate = prem_rate
+        self.prem_per = prem_per
+        
 
     async def __call__(self, msg: discord.Message) -> commands.Cooldown:
         """

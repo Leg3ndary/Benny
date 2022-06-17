@@ -152,7 +152,10 @@ class Tags(commands.Cog):
 
         async with self.db.cursor() as cursor:
             row = await cursor.execute("""SELECT MAX(tag_id) FROM tags;""")
-            self.latest_tag = int(tuple(await row.fetchone())[0])
+            if row:
+                self.latest_tag = int(tuple(await row.fetchone())[0])
+            else: 
+                self.latest_tag = 0
 
         await self.bot.blogger.load(f"Loaded tags up to {self.latest_tag}")
 
