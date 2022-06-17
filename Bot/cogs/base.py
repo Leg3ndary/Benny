@@ -10,7 +10,7 @@ import PIL as pil
 import psutil
 import pytesseract
 from discord.ext import commands
-from gears import cviews, style
+from gears import cviews, style, cooldowns
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
@@ -163,7 +163,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.channel)
     async def about_cmd(self, ctx: commands.Context) -> None:
         """
         About command for the bot, just tells you a little bit about the bot
@@ -190,7 +190,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
     async def avatar_cmd(
         self, ctx: commands.Context, *, user: discord.Member = None
     ) -> None:
@@ -216,6 +216,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0), commands.BucketType.user)
     async def info_cmd(
         self, ctx: commands.Context, person: discord.Member = None
     ) -> None:
@@ -252,7 +253,8 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def charinfo(self, ctx: commands.Context, *, characters: str) -> None:
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
+    async def charinfo_cmd(self, ctx: commands.Context, *, characters: str) -> None:
         """
         Gives you the character info of whatever you input
         """
@@ -284,10 +286,10 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 3.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.channel)
     async def dog_cmd(self, ctx: commands.Context) -> None:
         """
-        dog command
+        Dog command
         """
         dog = await self.session.get("https://dog.ceo/api/breeds/image/random")
 
@@ -305,7 +307,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 30.0, commands.BucketType.channel)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0, 30.0), commands.BucketType.channel)
     async def uptime_cmd(self, ctx: commands.Context) -> None:
         """
         Uptime command to show the bots uptime
@@ -331,7 +333,7 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(2.0, 10.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.channel)
     async def ping_cmd(self, ctx: commands.Context) -> None:
         """
         Ping command
@@ -369,7 +371,7 @@ Total Uptime: {resolved_rel}"""
         await msg.edit(embed=ping_embed)
 
     @commands.group()
-    @commands.cooldown(3.0, 7.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
     async def system_group(self, ctx: commands.Context) -> None:
         """
         Actual system info
@@ -399,7 +401,6 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def system_info_cmd(self, ctx: commands.Context) -> None:
         """Showing full system information"""
         uname = platform.uname()
@@ -433,7 +434,6 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def system_cpu_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our cpu information
@@ -478,7 +478,6 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=True,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def system_memory_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our memory information
@@ -510,7 +509,6 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=True,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def system_disk_cmd(self, ctx: commands.Context) -> None:
         """
         Showing our disk information
@@ -563,7 +561,7 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(2.0, 7.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0, 5.0), commands.BucketType.channel)
     async def files_cmd(self, ctx: commands.Context) -> None:
         """
         Send our stuff
@@ -587,7 +585,8 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
+    @commands.guild_only()
     async def afk_group(self, ctx: commands.Context) -> None:
         """Afk hybrid_group"""
 
@@ -600,8 +599,6 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @commands.guild_only()
     async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
         """Set your afk"""
         await self.afk.set_afk(ctx, message)
@@ -614,16 +611,16 @@ Total Uptime: {resolved_rel}"""
         """
         await self.afk.manage_afk(message)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="imgread",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        description="""Read text of an image""",
+        help="""Read text of an image""",
+        brief="Read text of an image",
         aliases=[],
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0, 7.0), commands.BucketType.user)
     async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
         """Command description"""
         if url:

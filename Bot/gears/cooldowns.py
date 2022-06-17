@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from motor import motor_asyncio
 
 
 class CustomCooldown:
@@ -35,14 +34,14 @@ class CustomCooldown:
         self.prem_per = prem_per
         
 
-    async def __call__(self, msg: discord.Message) -> commands.Cooldown:
+    def __call__(self, msg: discord.Message) -> commands.Cooldown:
         """
         The actual cooldown func
         """
         if msg.author.id == 360061101477724170:
             cooldown = None
         else:
-            cooldown = commands.Cooldown(2.0, 5.0)
+            cooldown = commands.Cooldown(self.reg_rate, self.reg_per)
         return cooldown
 
 
