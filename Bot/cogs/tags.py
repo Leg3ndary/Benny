@@ -126,7 +126,9 @@ class Tags(commands.Cog):
             tse.block.RedirectBlock(),
             tse.block.CooldownBlock(),
         ]
-        externals = [DeleteBlock()]
+        externals = [
+            DeleteBlock()
+        ]
         self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks + externals)
 
     async def cog_load(self) -> None:
@@ -341,6 +343,43 @@ class Tags(commands.Cog):
             )
             await ctx.send(embed=embed)
 
+    @tag_group.command(
+        name="remove",
+        description="""Delete a tag""",
+        help="""Delete a tag""",
+        brief="Delete a tag",
+        aliases=["delete", "-"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def tag_remove_cmd(self, ctx: commands.Context, name: str) -> None:
+        """Delete a tag"""
+        guild_commands = self.custom_tags.get(name.lower())
+        if guild_commands:
+            tag = guild_commands.get(str(ctx.guild.id))
+            if tag:
+                await self.remove_tag(tag)
+                embed = discord.Embed(
+                    title=f"Success",
+                    description=f"""Removed tag `{name.lower()}`""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.RED
+                )
+                await ctx.send(embed=embed)
+
+    @commands.command(
+        name="list",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def my_command(self, ctx: commands.Context) -> None:
+        """Command description"""
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Tags(bot))
