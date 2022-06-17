@@ -309,6 +309,7 @@ class Tags(commands.Cog):
         Create a new tag
         """
         guild_tags = self.custom_tags.get(name.lower())
+        tag = None
         if guild_tags:
             tag = guild_tags.get(str(ctx.guild.id))
         
