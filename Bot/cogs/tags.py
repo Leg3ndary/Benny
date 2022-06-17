@@ -152,8 +152,9 @@ class Tags(commands.Cog):
 
         async with self.db.cursor() as cursor:
             row = await cursor.execute("""SELECT MAX(tag_id) FROM tags;""")
-            if row:
-                self.latest_tag = int(tuple(await row.fetchone())[0])
+            _max = tuple(await row.fetchone())[0]
+            if _max:
+                self.latest_tag = int(_max)
             else: 
                 self.latest_tag = 0
 
