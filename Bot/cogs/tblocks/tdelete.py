@@ -14,7 +14,7 @@ class DeleteBlock(Block):
         will accept
         """
         dec = ctx.verb.declaration.lower()
-        return dec == "delete"
+        return any([dec == "delete", dec == "del"])
 
     def process(self, ctx: Context) -> Optional[str]:
         """

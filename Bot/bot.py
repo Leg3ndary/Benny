@@ -133,6 +133,7 @@ async def start_bot() -> None:
                 bot.dispatch("load_prefixes")
                 bot.dispatch("connect_wavelink")
                 bot.dispatch("load_sentinel_managers")
+                bot.dispatch("initiate_all_tags")
                 await bot.blogger.bot_update("LOGGED IN")
 
             async with aiohttp.ClientSession() as main_session:
