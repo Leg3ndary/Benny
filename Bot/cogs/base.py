@@ -19,11 +19,14 @@ class AFKManager:
     Manage afk sessions and related data
     """
 
+    pcc = None
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init the manager
         """
         self.bot = bot
+        self.pcc = bot.pcc
         mongo_uri = (
             self.bot.config.get("Mongo")
             .get("URL")

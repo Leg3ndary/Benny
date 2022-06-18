@@ -231,8 +231,12 @@ class PrefixManager:
 class Settings(commands.Cog):
     """Manage server settings like prefixes, welcome messages, etc"""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init for the bot
+        """
         self.bot = bot
+        
 
     async def cog_load(self) -> None:
         """
@@ -388,7 +392,7 @@ class Settings(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.group(
-        name="premium",
+        name=" ",
         description="""View premium perks and what you have""",
         help="""View premium related info and perks""",
         brief="""View premium related info""",

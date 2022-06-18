@@ -10,7 +10,7 @@ import aiohttp
 import discord
 from discord.ext import commands, ipc
 from dotenv import load_dotenv
-from gears import util
+from gears import util, cooldowns
 
 load_dotenv()
 
@@ -124,6 +124,9 @@ async def start_bot() -> None:
                 total += file_len
             file_list["total"] = total
             bot.file_list = file_list
+            
+            bot.pcc = cooldowns.PremiumChecker(bot)
+            bot.pcc.premium_list = []
 
             async def when_bot_ready():
                 """

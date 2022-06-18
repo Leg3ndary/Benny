@@ -1,5 +1,33 @@
+import asyncio
+import asqlite
 import discord
 from discord.ext import commands
+
+
+class PremiumChecker:
+    """
+    Class to interact with our db and check if a command is premium
+    """
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        PremiumChecker mainly to be used with cooldowns
+        """
+        self.bot = bot
+        self.loop = bot.loop
+
+    async def _guild_premium(self, _id: int) -> bool:
+        """
+        Internal async method to be called because
+        """
+        
+        
+    def guild_premium(self, _id: int) -> bool:
+        """
+        Check if a guild is premium
+        """
+        return self.loop.run_in_executor(None, self._guild_premium, _id)
+
 
 
 class CustomCooldown:
