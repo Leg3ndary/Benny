@@ -1,5 +1,5 @@
 from typing import Optional
-from TagScriptEngine import Block, Context, helper_parse_if
+from bTagScript import Block, Context, helper_parse_if
 
 
 class DeleteBlock(Block):

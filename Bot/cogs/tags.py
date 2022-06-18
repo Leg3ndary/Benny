@@ -5,7 +5,7 @@ import time
 import asqlite
 import discord
 import discord.utils
-import TagScriptEngine as tse
+import bTagScript as tse
 from discord.ext import commands
 from gears import style
 from .tblocks import DeleteBlock
@@ -119,12 +119,14 @@ class Tags(commands.Cog):
             tse.block.ReplaceBlock(),
             tse.block.PythonBlock(),
             tse.block.URLEncodeBlock(),
+            tse.block.URLDecodeBlock(),
             tse.block.RequireBlock(),
             tse.block.BlacklistBlock(),
             tse.block.CommandBlock(),
             tse.block.OverrideBlock(),
             tse.block.RedirectBlock(),
             tse.block.CooldownBlock(),
+            tse.block.GetDiscord()
         ]
         externals = [
             DeleteBlock()
