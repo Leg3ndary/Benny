@@ -280,17 +280,23 @@ class Tags(commands.Cog):
         """
         Testing out tags because yea...
         """
-        seeds = {"args": tse.StringAdapter(args)}
+        seeds = {}
+        if args:
+            seeds.update({"args": tse.StringAdapter(args)})
         seeds.update(to_seed(ctx))
 
         response = await self.tsei.process(message=args, seed_variables=seeds)
-
-        await ctx.send(response.body)
 
         if response.actions:
             for action, value in response.actions.items():
                 if action == "delete" and value:
                     await ctx.message.delete()
+                elif action == "embed":
+                    await ctx.send(response.body, embed=value)
+                    sent = True
+
+        if not sent:
+            await ctx.send(response.body)
 
     @commands.hybrid_group(
         name="tag",
