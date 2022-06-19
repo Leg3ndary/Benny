@@ -373,7 +373,15 @@ Total Uptime: {resolved_rel}"""
         )
         await msg.edit(embed=ping_embed)
 
-    @commands.group()
+    @commands.group(
+        name="system",
+        description="""Systeminfo group""",
+        help="""Systeminfo group""",
+        brief="Systeminfo group",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
     @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
     async def system_group(self, ctx: commands.Context) -> None:
         """
