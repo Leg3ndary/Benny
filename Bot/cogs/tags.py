@@ -14,6 +14,7 @@ from .tblocks import DeleteBlock
 def is_a_nerd():
     async def predicate(ctx: commands.Context):
         return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
+        
     return commands.check(predicate)
 
 def guild_check(custom_tags: dict) -> bool:
