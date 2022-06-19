@@ -14,7 +14,6 @@ from .tblocks import DeleteBlock
 def is_a_nerd():
     async def predicate(ctx: commands.Context):
         return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
-        
     return commands.check(predicate)
 
 def guild_check(custom_tags: dict) -> bool:
@@ -266,7 +265,7 @@ class Tags(commands.Cog):
         description="""Description of command""",
         help="""What the help command displays""",
         brief="Brief one liner about the command",
-        aliases=[],
+        aliases=["playground", "tagtest", "testtag"],
         enabled=True,
         hidden=False,
     )
