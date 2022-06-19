@@ -259,7 +259,10 @@ class Tags(commands.Cog):
                 if action == "delete" and value:
                     await ctx.message.delete()
                 elif action == "embed":
-                    await ctx.send(response.body, embed=value)
+                    if response.body:
+                        await ctx.send(response.body, embed=value)
+                    else:
+                        await ctx.send(embed=value)
                     sent = True
 
         if not sent:
@@ -293,7 +296,10 @@ class Tags(commands.Cog):
                 if action == "delete" and value:
                     await ctx.message.delete()
                 elif action == "embed" and value:
-                    await ctx.send(response.body, embed=value)
+                    if response.body:
+                        await ctx.send(response.body, embed=value)
+                    else:
+                        await ctx.send(embed=value)
                     sent = True
 
         if not sent:
