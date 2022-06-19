@@ -280,6 +280,7 @@ class Tags(commands.Cog):
         """
         Testing out tags because yea...
         """
+        sent = False
         seeds = {}
         if args:
             seeds.update({"args": tse.StringAdapter(args)})
@@ -291,7 +292,7 @@ class Tags(commands.Cog):
             for action, value in response.actions.items():
                 if action == "delete" and value:
                     await ctx.message.delete()
-                elif action == "embed":
+                elif action == "embed" and value:
                     await ctx.send(response.body, embed=value)
                     sent = True
 
