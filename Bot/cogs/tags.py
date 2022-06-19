@@ -130,7 +130,8 @@ class Tags(commands.Cog):
             tse.block.CommandBlock(),
             tse.block.OverrideBlock(),
             tse.block.RedirectBlock(),
-            tse.block.CooldownBlock()
+            tse.block.CooldownBlock(),
+            tse.block.LengthBlock(),
         ]
         externals = [
             DeleteBlock()
