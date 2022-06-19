@@ -125,8 +125,7 @@ class Tags(commands.Cog):
             tse.block.CommandBlock(),
             tse.block.OverrideBlock(),
             tse.block.RedirectBlock(),
-            tse.block.CooldownBlock(),
-            tse.block.GetDiscord()
+            tse.block.CooldownBlock()
         ]
         externals = [
             DeleteBlock()
