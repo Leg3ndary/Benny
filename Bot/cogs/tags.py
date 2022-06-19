@@ -11,6 +11,11 @@ from gears import style
 from .tblocks import DeleteBlock
 
 
+def is_a_nerd():
+    async def predicate(ctx: commands.Context):
+        return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
+    return commands.check(predicate)
+
 def guild_check(custom_tags: dict) -> bool:
     """
     Guild check for custom_tags
@@ -265,7 +270,7 @@ class Tags(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @commands.is_owner()
+    @is_a_nerd()
     async def tt_cmd(self, ctx: commands.Context, *, args: str) -> None:
         """
         Testing out tags because yea...

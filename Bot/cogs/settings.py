@@ -313,7 +313,6 @@ class Settings(commands.Cog):
     )
     @commands.guild_only()
     @commands.cooldown(1.0, 3.0, commands.BucketType.user)
-    @commands.has_permissions(manage_messages=True)
     async def prefix(self, ctx: commands.Context) -> None:
         """
         Prefix group for commands
@@ -357,6 +356,7 @@ class Settings(commands.Cog):
         enabled=True,
         hidden=False,
     )
+    @commands.has_permissions(manage_messages=True)
     async def add_prefix(self, ctx: commands.Context, *, prefix: str):
         """Add a prefix to a server"""
         await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
@@ -379,6 +379,7 @@ class Settings(commands.Cog):
         enabled=True,
         hidden=False,
     )
+    @commands.has_permissions(manage_messages=True)
     async def remove_prefix(self, ctx: commands.Context, *, prefix: str):
         """Remove a prefix from your server"""
         await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
@@ -392,7 +393,7 @@ class Settings(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.group(
-        name=" ",
+        name="premium",
         description="""View premium perks and what you have""",
         help="""View premium related info and perks""",
         brief="""View premium related info""",
