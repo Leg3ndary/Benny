@@ -24,7 +24,7 @@ class Events(commands.Cog):
         self.ltd_loop.cancel()
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild):
+    async def on_guild_join(self, guild: discord.Guild):
         """
         When we join a guild print it out
         """
@@ -44,6 +44,9 @@ class Events(commands.Cog):
             self.bot.blogger.gen_category(f"{Fore.GREEN}JOINED"),
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
+
+        if guild.id in [907096656732913744]:
+            return
 
         if bot_percentage > 20 and humans < 19:
             sent = False
