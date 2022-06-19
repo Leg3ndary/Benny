@@ -254,12 +254,16 @@ class Tags(commands.Cog):
 
         response = await self.tsei.process(message=tag.tagscript, seed_variables=seeds)
 
-        await ctx.send(response.body)
-
         if response.actions:
             for action, value in response.actions.items():
                 if action == "delete" and value:
                     await ctx.message.delete()
+                elif action == "embed":
+                    await ctx.send(response.body, embed=value)
+                    sent = True
+
+        if not sent:
+            await ctx.send(response.body)
 
     @commands.command(
         name="tt",
