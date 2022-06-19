@@ -45,9 +45,6 @@ class Events(commands.Cog):
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
 
-        if guild.id in [907096656732913744]:
-            return
-
         if bot_percentage > 20 and humans < 19:
             sent = False
             embed = discord.Embed(
