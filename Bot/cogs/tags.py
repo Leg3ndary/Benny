@@ -140,6 +140,7 @@ class Tags(commands.Cog):
             DeleteBlock()
         ]
         self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks + externals)
+        self.channel_converter = commands.TextChannelConverter()
 
     async def cog_load(self) -> None:
         """
@@ -239,36 +240,61 @@ class Tags(commands.Cog):
             await self.db.execute("""DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,))
             await self.db.commit()
 
+    async def use_tag(self, tag: Tag) -> None:
+        """
+        Use a tag by adding to its counter
+        """
+        tag.uses += 1
+        
+        await asyncio.gather(
+            self.db.execute("""UPDATE tags SET uses = ? WHERE tag_id = ?;""", (tag.uses, tag.tag_id)),
+            self.db.commit()
+        )
+
     async def invoke_custom_command(
-        self, ctx: commands.Context, args, tag: Tag
+        self, ctx: commands.Context, args: str, tag: Tag
     ) -> None:
         """
         Invoke a custom command
         """
+        self.bot.loop.create_task(self.use_tag())
+    
         seeds = {}
         if args:
             seeds.update({"args": tse.StringAdapter(args)})
         seeds.update(to_seed(ctx))
 
-        tag.uses += 1
-
-        await self.db.execute("""UPDATE tags SET uses = ? WHERE tag_id = ?;""", (tag.uses, tag.tag_id))
-        await self.db.commit()
-
         response = await self.tsei.process(message=tag.tagscript, seed_variables=seeds)
+
+        dest = None
+        can_send = True
+        embed = None
 
         if response.actions:
             for action, value in response.actions.items():
                 if action == "delete" and value:
                     await ctx.message.delete()
                 elif action == "embed":
-                    if response.body:
-                        await ctx.send(response.body, embed=value)
+                    embed = value
+                elif action == "target":
+                    if value == "dm":
+                        dest = ctx.author
+                    elif value == "reply":
+                        dest = "reply"
                     else:
-                        await ctx.send(embed=value)
-                    sent = True
+                        dest = await self.channel_converter.convert(ctx, value)
+                        if dest:
+                            can_send = dest.permissions_for(ctx.author).send_messages
+                elif action == "override":
+                    can_send = value.get("permissions")
 
-        if not sent:
+        if can_send:
+            if not dest:
+                await ctx.send(response.body if response.body else None, embed=embed)
+            elif dest == "reply":
+                await ctx.reply(response.body if response.body else None, embed=embed)
+            else:
+                await dest.send(response.body if response.body else None, embed=embed)
             await ctx.send(response.body)
 
     @commands.command(
@@ -286,27 +312,10 @@ class Tags(commands.Cog):
         """
         Testing out tags because yea...
         """
-        sent = False
-        seeds = {}
-        if args:
-            seeds.update({"args": tse.StringAdapter(args)})
-        seeds.update(to_seed(ctx))
-
-        response = await self.tsei.process(message=args, seed_variables=seeds)
-
-        if response.actions:
-            for action, value in response.actions.items():
-                if action == "delete" and value:
-                    await ctx.message.delete()
-                elif action == "embed" and value:
-                    if response.body:
-                        await ctx.send(response.body, embed=value)
-                    else:
-                        await ctx.send(embed=value)
-                    sent = True
-
-        if not sent:
-            await ctx.send(response.body)
+        tag = Tag(
+            0, 0, "", "", "", 0, args
+        )
+        await self.invoke_custom_command(ctx, args, tag)
 
     @commands.hybrid_group(
         name="tag",
