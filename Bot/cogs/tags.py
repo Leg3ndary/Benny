@@ -133,6 +133,8 @@ class Tags(commands.Cog):
             tse.block.CooldownBlock(),
             tse.block.LengthBlock(),
             tse.block.CountBlock(),
+            tse.block.CommentBlock(),
+            tse.block.OrdinalAbbreviationBlock(),
         ]
         externals = [
             DeleteBlock()
