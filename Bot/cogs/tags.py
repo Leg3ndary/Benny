@@ -223,7 +223,7 @@ class Tags(commands.Cog):
                 Custom command
                 """
                 _tag = self.custom_tags[ctx.invoked_with][tag.guild]
-                await self.invoke_custom_command(ctx, args, _tag)
+                await self.invoke_custom_command(ctx, args, _tag, True)
 
             self.bot.add_command(custom_tag_cmd)
             self.custom_tags[tag.name] = {tag.guild: tag}
@@ -252,12 +252,13 @@ class Tags(commands.Cog):
         )
 
     async def invoke_custom_command(
-        self, ctx: commands.Context, args: str, tag: Tag
+        self, ctx: commands.Context, args: str, tag: Tag, use: bool
     ) -> None:
         """
         Invoke a custom command
         """
-        self.bot.loop.create_task(self.use_tag())
+        if use:
+            self.bot.loop.create_task(self.use_tag(tag))
     
         seeds = {}
         if args:
@@ -315,7 +316,7 @@ class Tags(commands.Cog):
         tag = Tag(
             0, 0, "", "", "", 0, args
         )
-        await self.invoke_custom_command(ctx, args, tag)
+        await self.invoke_custom_command(ctx, args, tag, False)
 
     @commands.hybrid_group(
         name="tag",
