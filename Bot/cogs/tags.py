@@ -296,7 +296,6 @@ class Tags(commands.Cog):
                 await ctx.reply(response.body if response.body else None, embed=embed)
             else:
                 await dest.send(response.body if response.body else None, embed=embed)
-            await ctx.send(response.body)
 
     @commands.command(
         name="tt",
