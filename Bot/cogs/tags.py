@@ -357,7 +357,7 @@ class Tags(commands.Cog):
         tag = Tag(
             0, 0, "", "", "", 0, args
         )
-        await self.invoke_custom_command(ctx, args, tag, False, args)
+        await self.invoke_custom_command(ctx, args, tag, False)
 
     @commands.hybrid_group(
         name="tag",
