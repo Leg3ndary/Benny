@@ -303,7 +303,7 @@ class Tags(commands.Cog):
 
             for k, v in response.debug.items():
                 if k in seeds.keys():
-                    defaults += f"{clean(k)}, {clean(seeds.get(k))}"
+                    defaults += f"{clean(k)}, {clean(seeds.get(k).get_value())}"
                 else:
                     debug += f"{clean(k)}: {clean(v)}\n"
                 
