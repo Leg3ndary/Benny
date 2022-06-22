@@ -125,7 +125,6 @@ class Tags(commands.Cog):
             tse.block.FiftyFiftyBlock(),
             tse.block.ShortCutRedirectBlock("args"),
             tse.block.LooseVariableGetterBlock(),
-            tse.block.SubstringBlock(),
             tse.block.EmbedBlock(),
             tse.block.ReplaceBlock(),
             tse.block.PythonBlock(),
