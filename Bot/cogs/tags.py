@@ -16,6 +16,12 @@ def is_a_nerd():
         return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
     return commands.check(predicate)
 
+def clean(text: str) -> str:
+    """
+    Quickly clean a string
+    """
+    return text.replace("\\", "\\\\").replace("`", "\\`")
+
 def guild_check(custom_tags: dict) -> bool:
     """
     Guild check for custom_tags
@@ -135,6 +141,7 @@ class Tags(commands.Cog):
             tse.block.CountBlock(),
             tse.block.CommentBlock(),
             tse.block.OrdinalAbbreviationBlock(),
+            tse.block.DebugBlock(),
         ]
         externals = [
             DeleteBlock()
@@ -296,6 +303,16 @@ class Tags(commands.Cog):
                 await ctx.reply(response.body if response.body else None, embed=embed)
             else:
                 await dest.send(response.body if response.body else None, embed=embed)
+
+        if response.debug:
+            debug = ""
+            for k, v in response.debug.items():
+                debug += f"{clean(k)}: {clean(v)}\n"
+        
+            debug = f"""```yaml
+{debug.strip()}         
+```"""
+            await ctx.send(debug)
 
     @commands.command(
         name="tt",
