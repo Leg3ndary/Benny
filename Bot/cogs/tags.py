@@ -260,7 +260,7 @@ class Tags(commands.Cog):
         )
 
     async def invoke_custom_command(
-        self, ctx: commands.Context, args: str, tag: Tag, use: bool
+        self, ctx: commands.Context, args: str, tag: Tag, use: bool, tagscript = False
     ) -> None:
         """
         Invoke a custom command
@@ -273,7 +273,7 @@ class Tags(commands.Cog):
             seeds.update({"args": tse.StringAdapter(args)})
         seeds.update(to_seed(ctx))
 
-        response = await self.tsei.process(message=tag.tagscript, seed_variables=seeds)
+        response = await self.tsei.process(message=tag.tagscript if not tagscript else tagscript, seed_variables=seeds)
 
         dest = None
         can_send = True
@@ -313,6 +313,13 @@ class Tags(commands.Cog):
             debug = f"""```yaml
 {debug.strip()}         
 ```"""
+            embed = discord.Embed(
+                title=f"",
+                description=f"""""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.random()
+            )
+            await ctx.send(embed=embed)
             await ctx.send(debug)
 
     @commands.command(
@@ -333,7 +340,7 @@ class Tags(commands.Cog):
         tag = Tag(
             0, 0, "", "", "", 0, args
         )
-        await self.invoke_custom_command(ctx, args, tag, False)
+        await self.invoke_custom_command(ctx, args, tag, False, args)
 
     @commands.hybrid_group(
         name="tag",
