@@ -20,7 +20,9 @@ def clean(text: str) -> str:
     """
     Quickly clean a string
     """
-    return text.replace("\\", "\\\\").replace("`", "\\`")
+    if text:
+        return text.replace("\\", "\\\\").replace("`", "\\`")
+    return ""
 
 def guild_check(custom_tags: dict) -> bool:
     """
