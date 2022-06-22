@@ -260,7 +260,7 @@ class Tags(commands.Cog):
         )
 
     async def invoke_custom_command(
-        self, ctx: commands.Context, args: str, tag: Tag, use: bool, tagscript = False
+        self, ctx: commands.Context, args: str, tag: Tag, use: bool
     ) -> None:
         """
         Invoke a custom command
@@ -273,18 +273,18 @@ class Tags(commands.Cog):
             seeds.update({"args": tse.StringAdapter(args)})
         seeds.update(to_seed(ctx))
 
-        response = await self.tsei.process(message=tag.tagscript if not tagscript else tagscript, seed_variables=seeds)
+        response = await self.tsei.process(message=tag.tagscript, seed_variables=seeds)
 
         dest = None
         can_send = True
-        embed = None
+        embeds = []
 
         if response.actions:
             for action, value in response.actions.items():
                 if action == "delete" and value:
                     await ctx.message.delete()
                 elif action == "embed":
-                    embed = value
+                    embeds.append(value)
                 elif action == "target":
                     if value == "dm":
                         dest = ctx.author
@@ -297,30 +297,47 @@ class Tags(commands.Cog):
                 elif action == "override":
                     can_send = value.get("permissions")
 
-        if can_send:
-            if not dest:
-                await ctx.send(response.body if response.body else None, embed=embed)
-            elif dest == "reply":
-                await ctx.reply(response.body if response.body else None, embed=embed)
-            else:
-                await dest.send(response.body if response.body else None, embed=embed)
-
         if response.debug:
             debug = ""
+            defaults = ""
+
             for k, v in response.debug.items():
-                debug += f"{clean(k)}: {clean(v)}\n"
+                if k in seeds.keys():
+                    defaults += f"{clean(k)}, {clean(seeds.get(k))}"
+                else:
+                    debug += f"{clean(k)}: {clean(v)}\n"
+                
         
             debug = f"""```yaml
 {debug.strip()}         
 ```"""
-            embed = discord.Embed(
+            dembed = discord.Embed(
                 title=f"",
                 description=f"""""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random()
             )
-            await ctx.send(embed=embed)
-            await ctx.send(debug)
+            dembed.add_field(
+                name="Debug Values",
+                value=debug,
+                inline=False
+            )
+            dembed.add_field(
+                name="Default Values",
+                value=defaults,
+                inline=False
+            )
+            embeds.append(dembed)
+
+        if can_send:
+            if not dest:
+                await ctx.send(response.body if response.body else None, embeds=embeds)
+            elif dest == "reply":
+                await ctx.reply(response.body if response.body else None, embeds=embeds)
+            else:
+                await dest.send(response.body if response.body else None, embeds=embeds)
+
+        
 
     @commands.command(
         name="tt",
