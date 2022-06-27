@@ -113,7 +113,7 @@ class BotUtil:
                 try:
                     filename = file.split("/")[-1][:-3]
                     if file.endswith(".py") and (
-                        filename not in ["cog_template", "ipc"]
+                        filename not in ["cog_template"]
                     ):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
                         await self.bot.blogger.cog_update(file[:-3], "LOAD")
