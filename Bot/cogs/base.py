@@ -10,7 +10,7 @@ import PIL as pil
 import psutil
 import pytesseract
 from discord.ext import commands
-from gears import cviews, style, cooldowns
+from gears import cooldowns, cviews, style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 

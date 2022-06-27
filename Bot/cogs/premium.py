@@ -1,7 +1,8 @@
 import asyncio
+import datetime
+
 import discord
 import discord.utils
-import datetime
 from discord.ext import commands, tasks
 from gears import style
 

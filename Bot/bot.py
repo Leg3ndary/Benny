@@ -10,7 +10,7 @@ import aiohttp
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
-from gears import util, cooldowns
+from gears import cooldowns, util
 
 load_dotenv()
 
