@@ -166,7 +166,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.channel)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def about_cmd(self, ctx: commands.Context) -> None:
         """
         About command for the bot, just tells you a little bit about the bot
@@ -193,7 +193,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def avatar_cmd(
         self, ctx: commands.Context, *, user: discord.Member = None
     ) -> None:
@@ -256,7 +256,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def charinfo_cmd(self, ctx: commands.Context, *, characters: str) -> None:
         """
         Gives you the character info of whatever you input
@@ -289,7 +289,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.channel)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def dog_cmd(self, ctx: commands.Context) -> None:
         """
         Dog command
@@ -310,7 +310,9 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0, 30.0), commands.BucketType.channel)
+    @commands.dynamic_cooldown(
+        cooldowns.CustomCooldown(1.0, 30.0), commands.BucketType.channel
+    )
     async def uptime_cmd(self, ctx: commands.Context) -> None:
         """
         Uptime command to show the bots uptime
@@ -336,7 +338,7 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.channel)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def ping_cmd(self, ctx: commands.Context) -> None:
         """
         Ping command
@@ -380,9 +382,9 @@ Total Uptime: {resolved_rel}"""
         brief="Systeminfo group",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def system_group(self, ctx: commands.Context) -> None:
         """
         Actual system info
@@ -572,7 +574,9 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0, 5.0), commands.BucketType.channel)
+    @commands.dynamic_cooldown(
+        cooldowns.CustomCooldown(1.0, 5.0), commands.BucketType.channel
+    )
     async def files_cmd(self, ctx: commands.Context) -> None:
         """
         Send our stuff
@@ -596,7 +600,7 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(), commands.BucketType.user)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     @commands.guild_only()
     async def afk_group(self, ctx: commands.Context) -> None:
         """Afk hybrid_group"""
@@ -631,7 +635,9 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0, 7.0), commands.BucketType.user)
+    @commands.dynamic_cooldown(
+        cooldowns.CustomCooldown(1.0, 7.0), commands.BucketType.user
+    )
     async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
         """Command description"""
         if url:
