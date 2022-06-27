@@ -124,7 +124,7 @@ async def start_bot() -> None:
                 total += file_len
             file_list["total"] = total
             bot.file_list = file_list
-            
+
             bot.pcc = cooldowns.PremiumChecker(bot)
             bot.pcc.premium_list = []
 

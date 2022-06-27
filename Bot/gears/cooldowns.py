@@ -20,14 +20,12 @@ class PremiumChecker:
         """
         Internal async method to be called because
         """
-        
-        
+
     def guild_premium(self, _id: int) -> bool:
         """
         Check if a guild is premium
         """
         return self.loop.run_in_executor(None, self._guild_premium, _id)
-
 
 
 class CustomCooldown:
@@ -40,7 +38,7 @@ class CustomCooldown:
         reg_rate: float = 2.0,
         reg_per: float = 5.0,
         prem_rate: float = 2.0,
-        prem_per: float = 3.5
+        prem_per: float = 3.5,
     ) -> None:
         """
         Custom Cooldowns
@@ -60,7 +58,6 @@ class CustomCooldown:
         self.reg_per = reg_per
         self.prem_rate = prem_rate
         self.prem_per = prem_per
-        
 
     def __call__(self, msg: discord.Message) -> commands.Cooldown:
         """

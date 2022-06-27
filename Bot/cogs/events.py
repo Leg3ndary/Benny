@@ -28,7 +28,9 @@ class Events(commands.Cog):
         """
         When we join a guild print it out
         """
-        if guild.get_member(360061101477724170) or (await guild.fetch_member(360061101477724170)):
+        if guild.get_member(360061101477724170) or (
+            await guild.fetch_member(360061101477724170)
+        ):
             return
 
         guild_bots = 0

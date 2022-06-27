@@ -236,7 +236,6 @@ class Settings(commands.Cog):
         Init for the bot
         """
         self.bot = bot
-        
 
     async def cog_load(self) -> None:
         """
