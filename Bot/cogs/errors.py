@@ -40,7 +40,7 @@ class Errors(commands.Cog):
 
         cog = ctx.cog
         if cog:
-            if cog._get_overridden_method(cog.cog_command_error) is not None:
+            if cog._get_overridden_method(cog.cog_command_error):
                 return
         ignored = (commands.CommandNotFound,)
 
@@ -65,11 +65,8 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.MissingRequiredArgument):
             missing_argument = discord.Embed(
                 title="Error",
-                description=f"""Missing parameter:
-```md
-Command Error
-[{ctx.command}]({str(error.param).split(":", maxsplit=1)[0]})
-```""",
+                description=f"""{ctx.command}
+                Parameter: {str(error.param).split(":", maxsplit=1)[0]}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -109,7 +106,7 @@ Command Error
         elif isinstance(error, commands.BadArgument):
             embed = discord.Embed(
                 title="Not found",
-                description=f"""{error.with_traceback}""",
+                description=f"""{error.args}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
