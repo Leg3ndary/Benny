@@ -1,6 +1,7 @@
 import asyncio
 import random
 import time
+from typing import List
 
 import asqlite
 import bTagScript as tse
@@ -273,6 +274,23 @@ class Tags(commands.Cog):
             self.db.commit(),
         )
 
+    async def get_tags(self, guild: str) -> List[Tag]:
+        """
+        Get all a servers tags in a list
+
+        Returns all of them as a Tag class
+        """
+        async with self.db.cursor() as cursor:
+            tags = []
+            row = await cursor.execute(
+                """SELECT * FROM tags WHERE guild = ?;""", (guild,)
+            )
+            tags = tuple(await row.fetchall())
+            for tag in tags:
+                tag = Tag(tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6])
+                tags.append(tag)
+        return tags
+
     async def invoke_custom_command(
         self, ctx: commands.Context, args: str, tag: Tag, use: bool
     ) -> None:
@@ -398,7 +416,7 @@ class Tags(commands.Cog):
 
         for x in self.bot.commands:
             if x.name == name:
-                raise commands.BadArgument.send(
+                raise commands.BadArgument(
                     f"A command with the name {name} already exists. Please choose a different name."
                 )
 
@@ -463,9 +481,9 @@ class Tags(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_remove_cmd(self, ctx: commands.Context, name: str) -> None:
         """Delete a tag"""
-        guild_commands = self.custom_tags.get(name.lower())
-        if guild_commands:
-            tag = guild_commands.get(str(ctx.guild.id))
+        commands_named = self.custom_tags.get(name.lower())
+        if commands_named:
+            tag = commands_named.get(str(ctx.guild.id))
             if tag:
                 await self.remove_tag(tag)
                 embed = discord.Embed(
@@ -485,9 +503,20 @@ class Tags(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
     async def tag_list_cmd(self, ctx: commands.Context) -> None:
         """Display all of a servers tags"""
+        tags = await self.get_tags(str(ctx.guild.id))
+
+        embed = discord.Embed(
+            title=f"{ctx.guild.name} Tags",
+            description=f"""```
+            {"\n".join(f"{tag.name} - Uses: {tag.uses} - Length: {len(tag.tagscript)}" for tag in tags)}
+            ```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PINK
+        )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
