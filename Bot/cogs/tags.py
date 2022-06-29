@@ -3,18 +3,21 @@ import random
 import time
 
 import asqlite
+import bTagScript as tse
 import discord
 import discord.utils
-import bTagScript as tse
 from discord.ext import commands
 from gears import style
+
 from .tblocks import DeleteBlock
 
 
 def is_a_nerd():
     async def predicate(ctx: commands.Context):
         return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
+
     return commands.check(predicate)
+
 
 def clean(text: str) -> str:
     """
@@ -23,6 +26,7 @@ def clean(text: str) -> str:
     if text:
         return text.replace("\\", "\\\\").replace("`", "\\`")
     return ""
+
 
 def guild_check(custom_tags: dict) -> bool:
     """
@@ -33,9 +37,9 @@ def guild_check(custom_tags: dict) -> bool:
         """
         Predicate
         """
-        return custom_tags.get(
-            ctx.command.qualified_name
-        ) and str(ctx.guild.id) in custom_tags.get(ctx.command.qualified_name)
+        return custom_tags.get(ctx.command.qualified_name) and str(
+            ctx.guild.id
+        ) in custom_tags.get(ctx.command.qualified_name)
 
     return commands.check(predicate)
 
@@ -144,9 +148,7 @@ class Tags(commands.Cog):
             tse.block.OrdinalAbbreviationBlock(),
             tse.block.DebugBlock(),
         ]
-        externals = [
-            DeleteBlock()
-        ]
+        externals = [DeleteBlock()]
         self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks + externals)
         self.channel_converter = commands.TextChannelConverter()
 
@@ -157,7 +159,7 @@ class Tags(commands.Cog):
         self.db = await asqlite.connect("Databases/tags.db")
 
         await self.db.execute(
-        """
+            """
             CREATE TABLE IF NOT EXISTS tags (
                 tag_id     TEXT PRIMARY KEY
                                 NOT NULL,
@@ -176,7 +178,7 @@ class Tags(commands.Cog):
             _max = tuple(await row.fetchone())[0]
             if _max:
                 self.latest_tag = int(_max)
-            else: 
+            else:
                 self.latest_tag = 0
 
         await self.bot.blogger.load(f"Loaded tags up to {self.latest_tag}")
@@ -204,7 +206,9 @@ class Tags(commands.Cog):
         end = time.monotonic()
 
         total_load = (round((end - start) * 1000, 2)) / 1000
-        await self.bot.blogger.load(f"Loaded {self.latest_tag} tags in {total_load} seconds.")
+        await self.bot.blogger.load(
+            f"Loaded {self.latest_tag} tags in {total_load} seconds."
+        )
 
     async def create_tag(self, tag: Tag) -> None:
         """
@@ -226,7 +230,9 @@ class Tags(commands.Cog):
                 help=f"Custom command: Outputs your custom provided output",
             )
             @guild_check(self.custom_tags)
-            async def custom_tag_cmd(ctx: commands.Context, *, args: str = None) -> None:
+            async def custom_tag_cmd(
+                ctx: commands.Context, *, args: str = None
+            ) -> None:
                 """
                 Custom command
                 """
@@ -235,17 +241,23 @@ class Tags(commands.Cog):
 
             self.bot.add_command(custom_tag_cmd)
             self.custom_tags[tag.name] = {tag.guild: tag}
+            self.latest_tag += 1
 
     async def remove_tag(self, tag: Tag) -> None:
         """
         Officially delete the tag.
         """
-        if tag.name not in self.custom_tags or tag.guild not in self.custom_tags[tag.name]:
+        if (
+            tag.name not in self.custom_tags
+            or tag.guild not in self.custom_tags[tag.name]
+        ):
             raise commands.BadArgument(f"There isn't a custom tag called {self.name}")
 
         else:
             del self.custom_tags[tag.name][tag.guild]
-            await self.db.execute("""DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,))
+            await self.db.execute(
+                """DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,)
+            )
             await self.db.commit()
 
     async def use_tag(self, tag: Tag) -> None:
@@ -253,10 +265,12 @@ class Tags(commands.Cog):
         Use a tag by adding to its counter
         """
         tag.uses += 1
-        
+
         await asyncio.gather(
-            self.db.execute("""UPDATE tags SET uses = ? WHERE tag_id = ?;""", (tag.uses, tag.tag_id)),
-            self.db.commit()
+            self.db.execute(
+                """UPDATE tags SET uses = ? WHERE tag_id = ?;""", (tag.uses, tag.tag_id)
+            ),
+            self.db.commit(),
         )
 
     async def invoke_custom_command(
@@ -267,7 +281,7 @@ class Tags(commands.Cog):
         """
         if use:
             self.bot.loop.create_task(self.use_tag(tag))
-    
+
         seeds = {}
         if args:
             seeds.update({"args": tse.StringAdapter(args)})
@@ -306,8 +320,7 @@ class Tags(commands.Cog):
                     defaults += f"{clean(k)}, {clean(seeds.get(k).get_value())}"
                 else:
                     debug += f"{clean(k)}: {clean(v)}\n"
-                
-        
+
             debug = f"""```yaml
 {debug.strip()}         
 ```"""
@@ -315,18 +328,10 @@ class Tags(commands.Cog):
                 title=f"",
                 description=f"""""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.random()
+                color=style.Color.random(),
             )
-            dembed.add_field(
-                name="Debug Values",
-                value=debug,
-                inline=False
-            )
-            dembed.add_field(
-                name="Default Values",
-                value=defaults,
-                inline=False
-            )
+            dembed.add_field(name="Debug Values", value=debug, inline=False)
+            dembed.add_field(name="Default Values", value=defaults, inline=False)
             embeds.append(dembed)
 
         if can_send:
@@ -336,8 +341,6 @@ class Tags(commands.Cog):
                 await ctx.reply(response.body if response.body else None, embeds=embeds)
             else:
                 await dest.send(response.body if response.body else None, embeds=embeds)
-
-        
 
     @commands.command(
         name="tt",
@@ -354,9 +357,7 @@ class Tags(commands.Cog):
         """
         Testing out tags because yea...
         """
-        tag = Tag(
-            0, 0, "", "", "", 0, args
-        )
+        tag = Tag(0, 0, "", "", "", 0, args)
         await self.invoke_custom_command(ctx, args, tag, False)
 
     @commands.hybrid_group(
@@ -366,7 +367,7 @@ class Tags(commands.Cog):
         brief="Anything to do with tags",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_group(self, ctx: commands.Context) -> None:
@@ -381,10 +382,12 @@ class Tags(commands.Cog):
         brief="Create a new tag",
         aliases=["add", "+"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def tag_create_cmd(self, ctx: commands.Context, name: str, *, content: str) -> None:
+    async def tag_create_cmd(
+        self, ctx: commands.Context, name: str, *, content: str
+    ) -> None:
         """
         Create a new tag
         """
@@ -392,32 +395,53 @@ class Tags(commands.Cog):
         tag = None
         if guild_tags:
             tag = guild_tags.get(str(ctx.guild.id))
-        
+
         if tag:
-            await self.db.execute("""UPDATE tags SET tagscript = ? WHERE tag_id = ?;""", (content, tag.tag_id))
+            await self.db.execute(
+                """UPDATE tags SET tagscript = ? WHERE tag_id = ?;""",
+                (content, tag.tag_id),
+            )
             await self.db.commit()
             embed = discord.Embed(
                 title=f"Success",
                 description=f"""Edited tag `{name}`, new length `{len(content)}`""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN
+                color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
         else:
             self.latest_tag += 1
-            tag_data = (self.latest_tag, str(ctx.guild.id), name, str(ctx.author.id), round(time.time()), 0, content)
+            tag_data = (
+                self.latest_tag,
+                str(ctx.guild.id),
+                name,
+                str(ctx.author.id),
+                round(time.time()),
+                0,
+                content,
+            )
 
-            await self.db.execute("""INSERT INTO tags VALUES(?, ?, ?, ?, ?, ?, ?);""", tag_data)
+            await self.db.execute(
+                """INSERT INTO tags VALUES(?, ?, ?, ?, ?, ?, ?);""", tag_data
+            )
             await self.db.commit()
-    
-            tag_mod = Tag(tag_data[0], tag_data[1], tag_data[2], tag_data[3], tag_data[4], tag_data[5], tag_data[6])
+
+            tag_mod = Tag(
+                tag_data[0],
+                tag_data[1],
+                tag_data[2],
+                tag_data[3],
+                tag_data[4],
+                tag_data[5],
+                tag_data[6],
+            )
             await self.create_tag(tag_mod)
-            
+
             embed = discord.Embed(
                 title=f"Success",
                 description=f"""Created tag `{name}`, length `{len(content)}`""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN
+                color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
 
@@ -428,7 +452,7 @@ class Tags(commands.Cog):
         brief="Delete a tag",
         aliases=["delete", "-"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_remove_cmd(self, ctx: commands.Context, name: str) -> None:
@@ -442,22 +466,23 @@ class Tags(commands.Cog):
                     title=f"Success",
                     description=f"""Removed tag `{name.lower()}`""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED
+                    color=style.Color.RED,
                 )
                 await ctx.send(embed=embed)
 
     @commands.command(
         name="list",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        description="""List all of a servers tags""",
+        help="""List all of a servers tags""",
+        brief="List all of a servers tags",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def my_command(self, ctx: commands.Context) -> None:
-        """Command description"""
+    async def tag_list_cmd(self, ctx: commands.Context) -> None:
+        """Display all of a servers tags"""
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Tags(bot))

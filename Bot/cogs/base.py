@@ -14,6 +14,20 @@ from gears import cooldowns, cviews, style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
+def to_string(char: str) -> str:
+    """
+    Convert a string into a nice format for an embed...
+    
+    Took this from rdanny, ty
+    """
+    digit = f"{ord(char):x}"
+    name = unicodedata.name(char, "Name not found.")
+    return f"""```fix
+\\U{digit:>08}
+```
+{char} - [{name}](http://www.fileformat.info/info/unicode/char/{digit})"""
+
+
 class AFKManager:
     """
     Manage afk sessions and related data
@@ -261,14 +275,6 @@ class Base(commands.Cog):
         """
         Gives you the character info of whatever you input
         """
-
-        def to_string(c):
-            digit = f"{ord(c):x}"
-            name = unicodedata.name(c, "Name not found.")
-            return f"""```fix
-\\U{digit:>08}
-```
-{c} - [{name}](http://www.fileformat.info/info/unicode/char/{digit})"""
 
         msg = "\n".join(map(to_string, characters))
 

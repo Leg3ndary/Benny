@@ -61,10 +61,10 @@ async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> list:
     """
     prefixes = [f"<@!{_bot.user.id}> ", f"<@{_bot.user.id}> "]
     if _bot.LOADED_PREFIXES:
-        if not msg.guild:
-            return prefixes.append(_bot.prefix)
-        else:
+        if msg.guild:
             return prefixes + _bot.prefixes.get(str(msg.guild.id), "")
+        else: 
+            return prefixes.append(_bot.prefix)
     else:
         return ""
 
