@@ -508,10 +508,12 @@ class Tags(commands.Cog):
         """Display all of a servers tags"""
         tags = await self.get_tags(str(ctx.guild.id))
 
+        vis = "\n".join(f"{tag.name} - Uses: {tag.uses} - Length: {len(tag.tagscript)}" for tag in tags)
+
         embed = discord.Embed(
             title=f"{ctx.guild.name} Tags",
             description=f"""```
-            {"\n".join(f"{tag.name} - Uses: {tag.uses} - Length: {len(tag.tagscript)}" for tag in tags)}
+            {vis}
             ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK
