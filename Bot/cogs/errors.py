@@ -59,7 +59,6 @@ class Errors(commands.Cog):
             await ctx.send(embed=embed)
 
         elif isinstance(error, commands.ConversionError):
-            # unfinished
             pass
 
         elif isinstance(error, commands.MissingRequiredArgument):

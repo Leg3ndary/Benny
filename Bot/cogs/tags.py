@@ -396,6 +396,12 @@ class Tags(commands.Cog):
         if guild_tags:
             tag = guild_tags.get(str(ctx.guild.id))
 
+        for x in self.bot.commands:
+            if x.name == name:
+                raise commands.BadArgument.send(
+                    f"A command with the name {name} already exists. Please choose a different name."
+                )
+
         if tag:
             await self.db.execute(
                 """UPDATE tags SET tagscript = ? WHERE tag_id = ?;""",
