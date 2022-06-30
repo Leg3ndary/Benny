@@ -20,7 +20,7 @@ class WelcomeManager:
         self.bot = bot
         self.db = db
 
-    async def to_str(self, embed: discord.Embed) -> str:
+    async def to_str(self, text: str, embed: discord.Embed) -> str:
         """
         Convert a discord embed object into a string to save to our db
         """
@@ -51,7 +51,7 @@ class WelcomeManager:
             ).fetchone()
 
         if not result:
-            pass
+            return
 
         channel = self.bot.get_channel(result) or (await self.bot.fetch_channel(result))
 
@@ -62,6 +62,23 @@ class WelcomeManager:
         """
         Say goodbye to a user!
         """
+        guild = member.guild.id
+
+        async with self.db.cursor() as cur:
+            result = await (
+                await cur.execute(
+                    """SELECT goodbye_channel FROM welcome WHERE guild = ?;""",
+                    (str(guild)),
+                )
+            ).fetchone()
+
+        if not result:
+            return
+        
+        channel = self.bot.get_channel(result) or (await self.bot.fetch_channel(result))
+
+        embed = await self.to_embed(result)
+        await channel.send(embed=embed)
 
 
 class Welcome(commands.Cog):
@@ -103,11 +120,10 @@ class Welcome(commands.Cog):
         await self.db.close()
 
     @commands.Cog.listener()
-    async def on__member_join(self, member: discord.Member) -> None:
+    async def on_member_join(self, member: discord.Member) -> None:
         """
         On a member joining, welcome them!
         """
-
         await self.wm.welcome(member)
 
     @commands.Cog.listener()
@@ -124,6 +140,39 @@ class Welcome(commands.Cog):
         )
 
         await self.wm.goodbye(member)
+
+    @commands.hybrid_group(
+        name="welcome",
+        description="""Welcome Group""",
+        help="""Welcome Group""",
+        brief="Welcome Group",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
+    async def welcome_group(self, ctx: commands.Context) -> None:
+        """
+        Welcome group
+        """
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
+
+    @welcome_group.command(
+        name="set",
+        description="""Set the welcome command""",
+        help="""Set the welcome command""",
+        brief="Set the welcome command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def welcome_set_group(self, ctx: commands.Context) -> None:
+        """
+        Set the welcome command
+        """
+
 
 
 async def setup(bot: commands.Bot) -> None:
