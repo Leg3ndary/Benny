@@ -20,11 +20,13 @@ class Events(commands.Cog):
         self.ltd_loop.start()
 
     async def cog_unload(self) -> None:
-        """on unload unload timers"""
+        """
+        On unload unload timers
+        """
         self.ltd_loop.cancel()
 
     @commands.Cog.listener()
-    async def on_guild_join(self, guild: discord.Guild):
+    async def on_guild_join(self, guild: discord.Guild) -> None:
         """
         When we join a guild print it out
         """
@@ -47,7 +49,7 @@ class Events(commands.Cog):
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
 
-        if bot_percentage > 20 and humans < 19:
+        if bot_percentage > 20 and humans < 5:
             sent = False
             embed = discord.Embed(
                 title=f"Sorry!",
@@ -77,7 +79,7 @@ class Events(commands.Cog):
             )
 
     @commands.Cog.listener()
-    async def on_guild_remove(self, guild):
+    async def on_guild_remove(self, guild: discord.Guild) -> None:
         """
         When we leave a guild
         """
@@ -87,7 +89,7 @@ class Events(commands.Cog):
         )
 
     @commands.Cog.listener()
-    async def on_thread_create(self, thread):
+    async def on_thread_create(self, thread: discord.Thread) -> None:
         """
         Whenever possible, join threads
         """
@@ -99,7 +101,7 @@ class Events(commands.Cog):
         await self.bot.blogger.ltd()
 
     @ltd_loop.before_loop
-    async def before_ltd_loop(self):
+    async def before_ltd_loop(self) -> None:
         """Waiting until the bots ready to dispatch the loop"""
         await self.bot.wait_until_ready()
 

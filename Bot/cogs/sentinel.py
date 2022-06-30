@@ -683,7 +683,7 @@ class Sentinel(commands.Cog):
         """
         if hasattr(self.bot, "sentinel_manager"):
             self.sm = self.bot.sentinel_manager
-            await self.load_sentinels()
+            await self.sm.load_sentinels()
 
         if hasattr(self.bot, "decancer_manager"):
             self.decancer = self.bot.decancer_manager
@@ -741,7 +741,7 @@ class Sentinel(commands.Cog):
         self.bot.decancer_manager = self.decancer
 
     @commands.Cog.listener()
-    async def on_message(self, msg: discord.Message):
+    async def on_message(self, msg: discord.Message) -> None:
         """
         Sentinels time :)
         """
