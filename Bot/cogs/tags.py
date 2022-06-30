@@ -281,15 +281,15 @@ class Tags(commands.Cog):
         Returns all of them as a Tag class
         """
         async with self.db.cursor() as cursor:
-            tags = []
+            tags_list = []
             row = await cursor.execute(
                 """SELECT * FROM tags WHERE guild = ?;""", (guild,)
             )
             tags = tuple(await row.fetchall())
             for tag in tags:
                 tag = Tag(tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6])
-                tags.append(tag)
-        return tags
+                tags_list.append(tag)
+        return tags_list
 
     async def invoke_custom_command(
         self, ctx: commands.Context, args: str, tag: Tag, use: bool
@@ -494,7 +494,7 @@ class Tags(commands.Cog):
                 )
                 await ctx.send(embed=embed)
 
-    @commands.command(
+    @tag_group.command(
         name="list",
         description="""List all of a servers tags""",
         help="""List all of a servers tags""",
@@ -511,12 +511,12 @@ class Tags(commands.Cog):
         vis = ""
 
         for tag in tags:
-            vis += (f"\n{tag.name} - Uses: {tag.uses} - Length: {len(tag.tagscript)}")
+            vis += f"\n{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}"
 
         embed = discord.Embed(
             title=f"{ctx.guild.name} Tags",
-            description=f"""```
-            {vis.strip()}
+            description=f"""```yaml
+{vis.strip()}
             ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK
