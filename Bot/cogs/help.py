@@ -194,10 +194,6 @@ class Help(commands.Cog):
         help_command.cog = self
         bot.help_command = help_command
 
-    @commands.command()
-    async def show_help(self, ctx: commands.Context, hello: str, stuff, optional=None):
-        await ctx.send_help(ctx.command.name)
-
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Help(bot))
