@@ -53,14 +53,16 @@ class TranslateView(discord.ui.View):
     """
 
     def __init__(self, translated: aiogtrans.Translated) -> None:
-        """Init"""
+        """
+        Construct the translate view
+        """
         super().__init__()
         self.translated = translated
 
     @discord.ui.button(label="Original", style=discord.ButtonStyle.grey)
     async def original_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    ) -> None:
         """Show the original translation and related info"""
         embed = discord.Embed(
             title=f"Original: {aiogtrans.LANGUAGES.get(self.translated.src).capitalize()}",
@@ -73,7 +75,7 @@ class TranslateView(discord.ui.View):
     @discord.ui.button(label="Translated", style=discord.ButtonStyle.green)
     async def translated_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
-    ):
+    ) -> None:
         """Show the translated translation and related info"""
         embed = discord.Embed(
             title=f"Translated: {aiogtrans.LANGUAGES.get(self.translated.dest).capitalize()}",
@@ -85,10 +87,17 @@ class TranslateView(discord.ui.View):
 
 
 class Translate(commands.Cog):
-    """Everything to do with translating"""
+    """
+    Everything to do with translating
+    """
+
+    COLOR = style.Color.YELLOW
+    ICON = "<:_:992120792827568228>"
 
     def __init__(self, bot: commands.Bot) -> None:
-        """Init the translate cog"""
+        """
+        Init the translate cog
+        """
         self.bot = bot
         self.translator = Translator(bot)
         self.translate_menu = app_commands.ContextMenu(

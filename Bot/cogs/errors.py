@@ -9,7 +9,12 @@ from gears import style
 
 
 class Errors(commands.Cog):
-    """Handling all our bots errors"""
+    """
+    Handling all our bots errors
+    """
+
+    COLOR = style.Color.RED
+    ICON = style.Emojis.REGULAR.cancel
 
     def __init__(self, bot: commands.Bot) -> None:
         """

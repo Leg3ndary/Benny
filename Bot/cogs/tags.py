@@ -13,8 +13,11 @@ from gears import style
 from .tblocks import DeleteBlock
 
 
-def is_a_nerd():
-    async def predicate(ctx: commands.Context):
+def is_a_nerd() -> bool: # I think its bool
+    """
+    Check if this person is part of the nerd thingy for asty
+    """
+    async def predicate(ctx: commands.Context) -> bool:
         return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
 
     return commands.check(predicate)
@@ -34,7 +37,7 @@ def guild_check(custom_tags: dict) -> bool:
     Guild check for custom_tags
     """
 
-    def predicate(ctx: commands.Context):
+    def predicate(ctx: commands.Context) -> bool:
         """
         Predicate
         """
@@ -108,13 +111,18 @@ class Tag:
 
 
 class Tags(commands.Cog):
-    """Tag cog"""
+    """
+    Tag cog
+    """
+
+    COLOR = style.Color.ORANGE
+    ICON = "<:_:992082395748634724>"
 
     custom_tags = {}
 
     def __init__(self, bot: commands.Bot):
         """
-        Init the bot with all the blocks it needs
+        Init the bot with all the blocks the bot needs
         """
         self.bot = bot
         bot.custom_tags = self.custom_tags
@@ -390,9 +398,11 @@ class Tags(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_group(self, ctx: commands.Context) -> None:
-        """tag group"""
+        """
+        Tag group
+        """
         if not ctx.invoked_subcommand:
-            pass
+            await ctx.send_help(ctx.command)
 
     @tag_group.command(
         name="create",
@@ -481,8 +491,11 @@ class Tags(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_remove_cmd(self, ctx: commands.Context, name: str) -> None:
-        """Delete a tag"""
+        """
+        Delete a tag
+        """
         commands_named = self.custom_tags.get(name.lower())
+
         if commands_named:
             tag = commands_named.get(str(ctx.guild.id))
             if tag:
@@ -506,18 +519,22 @@ class Tags(commands.Cog):
     )
     @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
     async def tag_list_cmd(self, ctx: commands.Context) -> None:
-        """Display all of a servers tags"""
+        """
+        Display all of a servers tags
+        """
         tags = await self.get_tags(str(ctx.guild.id))
 
-        vis = ""
+        vis_list = []
 
         for tag in tags:
-            vis += f"\n{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}"
+            vis.append(f"{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}")
+
+        vis = vis_list.join("\n")
 
         embed = discord.Embed(
             title=f"{ctx.guild.name} Tags",
             description=f"""```yaml
-{vis.strip()}
+{vis}
             ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK,

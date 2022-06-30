@@ -153,18 +153,27 @@ class IMGReader:
 
 
 class Base(commands.Cog):
-    """Basic commands that you would use with no specific category"""
+    """
+    Basic commands that you would use with no specific category
+    """
+
+    COLOR = style.Color.AQUA
+    ICON = ":gear:"
 
     def __init__(self, bot: commands.Bot) -> None:
-        """Init"""
+        """
+        Init
+        """
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
         self.afk = AFKManager(bot)
         self.session = bot.sessions.get("base")
         self.imgr = IMGReader(bot)
 
-    def get_size(self, _bytes, suffix="B") -> str:
-        """Return the correct data from bytes"""
+    def get_size(self, _bytes: int, suffix: str = "B") -> str:
+        """
+        Return the correct data from bytes
+        """
         factor = 1024
         for unit in ["", "K", "M", "G", "T", "P"]:
             if _bytes < factor:
@@ -180,7 +189,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.channel)
     async def about_cmd(self, ctx: commands.Context) -> None:
         """
         About command for the bot, just tells you a little bit about the bot
@@ -193,7 +202,7 @@ class Base(commands.Cog):
         )
         avatar = "https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024"
         embed.set_footer(
-            text="_Leg3ndary#5759",
+            text="_Leg3ndary#0001",
             icon_url=avatar,
         )
         await ctx.send(embed=embed)
@@ -207,7 +216,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def avatar_cmd(
         self, ctx: commands.Context, *, user: discord.Member = None
     ) -> None:
@@ -233,7 +242,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(cooldowns.CustomCooldown(1.0), commands.BucketType.user)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def info_cmd(
         self, ctx: commands.Context, person: discord.Member = None
     ) -> None:
@@ -270,12 +279,11 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def charinfo_cmd(self, ctx: commands.Context, *, characters: str) -> None:
         """
         Gives you the character info of whatever you input
         """
-
         msg = "\n".join(map(to_string, characters))
 
         embed = discord.Embed(
@@ -291,11 +299,11 @@ class Base(commands.Cog):
         description="""Get a random dog image!""",
         help="""What good bot doesn't have a dog command?""",
         brief="Get a random dog image",
-        aliases=[],
+        aliases=["doggo"],
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.channel)
     async def dog_cmd(self, ctx: commands.Context) -> None:
         """
         Dog command
@@ -316,9 +324,7 @@ class Base(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(
-        cooldowns.CustomCooldown(1.0, 30.0), commands.BucketType.channel
-    )
+    @commands.cooldown(1.0, 15.0, commands.BucketType.channel)
     async def uptime_cmd(self, ctx: commands.Context) -> None:
         """
         Uptime command to show the bots uptime
@@ -340,7 +346,7 @@ Total Uptime: {resolved_rel}"""
         description="""Check the bots current ping""",
         help="""Check the bots latency stats""",
         brief="Check the ping",
-        aliases=[],
+        aliases=["pong"],
         enabled=True,
         hidden=False,
     )
@@ -390,7 +396,7 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def system_group(self, ctx: commands.Context) -> None:
         """
         Actual system info
@@ -465,7 +471,6 @@ Total Uptime: {resolved_rel}"""
         [ Current Frequency ]
         = {cpufreq.current:.2f}Mhz =
         """
-
         cpu_core_data = ""
         for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
             cpu_core_data = f"""{cpu_core_data}[Core {i}]
@@ -580,9 +585,7 @@ Total Uptime: {resolved_rel}"""
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(
-        cooldowns.CustomCooldown(1.0, 5.0), commands.BucketType.channel
-    )
+    @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
     async def files_cmd(self, ctx: commands.Context) -> None:
         """
         Send our stuff
@@ -609,7 +612,11 @@ Total Uptime: {resolved_rel}"""
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     @commands.guild_only()
     async def afk_group(self, ctx: commands.Context) -> None:
-        """Afk hybrid_group"""
+        """
+        Afk hybrid_group
+        """
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
 
     @afk_group.command(
         name="set",
@@ -621,31 +628,32 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
-        """Set your afk"""
+        """
+        Set your afk
+        """
         await self.afk.set_afk(ctx, message)
 
     @commands.Cog.listener()
-    async def on_message(self, message) -> None:
+    async def on_message(self, msg: discord.Message) -> None:
         """
         On a message, check if that user is either pinging an afk user or is an afk user with an
         active afk
         """
-        await self.afk.manage_afk(message)
+        await self.afk.manage_afk(msg)
 
     @commands.hybrid_command(
         name="imgread",
-        description="""Read text of an image""",
-        help="""Read text of an image""",
-        brief="Read text of an image",
+        description="""Read text off an image""",
+        help="""Read text off an image""",
+        brief="Read text off an image",
         aliases=[],
         enabled=True,
         hidden=False,
     )
-    @commands.dynamic_cooldown(
-        cooldowns.CustomCooldown(1.0, 7.0), commands.BucketType.user
-    )
+    @commands.cooldown(2.0, 8.0, commands.BucketType.user)
     async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
-        """Command description"""
+        """
+        Use pytesseract to read stuff yay."""
         if url:
             async with self.session as session:
                 async with session.get(url) as response:

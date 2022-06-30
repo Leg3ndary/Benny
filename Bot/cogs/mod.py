@@ -103,6 +103,9 @@ class Mod(commands.Cog):
     Moderation related commands
     """
 
+    COLOR = style.Color.SILVER
+    ICON = ":tools:"
+
     def __init__(self, bot: commands.Bot):
         """
         Init with moderationmanager short mm
@@ -175,7 +178,7 @@ class Mod(commands.Cog):
         member: commands.Greedy[discord.Member],
         *,
         reason: str = "None",
-    ):
+    ) -> None:
         """
         Warn cmd
         """
@@ -194,7 +197,7 @@ class Mod(commands.Cog):
     @commands.has_permissions(ban_members=True)
     async def ban_cmd(
         self, ctx: commands.Context, user: discord.Member = None, *, reason: str = None
-    ):
+    ) -> None:
         """
         Ban a member, requires ban member permission
         """
@@ -276,8 +279,10 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def unban_cmd(self, ctx: commands.Context, member: int, reason: str = None):
-        """Command description"""
+    async def unban_cmd(self, ctx: commands.Context, member: int, reason: str = None) -> None:
+        """
+        Unban a user using an id
+        """
         if not re.match(r"[0-9]{15,19}", str(member)):
             embed = discord.Embed(
                 title=f"Error",
@@ -302,19 +307,38 @@ class Mod(commands.Cog):
             reason = f"Unbanned by: "
 
             await ctx.guild.unban(discord.Object(id=member), reason)
-
-    @commands.group(name="modlogs")
-    async def modlogs(self, ctx: commands.Context) -> None:
-        """Check someones latest modlogs"""
+    @commands.group(
+        name="modlogs",
+        description="""Check someones latest modlogs""",
+        help="""Check someones latest modlogs""",
+        brief="Check someones latest modlogs",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
+    async def modlogs_group(self, ctx: commands.Context) -> None:
+        """
+        Check someones latest modlogs
+        """
         if not ctx.invoked_subcommand:
-            pass
+            await ctx.send_help(ctx.command)
 
-    @modlogs.command(name="channel", aliases=["set"])
+    @modlogs_group.command(
+        name="channel",
+        description="""Set the modlogs channel""",
+        help="""Set the modlogs channel""",
+        brief="Set the modlogs channel",
+        aliases=["set"],
+        enabled=True,
+        hidden=False
+    )
     async def modlogs_channel(
         self, ctx: commands.Context, channel: discord.TextChannel
-    ):
-        """Set a channel for modlogs"""
-
+    ) -> None:
+        """
+        Set a channel for modlogs
+        """
         data = await self.db_modlogs.find_one({"_id": ctx.guild.id})
 
         if not data:
@@ -357,12 +381,12 @@ class Mod(commands.Cog):
             await ctx.send(embed=modlogs_changed)
 
     @commands.Cog.listener()
-    async def on_send_modlog(self, type, modlog):
+    async def on_send_modlog(self, type: str, modlog: str) -> None:
         """Send modlogs to the specified channel if not just return"""
         pass
 
 
 async def setup(bot: commands.Bot) -> None:
-    """not working as of now"""
+    """Still need to fix this"""
     pass
     # await bot.add_cog(Mod(bot))

@@ -86,6 +86,9 @@ class Welcome(commands.Cog):
     Anything to deal with welcoming or leaving
     """
 
+    COLOR = style.Color.GREEN
+    ICON = ":wave:"
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init for the bot

@@ -3,6 +3,7 @@ import datetime
 import discord
 from discord.ext import commands
 from motor.motor_asyncio import AsyncIOMotorClient
+from gears import style
 
 
 class DictDropdown(discord.ui.Select):
@@ -10,7 +11,10 @@ class DictDropdown(discord.ui.Select):
     Dict Dropdown
     """
 
-    def __init__(self, entries):
+    def __init__(self, entries: list) -> None:
+        """
+        Init the dict dropdown
+        """
         self.entries = entries[:25]
 
         options = []
@@ -58,8 +62,6 @@ class WordNotFound(Exception):
     Raised when a word isn't found
     """
 
-    pass
-
 
 class Dictionary(commands.Cog):
     """
@@ -67,12 +69,18 @@ class Dictionary(commands.Cog):
     important in the end though.
     """
 
-    def __init__(self, bot: commands.Bot):
+    COLOR = style.Color.MAROON
+    ICON = ":books:"
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init the dictionary cog
+        """
         self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
         self.session = bot.sessions.get("main")
 
-    async def cog_load(self):
+    async def cog_load(self) -> None:
         """
         On Cog load do some stuff
         """
@@ -143,7 +151,7 @@ class Dictionary(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def define_cmd(self, ctx: commands.Context, *, word: str):
+    async def define_cmd(self, ctx: commands.Context, *, word: str) -> None :
         """Define a word"""
         data = await self.get_word(word)
         await ctx.send("Sorry, this command doesn't actually do anything as of now")

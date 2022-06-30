@@ -12,6 +12,9 @@ class Events(commands.Cog):
     Events that I wanna receive but don't really have a cog for
     """
 
+    COLOR = style.Color.BLUE
+    ICON = ":clock7:"
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init for events
@@ -97,12 +100,16 @@ class Events(commands.Cog):
 
     @tasks.loop(seconds=60.0)
     async def ltd_loop(self) -> None:
-        """the ltd loop that checks if any updates need to be sent"""
+        """
+        the ltd loop that checks if any updates need to be sent
+        """
         await self.bot.blogger.ltd()
 
     @ltd_loop.before_loop
     async def before_ltd_loop(self) -> None:
-        """Waiting until the bots ready to dispatch the loop"""
+        """
+        Waiting until the bots ready to dispatch the loop
+        """
         await self.bot.wait_until_ready()
 
 

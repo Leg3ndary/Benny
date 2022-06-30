@@ -19,12 +19,20 @@ class Databases(commands.Cog):
     Currently using redis and mongodb
     """
 
-    def __init__(self, bot: commands.Bot):
+    COLOR = style.Color.GREEN
+    ICON = ":floppy_disk:"
+
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Constructor for databases...
+        """
         self.bot = bot
         self.redis_updater.start()
 
-    async def cog_load(self):
-        """Connect to our Redis DB"""
+    async def cog_load(self) -> None:
+        """
+        Connect to our Redis DB
+        """
         self.bot.redis = await aioredis.from_url(
             "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
             username="",
@@ -41,7 +49,7 @@ class Databases(commands.Cog):
         self.bot.mongo = AsyncIOMotorClient(mongo_uri)
         await self.bot.blogger.connect("MONGODB")
 
-    async def cog_unload(self):
+    async def cog_unload(self) -> None:
         """
         Stop task loop if cog unloaded
         """
@@ -58,7 +66,9 @@ class Databases(commands.Cog):
     )
     @commands.is_owner()
     async def redis_group(self, ctx: commands.Context) -> None:
-        """Access stuff about redis"""
+        """
+        Access stuff about redis
+        """
         if not ctx.invoked_subcommand:
             await ctx.send_help("redis")
 
@@ -105,7 +115,7 @@ class Databases(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def redis_add_cmd(self, ctx: commands.Context, key: str, *, value: str):
+    async def redis_add_cmd(self, ctx: commands.Context, key: str, *, value: str) -> None:
         """
         Add something to our db
         """
@@ -139,8 +149,10 @@ class Databases(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def redis_search_cmd(self, ctx: commands.Context, *, pattern: str = "*"):
-        """List all our keys"""
+    async def redis_search_cmd(self, ctx: commands.Context, *, pattern: str = "*") -> None:
+        """
+        List all our keys
+        """
         keys = ""
         for count, value in enumerate(await self.bot.redis.keys(pattern), start=1):
             keys = f"""{keys}\n{count}. {value}"""
@@ -229,7 +241,9 @@ class Databases(commands.Cog):
         hidden=False,
     )
     async def redis_showall_cmd(self, ctx: commands.Context) -> None:
-        """Show all data"""
+        """
+        Show all data
+        """
         embed = discord.Embed(
             title="Attempting to fetch all data",
             description=f"""ETA {await self.bot.redis.dbsize() * 0.1} seconds""",

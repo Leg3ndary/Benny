@@ -28,8 +28,10 @@ class Player(wavelink.Player):
         self.queue = wavelink.Queue(max_size=250)
         self.looping = False
 
-    async def request(self, track) -> None:
-        """Request a song"""
+    async def request(self, track: wavelink.Track) -> None:
+        """
+        Request a song
+        """
         if self.queue.is_empty and not self.track:
             await self.play(track)
         elif self.queue.is_full:
@@ -38,13 +40,17 @@ class Player(wavelink.Player):
             self.queue.put(track)
 
     async def skip(self) -> None:
-        """Skip the currently playing track just an alias"""
+        """
+        Skip the currently playing track just an alias
+        """
         if self.queue.is_empty and not self.track:
             raise NothingPlaying("Nothing is currently playing")
         await self.stop()
 
     async def shuffle(self) -> None:
-        """Shuffle the queue"""
+        """
+        Shuffle the queue
+        """
         if self.queue.is_empty:
             raise QueueEmpty("The queue is currently empty")
         lq = len(self.queue._queue)
@@ -63,7 +69,9 @@ class Player(wavelink.Player):
             index_list.pop(index_list.index(ri))
 
     async def loop(self) -> None:
-        """Loop the queue?"""
+        """
+        Loop the queue?
+        """
         if self.queue.is_empty and not self.is_playing:
             raise QueueEmpty("The queue is currently empty")
         self.looping = not self.looping
@@ -74,9 +82,9 @@ class PlayerDropdown(discord.ui.Select):
     Shows up to 25 songs in a Select so we can see it
     """
 
-    def __init__(self, ctx: commands.Context, player, songs: list) -> None:
+    def __init__(self, ctx: commands.Context, player: Player, songs: list) -> None:
         """
-        Init
+        Constructing the dropdown view
         """
         self.ctx = ctx
         self.player = player
@@ -103,7 +111,9 @@ class PlayerDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
-        """Callback for the queue"""
+        """
+        Callback for the queue
+        """
         track = self.songs[int(self.values[0])]
 
         embed = discord.Embed(
@@ -128,28 +138,33 @@ class PlayerDropdown(discord.ui.Select):
 
 
 class PlayerSelector(discord.ui.View):
-    """Select a song based on what we show from track results."""
+    """
+    Select a song based on what we show from track results.
+    """
 
     def __init__(
-        self, ctx: commands.Context, player: wavelink.Player, songs: list
+        self, ctx: commands.Context, player: Player, songs: list
     ) -> None:
         """
-        Init
+        Constructing the player selector
         """
         self.ctx = ctx
         self.play_embed = None
         super().__init__(timeout=60)
-
         self.add_item(PlayerDropdown(ctx, player, songs))
 
-    async def interaction_check(self, interaction) -> None:
-        """If the interaction isn't by the user, return a fail."""
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        If the interaction isn't by the user, return a fail.
+        """
         if interaction.user != self.ctx.author:
             return False
         return True
 
     async def on_timeout(self) -> None:
-        """On timeout make this look cool"""
+        """
+        On timeout make this look cool
+        """
         for item in self.children:
             item.disabled = True
 
@@ -167,8 +182,10 @@ class PlayerSelector(discord.ui.View):
         style=discord.ButtonStyle.danger,
         row=2,
     )
-    async def button_callback(self, button, interaction) -> None:
-        """Delete the message if clicked"""
+    async def button_callback(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        """
+        Delete the message if clicked
+        """
         await self.play_embed.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
 
@@ -179,10 +196,10 @@ class QueueDropdown(discord.ui.Select):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: wavelink.Player, songs: list, page_num: int
+        self, ctx: commands.Context, player: Player, songs: list, page_num: int
     ) -> None:
         """
-        Init
+        Construct the queue dropdown view
         """
         self.ctx = ctx
         self.player = player
@@ -240,10 +257,10 @@ class QueueView(discord.ui.View):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: wavelink.Player, songs: list
+        self, ctx: commands.Context, player: Player, songs: list
     ) -> None:
         """
-        Init
+        Construct the queue view with dropdown attached
         """
         self.ctx = ctx
         self.play_embed = None
@@ -251,14 +268,16 @@ class QueueView(discord.ui.View):
 
         self.add_item(QueueDropdown(ctx, player, songs))
 
-    async def interaction_check(self, interaction) -> None:
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """If the interaction isn't by the user, return a fail."""
         if interaction.user != self.ctx.author:
             return False
         return True
 
     async def on_timeout(self) -> None:
-        """On timeout make this look cool"""
+        """
+        On timeout make this look cool
+        """
         for item in self.children:
             item.disabled = True
 
@@ -276,33 +295,40 @@ class QueueView(discord.ui.View):
         style=discord.ButtonStyle.danger,
         row=2,
     )
-    async def button_callback(self, button, interaction) -> None:
-        """Delete the message if clicked"""
+    async def button_callback(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        """
+        Delete the message if clicked
+        """
         await self.play_embed.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
 
 
 class FilterSpinView(discord.ui.View):
-    """Display a ui for spinning!"""
+    """
+    Display a ui for spinning!
+    """
 
-    def __init__(self, ctx: commands.Context, player: wavelink.Player) -> None:
+    def __init__(self, ctx: commands.Context, player: Player) -> None:
         """
-        Init
+        Construct the spinny thing :)
         """
         self.ctx = ctx
         self.player = player
         self.spin: float = 0.0
         super().__init__()
 
-    async def interaction_check(self, interaction) -> None:
-        """If the interaction isn't by the user, return a fail."""
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        If the interaction isn't by the user, return a fail.
+        """
         if interaction.user != self.ctx.author:
             return False
         return True
 
     async def on_timeout(self) -> None:
-        """On timeout make this look cool"""
-
+        """
+        On timeout make this look cool
+        """
         for item in self.children:
             item.disabled = True
 
@@ -331,6 +357,7 @@ class FilterSpinView(discord.ui.View):
         if self.spin < -5.0:
             self.spin = -5.0
         await self.set_spin()
+
         embed = discord.Embed(
             title=f"Spin Mode",
             description=f"""Set a spin mode below!
@@ -350,7 +377,9 @@ class FilterSpinView(discord.ui.View):
     async def button2_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
-        """-1 button"""
+        """
+        -1 button
+        """
         self.spin -= 1
         await self.edit_spin_embed(interaction)
 
@@ -360,7 +389,9 @@ class FilterSpinView(discord.ui.View):
     async def button1_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
-        """-0.1 button"""
+        """
+        -0.1 button
+        """
         self.spin -= 0.1
         await self.edit_spin_embed(interaction)
 
@@ -370,7 +401,9 @@ class FilterSpinView(discord.ui.View):
     async def button3_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
-        """Reset button"""
+        """
+        Reset button
+        """
         self.spin = 0.0
         await self.edit_spin_embed(interaction)
 
@@ -380,7 +413,9 @@ class FilterSpinView(discord.ui.View):
     async def button4_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
-        """+0.1 button"""
+        """
+        +0.1 button
+        """
         self.spin += 0.1
         await self.edit_spin_embed(interaction)
 
@@ -390,22 +425,31 @@ class FilterSpinView(discord.ui.View):
     async def button5_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
-        """+1 button"""
+        """
+        +1 button
+        """
         self.spin += 1
         await self.edit_spin_embed(interaction)
 
 
 def duration(seconds: float) -> str:
-    """Return a human readable duration because"""
+    """
+    Return a human readable duration because
+    """
     return util.remove_zcs(str(datetime.timedelta(seconds=seconds)))
 
 
 class Music(commands.Cog):
-    """Music cog to hold Wavelink related commands and listeners."""
+    """
+    Music cog to hold Wavelink related commands and listeners.
+    """
+
+    COLOR = style.Color.PINK
+    ICON = ":music_visualizer:"
 
     def __init__(self, bot: commands.Bot) -> None:
         """
-        Init
+        Construct the music cog
         """
         self.bot = bot
 
@@ -452,8 +496,10 @@ class Music(commands.Cog):
             self_deaf=True,
         )
 
-    async def get_player(self, ctx: commands.Context) -> wavelink.Player:
-        """Create a player and connect cls"""
+    async def get_player(self, ctx: commands.Context) -> Player:
+        """
+        Create a player and connect cls
+        """
         if not ctx.author.voice:
             embed = discord.Embed(
                 title=f"Error",
@@ -463,18 +509,20 @@ class Music(commands.Cog):
             )
             return await ctx.send(embed=embed)
         elif not ctx.voice_client:
-            player: wavelink.Player = await ctx.author.voice.channel.connect(
+            player: Player = await ctx.author.voice.channel.connect(
                 cls=Player(dj=ctx.author, channel=ctx.author.voice.channel)
             )
         else:
-            player: wavelink.Player = ctx.voice_client
+            player: Player = ctx.voice_client
             await self.bot.loop.create_task(self.self_deafen(ctx))
 
         return player
 
     @commands.Cog.listener()
     async def on_connect_wavelink(self) -> None:
-        """On cog load do stuff"""
+        """
+        On cog load do stuff
+        """
         await self.connect_nodes()
         self.musicDB = await asqlite.connect("Databases/music.db")
         async with self.musicDB as db:
@@ -514,15 +562,19 @@ class Music(commands.Cog):
         await self.bot.blogger.load("Recently Played")
 
     @commands.Cog.listener()
-    async def on_wavelink_node_ready(self, node) -> None:
-        """Event fired when a node has finished connecting."""
+    async def on_wavelink_node_ready(self, node: wavelink.Node) -> None:
+        """
+        Event fired when a node has finished connecting.
+        """
         await self.bot.blogger.connect(f"{node.identifier} is ready.")
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(
-        self, player: Player, track: wavelink.Track, reason
+        self, player: Player, track: wavelink.Track, reason: str
     ) -> None:
-        """On end, check if the queue has another song to play if not disconnect after 5 min"""
+        """
+        On end, check if the queue has another song to play if not disconnect after 5 min
+        """
         if player.queue.is_empty:
             self.bot.loop.create_task()
         else:
@@ -540,7 +592,6 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @commands.has_permissions()
     async def play_cmd(self, ctx: commands.Context, *, song: str) -> None:
         """
         Play a song with the given search query.
@@ -688,7 +739,7 @@ class Music(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def queue_cmd(self, ctx: commands.Context) -> None:
         """
         View player queue
@@ -744,8 +795,8 @@ class Music(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def nowplaying_cmd(self, ctx: commands.Context) -> None:
+    @commands.cooldown(2.0, 5.0, commands.BucketType.channel)
+    async def now_cmd(self, ctx: commands.Context) -> None:
         """
         Showing whats now playing
         """
@@ -779,15 +830,17 @@ class Music(commands.Cog):
     @commands.hybrid_command(
         name="skip",
         description="""Skip command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
+        help="""Skip command""",
+        brief="Skip command",
         aliases=["s"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def skip_cmd(self, ctx: commands.Context) -> None:
-        """Skip command"""
+        """
+        Skip command
+        """
         player = await self.get_player(ctx)
 
         try:
@@ -840,7 +893,9 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def dc_cmd(self, ctx: commands.Context) -> None:
-        """Disconnect"""
+        """
+        Disconnect the bot from the voice channel
+        """
         player = await self.get_player(ctx)
 
         await player.disconnect()
@@ -863,7 +918,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def remove_cmd(self, ctx: commands.Context, *, number: str):
+    async def remove_cmd(self, ctx: commands.Context, *, number: str) -> None:
         """
         Will support removing by song name / author soon.
         """
@@ -905,7 +960,9 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def shuffle_cmd(self, ctx: commands.Context) -> None:
-        """Shuffle the queue"""
+        """
+        Shuffle the queue
+        """
         player = await self.get_player(ctx)
 
         try:
@@ -977,7 +1034,9 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def pause_cmd(self, ctx: commands.Context) -> None:
-        """Pause the queue"""
+        """
+        Pause the queue
+        """
         player = await self.get_player(ctx)
         try:
             if player.is_paused:
@@ -1018,8 +1077,11 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def unpause_cmd(self, ctx: commands.Context) -> None:
-        """Unause the queue"""
+        """
+        Unause the queue
+        """
         player = await self.get_player(ctx)
+
         try:
             if not player.is_paused:
                 embed = discord.Embed(
@@ -1048,12 +1110,22 @@ class Music(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @commands.hybrid_group(name="filter", aliases=[], enabled=True, hidden=False)
+    @commands.hybrid_group(
+        name="filter",
+        description="""Add different filters to the currently playing song""",
+        help="""Add different filters to the currently playing song""",
+        brief="Add different filters to the currently playing song",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def filter_group(self, ctx: commands.Context) -> None:
-        """Filter group"""
+        """
+        Add different filters to the currently playing song
+        """
         if not ctx.invoked_subcommand:
-            pass
+            await ctx.send_help(ctx.command)
 
     @filter_group.command(
         name="reset",
@@ -1070,6 +1142,7 @@ class Music(commands.Cog):
         Remove all filters and reset
         """
         player = await self.get_player(ctx)
+
         await player.set_filter(wavelink.Filter(), seek=True)
 
         embed = discord.Embed(
@@ -1091,9 +1164,11 @@ class Music(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def filter_equalizer_group(self, ctx: commands.Context) -> None:
-        """Equalizer filter"""
+        """
+        Equalizer filter
+        """
         if not ctx.invoked_subcommand:
-            pass
+            await ctx.send_help(ctx.command)
 
     @filter_equalizer_group.command(
         name="boost",

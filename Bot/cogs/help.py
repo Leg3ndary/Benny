@@ -2,30 +2,14 @@ import discord
 from discord.ext import commands
 from gears import style, util
 
-COG_INFO = {
-    "Playlist": {"color": style.Color.RED, "emoji": ":notepad_spiral:"},
-    "Settings": {"color": style.Color.GREY, "emoji": ":gear:"},
-    "Exalia": {"color": style.Color.BLACK, "emoji": ":crossed_swords:"},
-    "Help": {"color": style.Color.AQUA, "emoji": ":question:"},
-    "MongoDB": {"color": style.Color.GREEN, "emoji": ":leaves:"},
-    "Games": {"color": style.Color.BLACK, "emoji": ":game_die:"},
-    "Base": {"color": style.Color.BLUE, "emoji": ":crystal_ball:"},
-    "Music": {"color": style.Color.ORANGE, "emoji": ":musical_note:"},
-    "Errors": {"color": style.Color.RED, "emoji": ":x:"},
-    "SystemInfo": {"color": style.Color.ORANGE, "emoji": ":desktop:"},
-    "Dev": {"color": style.Color.AQUA, "emoji": ":lock:"},
-    "Mod": {"color": style.Color.PURPLE, "emoji": ":hammer:"},
-    "CustomCommands": {"color": style.Color.WHITE, "emoji": ":confetti_ball:"},
-    "Redis": {"color": style.Color.RED, "emoji": ":red_square:"},
-    "Reminders": {"color": style.Color.AQUA, "emoji": ":page_facing_up:"},
-    "None": {"color": style.Color.GREY, "emoji": ":warning:"},
-}
 
 HELP_FORMAT = f"{util.ansi('grey')}prefix{util.ansi('white', None, 'bold')}command_name {util.ansi('white', None, 'bold')}<{util.ansi('blue', None, 'underline')}Required{util.ansi('white', None, 'bold')}>{util.ansi('clear')} {util.ansi('white', None, 'bold')}[{util.ansi('pink', None, 'underline')}Optional{util.ansi('white', None, 'bold')}]"
 
 
 class BennyHelp(commands.HelpCommand):
-    """Custom Help Command Class"""
+    """
+    Custom Help Command Class
+    """
 
     def get_command_signature(self, command: commands.Command) -> str:
         """
@@ -95,11 +79,11 @@ class BennyHelp(commands.HelpCommand):
 
             if command_signatures:
                 cog_name = getattr(cog, "qualified_name", "ERROR")
-                if cog_name in ["ERROR", "Dev", "CustomCommands", "Events", "Users"]:
+                if cog_name in ["Errors", "Dev", "Events", "ERROR", "Help"]:
                     pass
                 else:
                     embed.add_field(
-                        name=f"{COG_INFO.get(cog_name, COG_INFO.get('None')).get('emoji')} {cog_name}",
+                        name=f"{cog.ICON} {cog_name}",
                         value="not done yet",
                         inline=True,
                     )
@@ -119,7 +103,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=cog.qualified_name,
             description=cog.description,
-            color=COG_INFO.get(cog.qualified_name).get("color"),
+            color=cog.COLOR,
         )
         commands_view = ""
         for command in cog.get_commands():
@@ -139,7 +123,7 @@ class BennyHelp(commands.HelpCommand):
         embed = discord.Embed(
             title=group.signature,
             description=f"""{group.short_doc}""",
-            color=COG_INFO.get(group.cog_name).get("color"),
+            color=group.cog.COLOR,
         )
         for command in group.walk_commands():
             embed.add_field(
@@ -174,7 +158,7 @@ class BennyHelp(commands.HelpCommand):
 {util.ansi('red', None, 'bold', 'underline')}Aliases{util.ansi('clear')}
 {util.ansi('cyan', None, 'underline')}{alias_text}
 ```""",
-            color=COG_INFO.get(command.cog_name).get("color"),
+            color=command.cog.COLOR,
         )
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
@@ -194,7 +178,12 @@ class BennyHelp(commands.HelpCommand):
 
 
 class Help(commands.Cog):
-    """The help cog"""
+    """
+    The help cog
+    """
+    
+    COLOR = style.Color.AQUA
+    ICON = ":blue_book:"
 
     def __init__(self, bot: commands.Bot):
         """

@@ -39,19 +39,34 @@ class Dev(commands.Cog):
     All commands in this cog are owner only, they are meant for bot development
     """
 
+    COLOR = style.Color.BLACK
+    ICON = "<:_:992072492191592448>"
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init for the bot
         """
         self.bot = bot
 
-    async def cog_check(self, ctx: commands.Context) -> None:
-        """Check if the user is the owner."""
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        """
+        Check if the user is the owner.
+        """
         return await self.bot.is_owner(ctx.author)
 
-    @commands.group(name="dev")
+    @commands.group(
+        name="dev",
+        description="""Commands thats sole purpose is for me to experiment.""",
+        help="""Commands thats sole purpose is for me to experiment.""",
+        brief="Commands thats sole purpose is for me to experiment.",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
     async def dev_group(self, ctx: commands.Context) -> None:
-        """Commands thats sole purpose is for me to experiment."""
+        """
+        Commands thats sole purpose is for me to experiment.
+        """
         if not ctx.invoked_subcommand:
             embed = discord.Embed(
                 title=f"{ctx.author.display_name} is the Dev",
@@ -359,7 +374,6 @@ class Dev(commands.Cog):
         Evaluates code given, I stole this from r danny, ty rapptz...
         """
         env = {"bot": self.bot, "ctx": ctx}
-
         env.update(globals())
 
         if code.startswith("```") and code.endswith("```"):
@@ -442,7 +456,7 @@ class Dev(commands.Cog):
         enabled=True,
         hidden=True,
     )
-    async def dev_close_bot(self, ctx: commands.Context) -> None:
+    async def dev_close_cmd(self, ctx: commands.Context) -> None:
         """
         Stopping the bot
         """

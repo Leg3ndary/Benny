@@ -21,7 +21,7 @@ class LoggingManager:
     Webhook manager, mainly used to make methods a lot more clear
     """
 
-    def __init__(self, bot) -> None:
+    def __init__(self, bot: commands.Bot) -> None:
         """
         Init
         """
@@ -57,6 +57,9 @@ class Logging(commands.Cog):
     Custom server logging
     """
 
+    COLOR = style.Color.PURPLE
+    ICON = ":newspaper:"
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Logging init
@@ -82,6 +85,8 @@ class Logging(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def logs_cmd(self, ctx: commands.Context) -> None:
         """View basic log config"""
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
 
 
 async def setup(bot: commands.Bot) -> None:

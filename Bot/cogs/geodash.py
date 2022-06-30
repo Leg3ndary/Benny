@@ -22,9 +22,14 @@ class GeometryDashWebhookUpdates:
 
 
 class GeometryDash(commands.Cog):
-    """Gonna be adding geodash stuff"""
+    """
+    Gonna be adding geodash stuff
+    """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Constructing the geodash cog
+        """
         self.bot = bot
         self.gd = client
 
@@ -51,17 +56,19 @@ class GeometryDash(commands.Cog):
         description="""Geometry dash related commands""",
         help="""Geometry dash related commands""",
         brief="Brief one liner about the command",
-        aliases=["geometrydash"],
+        aliases=["geometrydash", "geodash"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def gd_cmd(self, ctx: commands.Context) -> None:
-        """Does nothing on its own as of now"""
+    async def gd_group(self, ctx: commands.Context) -> None:
+        """
+        Does nothing on its own as of now
+        """
         if not ctx.invoked_subcommand:
             pass
 
-    @gd_cmd.command(
+    @gd_group.command(
         name="daily",
         description="""View the daily levels information""",
         help="""View the daily levels information""",
@@ -71,7 +78,10 @@ class GeometryDash(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def get_daily(self, ctx) -> None:
+    async def gd_daily_cmd(self, ctx: commands.Context) -> None:
+        """
+        Display the daily levels information
+        """
         try:
             daily = await self.gd.get_daily()
 

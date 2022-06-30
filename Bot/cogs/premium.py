@@ -60,7 +60,12 @@ class PremiumManager:
 
 
 class Premium(commands.Cog):
-    """Cog Example Description"""
+    """
+    Premium management
+    """
+
+    COLOR = style.Color.AQUA
+    ICON = ":crown:"
 
     def __init__(self, bot: commands.Bot) -> None:
         """
@@ -70,4 +75,5 @@ class Premium(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Premium(bot))
+    pass
+    #await bot.add_cog(Premium(bot))

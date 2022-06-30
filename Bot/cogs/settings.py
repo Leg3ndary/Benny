@@ -67,7 +67,7 @@ class PrefixManager:
             raise commands.BadArgument("Why do you have `:|:` as a prefix...")
         return prefix.strip()[:25]
 
-    async def prefixes_to_string(self, prefixes: list) -> str:
+    def prefixes_to_string(self, prefixes: list) -> str:
         """
         Turn prefix list into string
 
@@ -142,7 +142,7 @@ class PrefixManager:
             self.bot.prefixes[str(guild)] = prefixes
             await self.db.execute(
                 f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
-                (await self.prefixes_to_string(prefixes), str(guild)),
+                (self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
         return
@@ -174,7 +174,7 @@ class PrefixManager:
             self.bot.prefixes[str(guild)] = prefixes
             await self.db.execute(
                 f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
-                (await self.prefixes_to_string(prefixes), str(guild)),
+                (self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
 
@@ -229,7 +229,9 @@ class PrefixManager:
 
 
 class Settings(commands.Cog):
-    """Manage server settings like prefixes, welcome messages, etc"""
+    """
+    Manage server settings like prefixes, welcome messages, etc
+    """
 
     def __init__(self, bot: commands.Bot) -> None:
         """
@@ -311,11 +313,13 @@ class Settings(commands.Cog):
         hidden=False,
     )
     @commands.guild_only()
-    @commands.cooldown(1.0, 3.0, commands.BucketType.user)
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def prefix(self, ctx: commands.Context) -> None:
         """
         Prefix group for commands
         """
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
 
     @prefix.command(
         name="list",
@@ -328,8 +332,11 @@ class Settings(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def prefix_list_cmd(self, ctx: commands.Context) -> None:
-        """List prefixes for a server"""
+        """
+        List prefixes for a server
+        """
         prefixes = await self.bot.prefix_manager.get_prefixes(ctx.guild.id)
+
         prefix_visual = ""
         for count, prefix in enumerate(prefixes, start=1):
             prefix_visual += f"\n{count}. {prefix}"
@@ -357,7 +364,9 @@ class Settings(commands.Cog):
     )
     @commands.has_permissions(manage_messages=True)
     async def add_prefix(self, ctx: commands.Context, *, prefix: str):
-        """Add a prefix to a server"""
+        """
+        Add a prefix to a server
+        """
         await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
 
         embed = discord.Embed(
@@ -380,7 +389,9 @@ class Settings(commands.Cog):
     )
     @commands.has_permissions(manage_messages=True)
     async def remove_prefix(self, ctx: commands.Context, *, prefix: str):
-        """Remove a prefix from your server"""
+        """
+        Remove a prefix from your server
+        """
         await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
 
         embed = discord.Embed(
@@ -407,7 +418,7 @@ class Settings(commands.Cog):
         Premium group for commands
         """
         if not ctx.invoked_subcommand:
-            pass
+            await ctx.send_help(ctx.command)
 
     @premium_info.command(
         name="add",
@@ -420,7 +431,9 @@ class Settings(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def add_premium(self, ctx: commands.Context, *, prefix: str):
-        """Add premium to the bot"""
+        """
+        Add premium to the bot
+        """
         pass
 
     @premium_info.command(
@@ -435,7 +448,9 @@ class Settings(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def remove_premium(self, ctx: commands.Context, *, prefix: str):
-        """Remove premium from a server"""
+        """
+        Remove premium from a server
+        """
         pass
 
 
