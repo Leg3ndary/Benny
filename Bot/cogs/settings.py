@@ -233,6 +233,9 @@ class Settings(commands.Cog):
     Manage server settings like prefixes, welcome messages, etc
     """
 
+    COLOR = style.Color.AQUA
+    ICON = ":gear:"
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init for the bot

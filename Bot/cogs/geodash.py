@@ -26,6 +26,9 @@ class GeometryDash(commands.Cog):
     Gonna be adding geodash stuff
     """
 
+    COLOR = style.Color.NAVY
+    ICON = ":blue_square:"
+
     def __init__(self, bot: commands.Bot) -> None:
         """
         Constructing the geodash cog

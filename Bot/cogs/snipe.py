@@ -99,4 +99,5 @@ class Snipe(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
-    await bot.add_cog(Snipe(bot))
+    pass
+    #await bot.add_cog(Snipe(bot))

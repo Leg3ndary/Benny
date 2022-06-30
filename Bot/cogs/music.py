@@ -445,7 +445,7 @@ class Music(commands.Cog):
     """
 
     COLOR = style.Color.PINK
-    ICON = ":music_visualizer:"
+    ICON = "<a:_:992130768270790718>"
 
     def __init__(self, bot: commands.Bot) -> None:
         """
