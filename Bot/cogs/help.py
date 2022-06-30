@@ -69,8 +69,13 @@ class BennyHelp(commands.HelpCommand):
         return f"{colored_prefix}{colored_command_name} {colored_signature}"
 
     async def send_bot_help(self, mapping: dict) -> None:
-        """When help is ran on its own no args"""
-        embed = discord.Embed(title="Help", color=style.Color.AQUA)
+        """
+        When help is ran on its own no args
+        """
+        embed = discord.Embed(
+            title="Help",
+            color=style.Color.AQUA
+        )
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -172,7 +177,11 @@ class BennyHelp(commands.HelpCommand):
         """
         Error Messages that may appear
         """
-        embed = discord.Embed(title="Error", description=error, color=style.Color.RED)
+        embed = discord.Embed(
+            title="Error",
+            description=error,
+            color=style.Color.RED
+        )
         channel = self.get_destination()
         await channel.send(embed=embed)
 
