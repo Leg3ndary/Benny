@@ -47,16 +47,34 @@ class Databases(commands.Cog):
         """
         self.redis_updater.cancel()
 
-    @commands.group()
+    @commands.group(
+        name="redis",
+        description="""Redis Group""",
+        help="""Redis Group""",
+        brief="Redis Group",
+        aliases=[],
+        enabled=True,
+        hidden=True
+    )
     @commands.is_owner()
-    async def redis(self, ctx: commands.Context) -> None:
+    async def redis_group(self, ctx: commands.Context) -> None:
         """Access stuff about redis"""
         if not ctx.invoked_subcommand:
             await ctx.send_help("redis")
 
-    @redis.command()
-    async def get(self, ctx: commands.Context, key):
-        """Get a certain keys data"""
+    @redis_group.command(
+        name="get",
+        description="""Get a keys value""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["show"],
+        enabled=True,
+        hidden=False
+    )
+    async def redis_get_cmd(self, ctx: commands.Context, key: str) -> None:
+        """
+        Get a certain keys value
+        """
         data = await self.bot.redis.get(key)
 
         if not data:
@@ -78,11 +96,21 @@ class Databases(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-    @redis.command()
-    async def add(self, ctx: commands.Context, key, value):
-        """Add something to our db"""
+    @redis_group.command(
+        name="add",
+        description="""Add a value to redis""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=["set", "+"],
+        enabled=True,
+        hidden=False
+    )
+    async def redis_add_cmd(self, ctx: commands.Context, key: str, *, value: str):
+        """
+        Add something to our db
+        """
         try:
-            await self.bot.redis.set("key", "Data")
+            await self.bot.redis.set(key, value)
             embed = discord.Embed(
                 title=f"""Added Key""",
                 description=f"""```md
@@ -102,8 +130,16 @@ class Databases(commands.Cog):
             )
             await ctx.send(embed=unable)
 
-    @redis.command()
-    async def search(self, ctx: commands.Context, *, pattern: str = "*"):
+    @redis_group.command(
+        name="search",
+        description="""Search for a key""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    async def redis_search_cmd(self, ctx: commands.Context, *, pattern: str = "*"):
         """List all our keys"""
         keys = ""
         for count, value in enumerate(await self.bot.redis.keys(pattern), start=1):
@@ -122,9 +158,19 @@ class Databases(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @redis.command()
-    async def info(self, ctx: commands.Context) -> None:
-        """Show some info about our connection"""
+    @redis_group.command(
+        name="info",
+        description="""Info about redis""",
+        help="""Info about redis""",
+        brief="Info about redis",
+        aliases=["i"],
+        enabled=True,
+        hidden=False
+    )
+    async def redis_info_cmd(self, ctx: commands.Context) -> None:
+        """
+        Show some info about our connection
+        """
         embed = discord.Embed(
             title="Redis Info",
             description=f"""```asciidoc
@@ -141,13 +187,22 @@ class Databases(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @redis.command()
-    async def cinfo(self, ctx: commands.Context) -> None:
-        """Show complex info about our Redis DB"""
+    @redis_group.command(
+        name="cinfo",
+        description="""Complex info about redis""",
+        help="""Complex info about redis""",
+        brief="Complex info about redis",
+        aliases=["complex", "c"],
+        enabled=True,
+        hidden=False
+    )
+    async def redis_cinfo_cmd(self, ctx: commands.Context) -> None:
+        """
+        Show complex info about our Redis DB
+        """
         data = await self.bot.redis.info()
 
         visual = ""
-
         for item in data.keys():
             visual = (
                 f"""{visual}\n[ {item.replace("_", " ").capitalize()}: {data[item]} ]"""
@@ -164,8 +219,16 @@ class Databases(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    @redis.command()
-    async def sa(self, ctx: commands.Context) -> None:
+    @redis_group.command(
+        name="showall",
+        description="""Show all keys and data""",
+        help="""Show all keys and data""",
+        brief="Show all keys and data",
+        aliases=["sa"],
+        enabled=True,
+        hidden=False
+    )
+    async def redis_showall_cmd(self, ctx: commands.Context) -> None:
         """Show all data"""
         embed = discord.Embed(
             title="Attempting to fetch all data",
@@ -195,7 +258,10 @@ class Databases(commands.Cog):
         await msg.edit(embed=embed_done)
 
     @tasks.loop(hours=1.0)
-    async def redis_updater(self):
+    async def redis_updater(self) -> None:
+        """
+        Automatically update redis lul
+        """
         await self.bot.redis.set("updater", "0")
         await self.bot.redis.set("updater", "1")
 

@@ -39,10 +39,12 @@ class BotUtil:
     async def get_files(self, directory: str = None) -> list:
         """
         Return every file using recursion
+
         Parameters
         ----------
-        directory: str (Optional)
+        directory: str (Optional None)
             The directory to search, if none given opens then it leaves it
+        
         Returns
         -------
         list
