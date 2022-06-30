@@ -226,6 +226,7 @@ class Tags(commands.Cog):
             self.custom_tags[tag.name][tag.guild] = tag
 
         else:
+
             @commands.command(
                 name=tag.name,
                 help=f"Custom command: Outputs your custom provided output",
@@ -519,7 +520,7 @@ class Tags(commands.Cog):
 {vis.strip()}
             ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.PINK
+            color=style.Color.PINK,
         )
         await ctx.send(embed=embed)
 

@@ -44,7 +44,7 @@ class BotUtil:
         ----------
         directory: str (Optional None)
             The directory to search, if none given opens then it leaves it
-        
+
         Returns
         -------
         list

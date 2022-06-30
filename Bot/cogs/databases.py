@@ -54,7 +54,7 @@ class Databases(commands.Cog):
         brief="Redis Group",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     @commands.is_owner()
     async def redis_group(self, ctx: commands.Context) -> None:
@@ -69,7 +69,7 @@ class Databases(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["show"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def redis_get_cmd(self, ctx: commands.Context, key: str) -> None:
         """
@@ -103,7 +103,7 @@ class Databases(commands.Cog):
         brief="Brief one liner about the command",
         aliases=["set", "+"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def redis_add_cmd(self, ctx: commands.Context, key: str, *, value: str):
         """
@@ -137,7 +137,7 @@ class Databases(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def redis_search_cmd(self, ctx: commands.Context, *, pattern: str = "*"):
         """List all our keys"""
@@ -165,7 +165,7 @@ class Databases(commands.Cog):
         brief="Info about redis",
         aliases=["i"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def redis_info_cmd(self, ctx: commands.Context) -> None:
         """
@@ -194,7 +194,7 @@ class Databases(commands.Cog):
         brief="Complex info about redis",
         aliases=["complex", "c"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def redis_cinfo_cmd(self, ctx: commands.Context) -> None:
         """
@@ -226,7 +226,7 @@ class Databases(commands.Cog):
         brief="Show all keys and data",
         aliases=["sa"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def redis_showall_cmd(self, ctx: commands.Context) -> None:
         """Show all data"""

@@ -17,7 +17,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 def to_string(char: str) -> str:
     """
     Convert a string into a nice format for an embed...
-    
+
     Took this from rdanny, ty
     """
     digit = f"{ord(char):x}"
