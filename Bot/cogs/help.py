@@ -33,7 +33,7 @@ class BennyHelp(commands.HelpCommand):
 
     def get_colored_command_signature(self, command: commands.Command) -> str:
         """
-        ANSI colored version
+        ANSI colored version of help
         """
         parent = command.parent
         entries = []
@@ -73,7 +73,7 @@ class BennyHelp(commands.HelpCommand):
         When help is ran on its own no args
         """
         embed = discord.Embed(
-            title="Help",
+            title=f"{self.bot.name}Help",
             color=style.Color.AQUA
         )
         for cog, commands in mapping.items():
@@ -84,12 +84,10 @@ class BennyHelp(commands.HelpCommand):
 
             if command_signatures:
                 cog_name = getattr(cog, "qualified_name", "ERROR")
-                if cog_name in ["Errors", "Dev", "Events", "ERROR", "Help"]:
-                    pass
-                else:
+                if cog_name not in ("Errors", "Dev", "Events", "ERROR", "Help"):
                     embed.add_field(
                         name=f"{cog.ICON} {cog_name}",
-                        value="not done yet",
+                        value=f"Not finished as of yet",
                         inline=True,
                     )
 
@@ -110,10 +108,11 @@ class BennyHelp(commands.HelpCommand):
             description=cog.description,
             color=cog.COLOR,
         )
-        commands_view = ""
-        for command in cog.get_commands():
-            commands_view += f"\n{command}"
-        embed.add_field(name="Commands", value=commands_view, inline=False)
+        embed.add_field(
+            name="Commands",
+            value="\n".join(cog.get_commands()),
+            inline=False
+        )
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
             icon_url=self.context.author.avatar,
@@ -194,7 +193,7 @@ class Help(commands.Cog):
     COLOR = style.Color.AQUA
     ICON = ":blue_book:"
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         """
         Init the help cog
         """
