@@ -613,17 +613,23 @@ class SentinelWatcherView(discord.ui.View):
         super().__init__()
 
     @discord.ui.button(label="Ban", emoji=":hammer:", style=discord.ButtonStyle.danger)
-    async def ban(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def ban(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         await interaction.send("Add ban stuff idiot")
 
     @discord.ui.button(label="Mute", emoji=":mute:", style=discord.ButtonStyle.danger)
-    async def mute(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def mute(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         await interaction.send("Add mute stuff here idiot")
 
     @discord.ui.button(
         label="warn", emoji=":warning:", style=discord.ButtonStyle.blurple
     )
-    async def warn(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def warn(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         await interaction.send("add warn stuff loser")
 
 
@@ -841,7 +847,7 @@ class Sentinel(commands.Cog):
         brief="View sentinel config values",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def sentinel_config_cmd(self, ctx: commands.Context) -> None:

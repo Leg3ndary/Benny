@@ -4,9 +4,9 @@ import traceback
 
 import discord
 import discord.utils
+from colorama import Fore, Style
 from discord.ext import commands
 from gears import style
-from colorama import Style, Fore
 
 
 def log_error(error: str) -> None:
@@ -74,7 +74,7 @@ class Errors(commands.Cog):
                 title=f"Error - Missing Permissions",
                 description=f"""I don't have permission to perform this action.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.RED
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -83,7 +83,7 @@ class Errors(commands.Cog):
                 title=f"Error - Not Found",
                 description=f"""I couldn't find the requested resource.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.RED
+                color=style.Color.RED,
             )
             await ctx.send(embed=embed)
 
@@ -92,9 +92,9 @@ class Errors(commands.Cog):
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr
             )
-            log_error(f"HTTP request failed. HTTP Code: {error.status} Discord Code: {error.code}")
-
-
+            log_error(
+                f"HTTP request failed. HTTP Code: {error.status} Discord Code: {error.code}"
+            )
 
         elif isinstance(error, commands.MemberNotFound):
             embed = discord.Embed(

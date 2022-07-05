@@ -122,7 +122,7 @@ class IMGReader:
         self.bot = bot
         self.loop = bot.loop
 
-        if not bot.PLATFORM.lower() == "linux":
+        if not bot.PLATFORM == "linux":
             pytesseract.pytesseract.tesseract_cmd = (
                 "C:/Program Files/Tesseract-OCR/tesseract.exe"
             )

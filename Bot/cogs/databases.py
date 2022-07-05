@@ -115,7 +115,9 @@ class Databases(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def redis_add_cmd(self, ctx: commands.Context, key: str, *, value: str) -> None:
+    async def redis_add_cmd(
+        self, ctx: commands.Context, key: str, *, value: str
+    ) -> None:
         """
         Add something to our db
         """
@@ -149,7 +151,9 @@ class Databases(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def redis_search_cmd(self, ctx: commands.Context, *, pattern: str = "*") -> None:
+    async def redis_search_cmd(
+        self, ctx: commands.Context, *, pattern: str = "*"
+    ) -> None:
         """
         List all our keys
         """

@@ -142,9 +142,7 @@ class PlayerSelector(discord.ui.View):
     Select a song based on what we show from track results.
     """
 
-    def __init__(
-        self, ctx: commands.Context, player: Player, songs: list
-    ) -> None:
+    def __init__(self, ctx: commands.Context, player: Player, songs: list) -> None:
         """
         Constructing the player selector
         """
@@ -182,7 +180,9 @@ class PlayerSelector(discord.ui.View):
         style=discord.ButtonStyle.danger,
         row=2,
     )
-    async def button_callback(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Delete the message if clicked
         """
@@ -256,9 +256,7 @@ class QueueView(discord.ui.View):
     Display all items in our queue, let you skip to any song
     """
 
-    def __init__(
-        self, ctx: commands.Context, player: Player, songs: list
-    ) -> None:
+    def __init__(self, ctx: commands.Context, player: Player, songs: list) -> None:
         """
         Construct the queue view with dropdown attached
         """
@@ -295,7 +293,9 @@ class QueueView(discord.ui.View):
         style=discord.ButtonStyle.danger,
         row=2,
     )
-    async def button_callback(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def button_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Delete the message if clicked
         """

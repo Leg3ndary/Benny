@@ -2,8 +2,8 @@ import datetime
 
 import discord
 from discord.ext import commands
-from motor.motor_asyncio import AsyncIOMotorClient
 from gears import style
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 class DictDropdown(discord.ui.Select):
@@ -151,7 +151,7 @@ class Dictionary(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def define_cmd(self, ctx: commands.Context, *, word: str) -> None :
+    async def define_cmd(self, ctx: commands.Context, *, word: str) -> None:
         """Define a word"""
         data = await self.get_word(word)
         await ctx.send("Sorry, this command doesn't actually do anything as of now")

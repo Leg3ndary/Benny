@@ -13,10 +13,11 @@ from gears import style
 from .tblocks import DeleteBlock
 
 
-def is_a_nerd() -> bool: # I think its bool
+def is_a_nerd() -> bool:  # I think its bool
     """
     Check if this person is part of the nerd thingy for asty
     """
+
     async def predicate(ctx: commands.Context) -> bool:
         return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
 

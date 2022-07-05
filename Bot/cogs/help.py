@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 from gears import style, util
 
-
 HELP_FORMAT = f"{util.ansi('grey')}prefix{util.ansi('white', None, 'bold')}command_name {util.ansi('white', None, 'bold')}<{util.ansi('blue', None, 'underline')}Required{util.ansi('white', None, 'bold')}>{util.ansi('clear')} {util.ansi('white', None, 'bold')}[{util.ansi('pink', None, 'underline')}Optional{util.ansi('white', None, 'bold')}]"
 
 
@@ -72,10 +71,7 @@ class BennyHelp(commands.HelpCommand):
         """
         When help is ran on its own no args
         """
-        embed = discord.Embed(
-            title=f"{self.bot.name}Help",
-            color=style.Color.AQUA
-        )
+        embed = discord.Embed(title=f"{self.bot.name}Help", color=style.Color.AQUA)
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -109,9 +105,7 @@ class BennyHelp(commands.HelpCommand):
             color=cog.COLOR,
         )
         embed.add_field(
-            name="Commands",
-            value="\n".join(cog.get_commands()),
-            inline=False
+            name="Commands", value="\n".join(cog.get_commands()), inline=False
         )
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
@@ -176,11 +170,7 @@ class BennyHelp(commands.HelpCommand):
         """
         Error Messages that may appear
         """
-        embed = discord.Embed(
-            title="Error",
-            description=error,
-            color=style.Color.RED
-        )
+        embed = discord.Embed(title="Error", description=error, color=style.Color.RED)
         channel = self.get_destination()
         await channel.send(embed=embed)
 
@@ -189,7 +179,7 @@ class Help(commands.Cog):
     """
     The help cog
     """
-    
+
     COLOR = style.Color.AQUA
     ICON = ":blue_book:"
 

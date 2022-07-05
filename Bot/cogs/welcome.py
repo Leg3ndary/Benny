@@ -74,7 +74,7 @@ class WelcomeManager:
 
         if not result:
             return
-        
+
         channel = self.bot.get_channel(result) or (await self.bot.fetch_channel(result))
 
         embed = await self.to_embed(result)
@@ -151,7 +151,7 @@ class Welcome(commands.Cog):
         brief="Welcome Group",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def welcome_group(self, ctx: commands.Context) -> None:
@@ -168,14 +168,13 @@ class Welcome(commands.Cog):
         brief="Set the welcome command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def welcome_set_group(self, ctx: commands.Context) -> None:
         """
         Set the welcome command
         """
-
 
 
 async def setup(bot: commands.Bot) -> None:

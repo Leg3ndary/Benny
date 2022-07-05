@@ -61,7 +61,7 @@ class Dev(commands.Cog):
         brief="Commands thats sole purpose is for me to experiment.",
         aliases=[],
         enabled=True,
-        hidden=True
+        hidden=True,
     )
     async def dev_group(self, ctx: commands.Context) -> None:
         """

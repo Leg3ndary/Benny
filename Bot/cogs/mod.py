@@ -279,7 +279,9 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
-    async def unban_cmd(self, ctx: commands.Context, member: int, reason: str = None) -> None:
+    async def unban_cmd(
+        self, ctx: commands.Context, member: int, reason: str = None
+    ) -> None:
         """
         Unban a user using an id
         """
@@ -307,6 +309,7 @@ class Mod(commands.Cog):
             reason = f"Unbanned by: "
 
             await ctx.guild.unban(discord.Object(id=member), reason)
+
     @commands.group(
         name="modlogs",
         description="""Check someones latest modlogs""",
@@ -314,7 +317,7 @@ class Mod(commands.Cog):
         brief="Check someones latest modlogs",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def modlogs_group(self, ctx: commands.Context) -> None:
@@ -331,7 +334,7 @@ class Mod(commands.Cog):
         brief="Set the modlogs channel",
         aliases=["set"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def modlogs_channel(
         self, ctx: commands.Context, channel: discord.TextChannel
