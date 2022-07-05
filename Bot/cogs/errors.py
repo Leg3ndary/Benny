@@ -6,6 +6,14 @@ import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
+from colorama import Style, Fore
+
+
+def log_error(error: str) -> None:
+    """
+    Logs an error string from an error string
+    """
+    print(f"{Fore.WHITE}[ {Fore.RED}ERROR {Fore.WHITE}] {Fore.RED}{error}")
 
 
 class Errors(commands.Cog):
@@ -18,7 +26,7 @@ class Errors(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         """
-        init the thing
+        Init the error handler
         """
         self.bot = bot
 
@@ -47,17 +55,51 @@ class Errors(commands.Cog):
         if cog:
             if cog._get_overridden_method(cog.cog_command_error):
                 return
-        ignored = (commands.CommandNotFound,)
+        ignored_errors = (commands.CommandNotFound,)
 
         error = getattr(error, "original", error)
 
-        if isinstance(error, ignored):
+        if isinstance(error, ignored_errors):
             return
 
-        if isinstance(error, commands.MemberNotFound):
+        # Discord Errors
+        elif isinstance(error, discord.LoginFailure):
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
+            log_error("Failed to login.")
+
+        elif isinstance(error, discord.Forbidden):
+            embed = discord.Embed(
+                title=f"Error - Missing Permissions",
+                description=f"""I don't have permission to perform this action.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED
+            )
+            await ctx.send(embed=embed)
+
+        elif isinstance(error, discord.NotFound):
+            embed = discord.Embed(
+                title=f"Error - Not Found",
+                description=f"""I couldn't find the requested resource.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED
+            )
+            await ctx.send(embed=embed)
+
+        # Catching all other http related errors
+        elif isinstance(error, discord.HTTPException):
+            traceback.print_exception(
+                type(error), error, error.__traceback__, file=sys.stderr
+            )
+            log_error(f"HTTP request failed. HTTP Code: {error.status} Discord Code: {error.code}")
+
+
+
+        elif isinstance(error, commands.MemberNotFound):
             embed = discord.Embed(
                 title="Member Not Found",
-                description=f"""The member {error.argument} was not found""",
+                description=f"""`{error.argument}` was not found""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -120,14 +162,14 @@ class Errors(commands.Cog):
             pass
 
         elif isinstance(error, commands.CheckFailure):
-            print(error)
+            pass
 
-        else:
-            # All other Errors not returned come here. And we can just print the default TraceBack.
-            print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
-            traceback.print_exception(
-                type(error), error, error.__traceback__, file=sys.stderr
-            )
+        # Printing all errors out we need to know what happened, add an else when prod finally hits
+        # All other Errors not returned come here. And we can just print the default TraceBack.
+        print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
+        traceback.print_exception(
+            type(error), error, error.__traceback__, file=sys.stderr
+        )
 
 
 async def setup(bot: commands.Bot) -> None:
