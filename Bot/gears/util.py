@@ -341,13 +341,13 @@ class BotLogger:
             The update kind, LOAD|UNLOAD|RELOAD
         """
         if update == "LOAD":
-            category = f"{Fore.GREEN}Cog Load"
+            category = f"{Fore.GREEN}COG LOAD"
         elif update == "UNLOAD":
-            category = f"{Fore.RED}Cog Unload"
+            category = f"{Fore.RED}COG UNLOAD"
         elif update == "RELOAD":
-            category = f"{Fore.MAGENTA}Cog Reload"
+            category = f"{Fore.MAGENTA}COG RELOAD"
         elif update == "FAIL":
-            category = f"{Fore.RED}Cog Failed"
+            category = f"{Fore.RED}COG FAILED"
         msg = f"{self.gen_category(category)} {cog}"
         print(msg)
         self.bot.loop.create_task(self.atu(msg))
