@@ -69,16 +69,73 @@ async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> list:
         return ""
 
 
-bot = commands.Bot(
-    command_prefix=get_prefix,
-    intents=intents,
-    description="Benny Bot",
-)
-bot.START_TIME = datetime.datetime.now(datetime.timezone.utc)
-bot.LOADED_PREFIXES = False
-bot.MUSIC_ENABLED = True
-bot.PREFIX = config.get("Bot").get("Prefix")
-bot.PLATFORM = sys.platform
+class BennyBot(commands.Bot):
+    """
+    Custom class for Benny!
+    """
+
+    PLATFORM = sys.platform.lower()
+    START_TIME: float = datetime.datetime.now(datetime.timezone.utc)
+    LOADED_PREFIXES: bool = False
+    MUSIC_ENABLED: bool = True
+    PREFIX: str = config.get("Bot").get("Prefix")
+    sessions: dict = {
+        "main": None,
+        "base": None,
+        "sentinel": None,
+        "discordstatus": None,
+        "blogger": None,
+        "translate": None,
+    }
+    blogger: util.BotLogger = None
+    config: dict = config
+    file_list: dict = {}
+
+    def __init__(self) -> None:
+        """
+        Init for the bot
+        """
+        super().__init__(
+            command_prefix=get_prefix,
+            intents=intents,
+            description="Benny Bot",
+        )
+
+    async def async_init(self) -> None:
+        """
+        Setup hook for the bot
+        """
+        await super().setup_hook()
+        await self.create_sessions()
+        self.blogger = util.BotLogger(self, self.sessions.get("blogger"))
+        await bot.blogger.load("BotLogger")
+        self.util = util.BotUtil(bot)
+        await bot.blogger.load("Bot Util")
+
+        total = 0
+        for file in await self.util.get_files():
+            file_len = await self.util.len_file(file)
+            self.file_list[file] = file_len
+            total += file_len
+        self.file_list["total"] = total
+
+        self.pcc = cooldowns.PremiumChecker(bot)
+        self.pcc.premium_list = []
+
+    async def create_sessions(self) -> None:
+        """
+        Create a session for every key in sessions dict
+        """
+        for key in self.sessions.keys():
+            self.sessions[key] = aiohttp.ClientSession(loop=self.loop)
+
+    async def close(self) -> None:
+        await super().close()
+        for session in self.sessions.values():
+            await session.close()
+
+
+bot = BennyBot()
 
 
 @bot.check
@@ -104,72 +161,35 @@ async def start_bot() -> None:
     Start the bot with everything it needs
     """
     async with bot:
-        async with aiohttp.ClientSession() as blogger_session:
-            bot.config = config
+        await bot.async_init()
 
-            bot.blogger = util.BotLogger(bot, blogger_session)
-            await bot.blogger.load("BotLogger")
+        async def when_bot_ready():
+            """
+            On ready dispatch and print stuff
+            """
+            await bot.wait_until_ready()
+            bot.dispatch("load_prefixes")
+            bot.dispatch("connect_wavelink")
+            bot.dispatch("load_sentinel_managers")
+            bot.dispatch("initiate_all_tags")
+            await bot.blogger.bot_update("LOGGED IN")
 
-            await bot.blogger.load("Config")
+        await bot.util.load_cogs(os.listdir("Bot/cogs"))
 
-            bot.util = util.BotUtil(bot)
-            await bot.blogger.load("Bot Util")
+        end = time.monotonic()
+        total_load = (round((end - start) * 1000, 2)) / 1000
 
-            file_list = {}
-            total = 0
+        await bot.blogger.bot_info(
+            "",
+            f"Bot loaded in approximately {total_load} seconds",
+        )
 
-            for file in await bot.util.get_files():
-                file_len = await bot.util.len_file(file)
-                file_list[file] = file_len
-                total += file_len
-            file_list["total"] = total
-            bot.file_list = file_list
+        bot.loop.create_task(when_bot_ready())
 
-            bot.pcc = cooldowns.PremiumChecker(bot)
-            bot.pcc.premium_list = []
-
-            async def when_bot_ready():
-                """
-                On ready dispatch and print stuff
-                """
-                await bot.wait_until_ready()
-                bot.dispatch("load_prefixes")
-                bot.dispatch("connect_wavelink")
-                bot.dispatch("load_sentinel_managers")
-                bot.dispatch("initiate_all_tags")
-                await bot.blogger.bot_update("LOGGED IN")
-
-            async with aiohttp.ClientSession() as main_session:
-                async with aiohttp.ClientSession() as base_session:
-                    async with aiohttp.ClientSession() as sentinel_session:
-                        async with aiohttp.ClientSession() as discordstatus_session:
-                            async with aiohttp.ClientSession() as translate_session:
-                                bot.sessions = {
-                                    "main": main_session,
-                                    "base": base_session,
-                                    "sentinel": sentinel_session,
-                                    "discordstatus": discordstatus_session,
-                                    "blogger": blogger_session,
-                                    "translate": translate_session,
-                                }
-                                await bot.blogger.connect("AIOHTTP Sessions")
-
-                                await bot.util.load_cogs(os.listdir("Bot/cogs"))
-
-                                end = time.monotonic()
-
-                                total_load = (round((end - start) * 1000, 2)) / 1000
-
-                                await bot.blogger.bot_info(
-                                    "",
-                                    f"Bot loaded in approximately {total_load} seconds",
-                                )
-
-                                bot.loop.create_task(when_bot_ready())
-                                await bot.start(bot.config.get("Bot").get("Token"))
+        await bot.start(bot.config.get("Bot").get("Token"))
 
 
-if bot.PLATFORM.lower() == "linux":
+if bot.PLATFORM == "linux":
     import uvloop
 
     uvloop.install()
