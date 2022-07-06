@@ -1,9 +1,10 @@
+import logging
 import math
 
 import discord
 import discord.utils
 from colorama import Fore
-from discord.ext import commands, tasks
+from discord.ext import commands    
 from gears import style
 
 
@@ -20,13 +21,17 @@ class Events(commands.Cog):
         Init for events
         """
         self.bot = bot
-        self.ltd_loop.start()
-
-    async def cog_unload(self) -> None:
-        """
-        On unload unload timers
-        """
-        self.ltd_loop.cancel()
+        self.logger = logging.getLogger("Benny")
+        self.logger.setLevel(logging.INFO)
+        handler = logging.FileHandler(
+            filename="Logs/benny.log", encoding="utf-8", mode="w"
+        )
+        handler.setFormatter(
+            logging.Formatter(
+                "[ %(asctime)s ] [ %(levelname)s ] [ %(name)s.events ] %(message)s"
+            )
+        )
+        self.logger.addHandler(handler)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
@@ -51,6 +56,7 @@ class Events(commands.Cog):
             self.bot.blogger.gen_category(f"{Fore.GREEN}JOINED"),
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
+        self.logger.info(f"Joined Guild {guild.name} ({guild.id})")
 
         if bot_percentage > 20 and humans < 5:
             sent = False
@@ -58,7 +64,7 @@ class Events(commands.Cog):
                 title=f"Sorry!",
                 description=f"""Your server has **{guild_bots} Bots ** compared to **{len(guild.members)} Members**
                 Either:
-                - Have `20+` humans
+                - Have `6+` humans
                 Currently **{humans}** humans
                 - Lower your servers percentage of bots to under 20%
                 Currently **{bot_percentage}%** bots""",
@@ -80,6 +86,7 @@ class Events(commands.Cog):
                 self.bot.blogger.gen_category(f"{Fore.MAGENTA}AUTOLEFT"),
                 f" {guild.name} {guild.id}",
             )
+            self.logger.info(f"AutoLeft Guild {guild.name} ({guild.id})")
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild: discord.Guild) -> None:
@@ -90,6 +97,7 @@ class Events(commands.Cog):
             self.bot.blogger.gen_category(f"{Fore.RED}LEFT"),
             f" {guild.name} {guild.id}",
         )
+        self.logger.info(f"Left Guild {guild.name} ({guild.id})")
 
     @commands.Cog.listener()
     async def on_thread_create(self, thread: discord.Thread) -> None:
@@ -98,19 +106,31 @@ class Events(commands.Cog):
         """
         await thread.join()
 
-    @tasks.loop(seconds=60.0)
-    async def ltd_loop(self) -> None:
+    @commands.Cog.listener()
+    async def on_command(self, ctx: commands.Context) -> None:
         """
-        the ltd loop that checks if any updates need to be sent
+        On a command used track it
         """
-        await self.bot.blogger.ltd()
-
-    @ltd_loop.before_loop
-    async def before_ltd_loop(self) -> None:
+        self.logger.info(f"Command {ctx.command.name} used by {ctx.author.name} ({ctx.author.id}) in {ctx.guild.name} ({ctx.guild.id})")
+    
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
-        Waiting until the bots ready to dispatch the loop
+        On interaction, log it
         """
-        await self.bot.wait_until_ready()
+        _type = interaction.type
+        interstr = "Unknown"
+        if _type == discord.InteractionType.ping:
+            interstr = "Ping"
+        elif _type == discord.InteractionType.application_command:
+            interstr = "Slash Command"
+        elif _type == discord.InteractionType.component:
+            interstr = "Component"
+        elif _type == discord.InteractionType.autocomplete:
+            interstr = "Autocomplete"
+        elif _type == discord.InteractionType.modal_submit:
+            interstr = "Modal"
+        self.logger.info(f"Interaction type {interstr} used by {interaction.user.name} ({interaction.user.id}) in {interaction.guild.name} ({interaction.guild.id})")
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -245,56 +245,20 @@ def ansi(color, background=None, style=None, style2=None) -> str:
 
 
 class BotLogger:
-    """Printing info to our terminal from our bot in a nice way"""
+    """
+    Printing info to our terminal from our bot in a nice way
+    """
 
     def __init__(self, bot: commands.Bot, session: aiohttp.ClientSession) -> None:
-        """Init for the printer"""
+        """
+        Init for the printer
+        """
         self.bot = bot
         self.webhook_url = bot.config.get("Bot").get("Webhook")
         self.last_sent = int(time.time()) - 13
         self.updates = []
         self.session = session
         self.webhook = discord.Webhook.from_url(url=self.webhook_url, session=session)
-
-    async def atu(self, ttl: str) -> None:
-        """
-        Load to disc
-
-        Things to load
-        """
-        self.updates.append(ttl)
-        await self.ltd()
-
-    async def ltd(self) -> None:
-        """Check if we need to load to disc"""
-        if self.last_sent < int(time.time()) - 15 and self.updates:
-            batches = []
-            new = ""
-            total_len = 16
-            for update in self.updates:
-                if total_len > 2000:
-                    batches.append(
-                        f"""```ansi
-{new}
-```"""
-                    )
-                    new = ""
-                    total_len = 16
-
-                new += f"\n{update}"
-                total_len += len(update) + 2
-
-            batches.append(
-                f"""```ansi
-{new}
-```"""
-            )
-
-            for batch in batches:
-                self.bot.loop.create_task(self.webhook.send(content=batch))
-
-            self.last_sent = int(time.time())
-            self.updates = []
 
     def gen_category(self, category: str) -> str:
         """
@@ -327,7 +291,6 @@ class BotLogger:
         """
         msg = f"{self.gen_category(f'{Fore.BLUE}LOADED')} {info}"
         print(msg)
-        self.bot.loop.create_task(self.atu(msg))
 
     async def cog_update(self, cog: str, update: str) -> None:
         """
@@ -350,7 +313,6 @@ class BotLogger:
             category = f"{Fore.RED}COG FAILED"
         msg = f"{self.gen_category(category)} {cog}"
         print(msg)
-        self.bot.loop.create_task(self.atu(msg))
 
     async def bot_update(self, status: str) -> None:
         """
@@ -364,7 +326,6 @@ class BotLogger:
         discrim = f"{self.bot.user.name}#{self.bot.user.discriminator}"
         msg = f"{self.gen_category(f'{Fore.CYAN}{status}')} {discrim}"
         print(msg)
-        self.bot.loop.create_task(self.atu(msg))
 
     async def connect(self, info: str) -> None:
         """
@@ -377,7 +338,6 @@ class BotLogger:
         """
         msg = f"{self.gen_category(f'{Fore.YELLOW}CONNECTED')} {info}"
         print(msg)
-        self.bot.loop.create_task(self.atu(msg))
 
     async def bot_info(self, categories: str, info: str):
         """
@@ -392,7 +352,6 @@ class BotLogger:
         """
         msg = f"{self.gen_category(f'{Fore.CYAN}BOT')}{categories} {info}"
         print(msg)
-        self.bot.loop.create_task(self.atu(msg))
 
     async def cog(self, categories: str, info: str):
         """
@@ -407,4 +366,3 @@ class BotLogger:
         """
         msg = f"{self.gen_category(f'{Fore.RED}COG')}{categories} {info}"
         print(msg)
-        self.bot.loop.create_task(self.atu(msg))
