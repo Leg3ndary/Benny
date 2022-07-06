@@ -47,6 +47,8 @@ class LoggerPaginator(discord.ui.View):
                 current = []
 
         self.pages = tuple(pages)
+        if not self.pages:
+            self.pages = ("No logs found.",)
         self.current_page = 0
 
     async def generate_page(self, interaction: discord.Interaction) -> None:
@@ -84,14 +86,14 @@ class LoggerPaginator(discord.ui.View):
         self.change_page(-1)
         await self.generate_page(interaction)
     
-    @discord.ui.button(emoji='\U000023f9', style=discord.ButtonStyle.blurple)
+    @discord.ui.button(emoji=style.Emojis.REGULAR.stop, style=discord.ButtonStyle.red)
     async def on_stop(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         for child in self.children:
             child.disabled = True
         self.stop()
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(emoji=style.Emojis.REGULAR.right, style=discord.ButtonStyle.red)
+    @discord.ui.button(emoji=style.Emojis.REGULAR.right, style=discord.ButtonStyle.blurple)
     async def on_forward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         Go to next page
@@ -100,13 +102,31 @@ class LoggerPaginator(discord.ui.View):
         await self.generate_page(interaction)
     
     @discord.ui.button(emoji=style.Emojis.REGULAR.search, style=discord.ButtonStyle.grey)
-    async def on_forward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def on_search(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """
         Search a page
         """
         self.current_page = 0
         self.change_page(0)
         await self.generate_page(interaction)
+
+    async def start(self, ctx: commands.Context) -> None:
+        """
+        Start the paginator
+        """
+        self.current_page = 0
+        embed = discord.Embed(
+            title=f"Benny Logs",
+            description=f"""```
+{self.pages[self.current_page]}
+            ```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.BLACK
+        )
+        embed.set_footer(
+            text=f"Page {self.current_page + 1}/{len(self.pages)}",
+        )
+        await ctx.send(embed=embed, view=self)
 
 
 class Events(commands.Cog):
@@ -247,18 +267,8 @@ class Events(commands.Cog):
         """
         View logs
         """
-        embed = discord.Embed(
-            title=f"Benny Logs",
-            description=f"""```
-            Click a button to begin
-            ```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.BLACK
-        )
-        embed.set_footer(
-            text=f"Click a button to begin",
-        )
-        await ctx.send(embed=embed, view=LoggerPaginator())
+        paginator = LoggerPaginator()
+        await paginator.start(ctx)
 
 
 async def setup(bot: commands.Bot) -> None:
