@@ -8,6 +8,107 @@ from discord.ext import commands
 from gears import style
 
 
+class SelectPage(discord.ui.Modal, title="Type a Page"):
+    """
+    Select a page number to view.
+    """
+    page = discord.ui.TextInput(
+        label="Page", 
+        placeholder="1",
+        max_length=5,
+        required=True
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
+
+
+class LoggerPaginator(discord.ui.View):
+    """
+    Logger Paginator
+    """
+
+    def __init__(self) -> None:
+        """
+        Construct the paginator
+        """
+        super().__init__()
+        lines = (x for x in open("Logs/benny.log", "r").readlines())
+        pages = []
+        ctotal = 10
+        current = []
+        for line in lines:
+            if ctotal < 2000:
+                current.append(line)
+                ctotal += len(line) + 2
+            else:
+                pages.append("\n".join(current))
+                ctotal = 6
+                current = []
+
+        self.pages = tuple(pages)
+        self.current_page = 0
+
+    async def generate_page(self, interaction: discord.Interaction) -> None:
+        """
+        Generate the new page based on current page
+        """
+        embed = discord.Embed(
+            title=f"Benny Logs",
+            description=f"""```
+{self.pages[self.current_page]}
+            ```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.BLACK
+        )
+        embed.set_footer(
+            text=f"Page {self.current_page + 1}/{len(self.pages)}",
+        )
+        await interaction.edit_original_message(embed=embed)
+
+    def change_page(self, page: int) -> None:
+        """
+        Change the current page
+        """
+        self.current_page = page
+        if self.current_page < 0:
+            self.current_page = 0
+        elif self.current_page > len(self.pages):
+            self.current_page = len(self.pages) - 1
+    
+    @discord.ui.button(emoji=style.Emojis.REGULAR.left, style=discord.ButtonStyle.blurple)
+    async def on_backward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Go to next page
+        """
+        self.change_page(-1)
+        await self.generate_page(interaction)
+    
+    @discord.ui.button(emoji='\U000023f9', style=discord.ButtonStyle.blurple)
+    async def on_stop(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        for child in self.children:
+            child.disabled = True
+        self.stop()
+        await interaction.response.edit_message(view=self)
+
+    @discord.ui.button(emoji=style.Emojis.REGULAR.right, style=discord.ButtonStyle.red)
+    async def on_forward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Go to next page
+        """
+        self.change_page(1)
+        await self.generate_page(interaction)
+    
+    @discord.ui.button(emoji=style.Emojis.REGULAR.search, style=discord.ButtonStyle.grey)
+    async def on_forward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Search a page
+        """
+        self.current_page = 0
+        self.change_page(0)
+        await self.generate_page(interaction)
+
+
 class Events(commands.Cog):
     """
     Events that I wanna receive but don't really have a cog for
@@ -131,6 +232,33 @@ class Events(commands.Cog):
         elif _type == discord.InteractionType.modal_submit:
             interstr = "Modal"
         self.logger.info(f"Interaction type {interstr} used by {interaction.user.name} ({interaction.user.id}) in {interaction.guild.name} ({interaction.guild.id})")
+
+    @commands.command(
+        name="blogs",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.is_owner()
+    async def blogs_cmd(self, ctx: commands.Context, page: int) -> None:
+        """
+        View logs
+        """
+        embed = discord.Embed(
+            title=f"Benny Logs",
+            description=f"""```
+            Click a button to begin
+            ```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.BLACK
+        )
+        embed.set_footer(
+            text=f"Click a button to begin",
+        )
+        await ctx.send(embed=embed, view=LoggerPaginator())
 
 
 async def setup(bot: commands.Bot) -> None:
