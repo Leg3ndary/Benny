@@ -56,25 +56,19 @@ class Dev(commands.Cog):
 
     @commands.group(
         name="dev",
-        description="""Commands thats sole purpose is for me to experiment.""",
-        help="""Commands thats sole purpose is for me to experiment.""",
-        brief="Commands thats sole purpose is for me to experiment.",
+        description="""Commands thats sole purpose is for me to develop the bot.""",
+        help="""Commands thats sole purpose is for me to develop the bot.""",
+        brief="Commands thats sole purpose is for me to develop the bot.",
         aliases=[],
         enabled=True,
         hidden=True,
     )
     async def dev_group(self, ctx: commands.Context) -> None:
         """
-        Commands thats sole purpose is for me to experiment.
+        Commands thats sole purpose is for me to develop the bot.
         """
         if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                title=f"{ctx.author.display_name} is the Dev",
-                description=f"This message is only displayable by him.",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.BLACK,
-            )
-            await ctx.send(embed=embed)
+            await ctx.send_help(ctx.command)
 
     @dev_group.command(
         name="load",
@@ -211,14 +205,14 @@ class Dev(commands.Cog):
         servers = self.bot.guilds
         servers_var = ""
         for guild in servers:
-            servers_var = f"{servers_var}\n{guild.name}"
+            servers_var += f"\n{guild.name}"
         embed = discord.Embed(
             title=f"{self.bot.user.name} Server List {len(self.bot.guilds)}",
             description=f"""```
 {servers_var}
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
+            color=style.Color.AQUA,
         )
         await ctx.send(embed=embed)
 
@@ -446,6 +440,22 @@ class Dev(commands.Cog):
                 )
                 print(value + out)
                 await ctx.send(embed=embed_e3)
+
+    @commands.command(
+        name="openfile",
+        description="""Opens and sends a file""",
+        help="""Opens and sends a file""",
+        brief="Opens and sends a file",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    async def open_file_cmd(self, ctx: commands.Context, filename: str) -> None:
+        """
+        Opens and sends a file
+        """
+        file = discord.File(filename)
+        await ctx.send(file=file)
 
     @dev_group.command(
         name="close",
