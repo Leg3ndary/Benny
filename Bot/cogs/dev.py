@@ -455,7 +455,7 @@ class Dev(commands.Cog):
         Opens and sends a file
         """
         file = discord.File(filename)
-        await ctx.send(file=file)
+        await ctx.send(f"Showing file: `{filename}`", file=file)
 
     @dev_group.command(
         name="close",
