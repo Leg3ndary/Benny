@@ -2,6 +2,7 @@ import datetime
 import math
 import os
 import time
+from typing import Tuple
 
 import aiohttp
 import discord
@@ -20,7 +21,7 @@ class BotUtil:
         """
         self.bot = bot
 
-    async def len_file(self, file: str) -> int:
+    async def len_file(self, file: str) -> Tuple[int, int]:
         """
         Return the file length for a given file
         Parameters
@@ -29,13 +30,16 @@ class BotUtil:
             The file to open and count
         Returns
         -------
-        int
+        Tuple[int, int]
         """
-        if not file in [".github", ".vscode"]:
-            with open(file, encoding="utf8") as f:
-                return len(f.readlines())
+        if file not in [".github", ".vscode"]:
+            with open(file, encoding="utf8") as _file:
+                lines = len(_file.readlines())
+            with open(file, encoding="utf8") as _file:
+                chars = len(_file.read())
+            return (lines, chars)
         else:
-            return 0
+            return (0, 0)
 
     async def get_files(self, directory: str = None) -> list:
         """

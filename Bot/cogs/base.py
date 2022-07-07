@@ -598,6 +598,9 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
+        embed.set_footer(
+            text=f"{len(self.bot.file_list)} files listed, value is lines to chars",
+        )
         await ctx.send(embed=embed)
 
     @commands.hybrid_group(

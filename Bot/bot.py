@@ -114,12 +114,14 @@ class BennyBot(commands.Bot):
         self.util = util.BotUtil(bot)
         await bot.blogger.load("Bot Util")
 
-        total = 0
+        lines = 0
+        chars = 0
         for file in await self.util.get_files():
             file_len = await self.util.len_file(file)
-            self.file_list[file] = file_len
-            total += file_len
-        self.file_list["total"] = total
+            self.file_list[file] = f"{file_len[0]} lines, {file_len[1]} chars"
+            lines += file_len[0]
+            chars += file_len[1]
+        self.file_list["total"] = f"{lines} lines, {chars} chars"
 
         self.pcc = cooldowns.PremiumChecker(bot)
         self.pcc.premium_list = []
