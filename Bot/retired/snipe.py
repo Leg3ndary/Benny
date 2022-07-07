@@ -1,13 +1,13 @@
-# This entire cog is dicontinued due to message content privacy issues.
-# If it ever resurfaces it will be a lot more restricted.
+"""
+This entire cog is dicontinued due to message content privacy issues.
+If it ever resurfaces it will be a lot more restricted.
+"""
 
-import asyncio
 import time
 
 import discord
 import discord.utils
 from discord.ext import commands
-from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 """
@@ -29,13 +29,21 @@ MONGODB (Client)
 
 
 class Snipe(commands.Cog):
-    """The amazing snipe cog we use for this bot"""
+    """
+    The amazing snipe cog we use for this bot
+    """
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
+        """
+        Init the snipe cog
+        """
         self.bot = bot
+        self.snipe: AsyncIOMotorClient = None
 
-    async def cog_load(self):
-        """Load mongodb for snipe when called"""
+    async def cog_load(self) -> None:
+        """
+        Load mongodb for snipe when called
+        """
         mongo_uri = (
             self.bot.config.get("Mongo")
             .get("URL")
@@ -46,8 +54,10 @@ class Snipe(commands.Cog):
         await self.bot.blogger.connect("SNIPE MONGODB")
 
     @commands.Cog.listener()
-    async def on_message_delete(self, message):
-        """Tracking deleted messages..."""
+    async def on_message_delete(self, message: discord.Message) -> None:
+        """
+        Tracking deleted messages...
+        """
         if not message.guild.id or message.author.bot:
             pass
 
@@ -95,12 +105,14 @@ class Snipe(commands.Cog):
     async def snipe_group(self, ctx: commands.Context, choice=1):
         """Snipe command"""
         if not ctx.invoked_subcommand:
-            coll = await self.snipe[str(ctx.guild.id)]
+            # coll = await self.snipe[str(ctx.guild.id)]
+            return
+
 
 
 async def setup(bot: commands.Bot) -> None:
     """
     Setup the Cog.
     """
-    pass
+    return
     # await bot.add_cog(Snipe(bot))
