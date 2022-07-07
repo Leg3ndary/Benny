@@ -4,7 +4,7 @@ import math
 import discord
 import discord.utils
 from colorama import Fore
-from discord.ext import commands    
+from discord.ext import commands
 from gears import style
 
 
@@ -12,15 +12,15 @@ class SelectPage(discord.ui.Modal, title="Type a Page"):
     """
     Select a page number to view.
     """
+
     page = discord.ui.TextInput(
-        label="Page", 
-        placeholder="1",
-        max_length=5,
-        required=True
+        label="Page", placeholder="1", max_length=5, required=True
     )
 
     async def on_submit(self, interaction: discord.Interaction):
-        await interaction.response.send_message(f'Thanks for your response, {self.name}!', ephemeral=True)
+        await interaction.response.send_message(
+            f"Thanks for your response, {self.name}!", ephemeral=True
+        )
 
 
 class LoggerPaginator(discord.ui.View):
@@ -61,7 +61,7 @@ class LoggerPaginator(discord.ui.View):
 {self.pages[self.current_page]}
             ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.BLACK
+            color=style.Color.BLACK,
         )
         embed.set_footer(
             text=f"Page {self.current_page + 1}/{len(self.pages)}",
@@ -77,32 +77,46 @@ class LoggerPaginator(discord.ui.View):
             self.current_page = 0
         elif self.current_page > len(self.pages):
             self.current_page = len(self.pages) - 1
-    
-    @discord.ui.button(emoji=style.Emojis.REGULAR.left, style=discord.ButtonStyle.blurple)
-    async def on_backward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+
+    @discord.ui.button(
+        emoji=style.Emojis.REGULAR.left, style=discord.ButtonStyle.blurple
+    )
+    async def on_backward(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         """
         Go to next page
         """
         self.change_page(-1)
         await self.generate_page(interaction)
-    
+
     @discord.ui.button(emoji=style.Emojis.REGULAR.stop, style=discord.ButtonStyle.red)
-    async def on_stop(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def on_stop(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         for child in self.children:
             child.disabled = True
         self.stop()
         await interaction.response.edit_message(view=self)
 
-    @discord.ui.button(emoji=style.Emojis.REGULAR.right, style=discord.ButtonStyle.blurple)
-    async def on_forward(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    @discord.ui.button(
+        emoji=style.Emojis.REGULAR.right, style=discord.ButtonStyle.blurple
+    )
+    async def on_forward(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         """
         Go to next page
         """
         self.change_page(1)
         await self.generate_page(interaction)
-    
-    @discord.ui.button(emoji=style.Emojis.REGULAR.search, style=discord.ButtonStyle.grey)
-    async def on_search(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+
+    @discord.ui.button(
+        emoji=style.Emojis.REGULAR.search, style=discord.ButtonStyle.grey
+    )
+    async def on_search(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         """
         Search a page
         """
@@ -121,7 +135,7 @@ class LoggerPaginator(discord.ui.View):
 {self.pages[self.current_page]}
             ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.BLACK
+            color=style.Color.BLACK,
         )
         embed.set_footer(
             text=f"Page {self.current_page + 1}/{len(self.pages)}",
@@ -232,8 +246,10 @@ class Events(commands.Cog):
         """
         On a command used track it
         """
-        self.logger.info(f"Command {ctx.command.name} used by {ctx.author.name} ({ctx.author.id}) in {ctx.guild.name} ({ctx.guild.id})")
-    
+        self.logger.info(
+            f"Command {ctx.command.name} used by {ctx.author.name} ({ctx.author.id}) in {ctx.guild.name} ({ctx.guild.id})"
+        )
+
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         """
@@ -251,7 +267,9 @@ class Events(commands.Cog):
             interstr = "Autocomplete"
         elif _type == discord.InteractionType.modal_submit:
             interstr = "Modal"
-        self.logger.info(f"Interaction type {interstr} used by {interaction.user.name} ({interaction.user.id}) in {interaction.guild.name} ({interaction.guild.id})")
+        self.logger.info(
+            f"Interaction type {interstr} used by {interaction.user.name} ({interaction.user.id}) in {interaction.guild.name} ({interaction.guild.id})"
+        )
 
     @commands.command(
         name="blogs",
@@ -260,7 +278,7 @@ class Events(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.is_owner()
     async def blogs_cmd(self, ctx: commands.Context, page: int) -> None:

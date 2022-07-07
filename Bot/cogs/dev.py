@@ -448,7 +448,7 @@ class Dev(commands.Cog):
         brief="Opens and sends a file",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     async def open_file_cmd(self, ctx: commands.Context, filename: str) -> None:
         """
