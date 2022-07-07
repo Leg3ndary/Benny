@@ -128,7 +128,7 @@ class BennyBot(commands.Bot):
         """
         Create a session for every key in sessions dict
         """
-        for k in self.sessions.items():
+        for k in self.sessions:
             self.sessions[k] = aiohttp.ClientSession(loop=self.loop)
 
     async def close(self) -> None:

@@ -1,3 +1,8 @@
 [MASTER]
 disable=
     C0114, # missing-module-docstring
+    C0301, # line-too-long
+    E0401, # import-error
+    E0611, # no-name-in-module
+    W0613, # unused-argument Sometimes happens for stuff like buttons
+    W0212, # protected-access In errors.py

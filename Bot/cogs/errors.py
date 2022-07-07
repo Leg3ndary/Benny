@@ -104,13 +104,13 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.LoginFailure):
             _traceback = True
             log_error("Failed to login.")
-            self.bot.dispatch("log_critical", f"Failed to login.")
+            self.bot.dispatch("log_critical", "Failed to login.")
 
         elif isinstance(error, discord.Forbidden):
             _traceback = False
             embed = discord.Embed(
-                title=f"Error - Missing Permissions",
-                description=f"""I don't have permission to perform this action.""",
+                title="Error - Missing Permissions",
+                description="""I don't have permission to perform this action.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -122,8 +122,8 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.NotFound):
             _traceback = False
             embed = discord.Embed(
-                title=f"Error - Not Found",
-                description=f"""I couldn't find the requested resource.""",
+                title="Error - Not Found",
+                description="""I couldn't find the requested resource.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -135,8 +135,8 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.DiscordServerError):
             _traceback = False
             embed = discord.Embed(
-                title=f"Error - Discord",
-                description=f"""Discords failing to work. Please be patient, and monitor their website [here](https://discordstatus.com/).""",
+                title="Error - Discord",
+                description="""Discords failing to work. Please be patient, and monitor their website [here](https://discordstatus.com/).""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -160,21 +160,21 @@ class Errors(commands.Cog):
         elif isinstance(error, discord.InvalidData):
             _traceback = True
             embed = discord.Embed(
-                title=f"Error - Invalid Data",
-                description=f"""Discord seems to be returning invalid data, please be patient and try again.""",
+                title="Error - Invalid Data",
+                description="""Discord seems to be returning invalid data, please be patient and try again.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            log_error(f"Invalid data received from discord.")
+            log_error("Invalid data received from discord.")
             self.bot.dispatch(
-                "log_error", f"[ INVALID DATA ] Received invalid data from discord."
+                "log_error", "[ INVALID DATA ] Received invalid data from discord."
             )
 
         elif isinstance(error, discord.GatewayNotFound):
             _traceback = True
-            log_error(f"Discord Gateway Not Found.")
+            log_error("Discord Gateway Not Found.")
             self.bot.dispatch(
-                "log_critical", f"[ GATEWAY NOT FOUND ] Discord Gateway not found."
+                "log_critical", "[ GATEWAY NOT FOUND ] Discord Gateway not found."
             )
 
         elif isinstance(error, discord.ConnectionClosed):
@@ -183,7 +183,7 @@ class Errors(commands.Cog):
                 f"Websocket Connection closed, Reason: {error.reason} (Code: {error.code} Shard: {error.shard_id if not error.shard_id else '0'})."
             )
             self.bot.dispatch(
-                "log_critical", f"[ CONNECTION CLOSED ] Discord connection closed."
+                "log_critical", "[ CONNECTION CLOSED ] Discord connection closed."
             )
 
         elif isinstance(error, discord.PrivilegedIntentsRequired):
@@ -192,7 +192,7 @@ class Errors(commands.Cog):
                 f"Missing privileged intents. (Shard {error.shard_id if not error.shard_id else '0'})"
             )
             self.bot.dispatch(
-                "log_critical", f"[ PRIVILEGED INTENTS ] Discord connection closed."
+                "log_critical", "[ PRIVILEGED INTENTS ] Discord connection closed."
             )
 
         elif isinstance(error, discord.InteractionResponded):
@@ -221,8 +221,8 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.ConversionError):
             _traceback = False
             embed = discord.Embed(
-                title=f"Error - Conversion",
-                description=f"""I attempted to convert the provided value, but failed.""",
+                title="Error - Conversion",
+                description="""I attempted to convert the provided value, but failed.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -349,4 +349,7 @@ class Errors(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
+    """
+    Setup the Cog.
+    """
     await bot.add_cog(Errors(bot))
