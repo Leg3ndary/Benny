@@ -71,7 +71,7 @@ class BennyHelp(commands.HelpCommand):
         """
         When help is ran on its own no args
         """
-        embed = discord.Embed(title=f"{self.bot.name}Help", color=style.Color.AQUA)
+        embed = discord.Embed(title="Benny Help", color=style.Color.AQUA)
         for cog, commands in mapping.items():
             command_signatures = []
 
@@ -104,8 +104,16 @@ class BennyHelp(commands.HelpCommand):
             description=cog.description,
             color=cog.COLOR,
         )
+        cog_commands = []
+        for command in cog.get_commands():
+            if isinstance(command, commands.HybridCommand):
+                cog_commands.append(command.name)
+            elif isinstance(command, commands.HybridGroup):
+                cog_commands.append(command.name)
+            else:
+                cog_commands.append(command.name)
         embed.add_field(
-            name="Commands", value="\n".join(cog.get_commands()), inline=False
+            name="Commands", value="\n".join(cog_commands), inline=False
         )
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
