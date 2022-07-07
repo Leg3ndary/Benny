@@ -75,5 +75,8 @@ class Premium(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
+    """
+    Setup the Cog.
+    """
     pass
     # await bot.add_cog(Premium(bot))

@@ -1037,4 +1037,7 @@ class Sentinel(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
+    """
+    Setup the Cog.
+    """
     await bot.add_cog(Sentinel(bot))

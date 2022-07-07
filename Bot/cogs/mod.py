@@ -390,6 +390,9 @@ class Mod(commands.Cog):
 
 
 async def setup(bot: commands.Bot) -> None:
+    """
+    Setup the Cog.
+    """
     """Still need to fix this"""
     pass
     # await bot.add_cog(Mod(bot))
