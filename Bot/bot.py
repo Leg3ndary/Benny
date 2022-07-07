@@ -100,6 +100,8 @@ class BennyBot(commands.Bot):
             intents=intents,
             description="Benny Bot",
         )
+        self.util: util.BotUtil = None
+        self.pcc: cooldowns.PremiumChecker = None
 
     async def async_init(self) -> None:
         """
@@ -126,8 +128,8 @@ class BennyBot(commands.Bot):
         """
         Create a session for every key in sessions dict
         """
-        for key in self.sessions.keys():
-            self.sessions[key] = aiohttp.ClientSession(loop=self.loop)
+        for k in self.sessions.items():
+            self.sessions[k] = aiohttp.ClientSession(loop=self.loop)
 
     async def close(self) -> None:
         await super().close()
