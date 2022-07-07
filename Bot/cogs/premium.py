@@ -1,9 +1,4 @@
-import asyncio
-import datetime
-
-import discord
-import discord.utils
-from discord.ext import commands, tasks
+from discord.ext import commands
 from gears import style
 
 
@@ -56,7 +51,8 @@ class PremiumManager:
         """
 
     async def check_expiry(self, user: int) -> bool:
-        """"""
+        """
+        Check a users subscription expiry"""
 
 
 class Premium(commands.Cog):
@@ -78,5 +74,5 @@ async def setup(bot: commands.Bot) -> None:
     """
     Setup the Cog.
     """
-    pass
+    return
     # await bot.add_cog(Premium(bot))

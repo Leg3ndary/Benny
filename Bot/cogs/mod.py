@@ -44,7 +44,8 @@ class ModerationManager:
         """
         Pull the time from a string
         """
-        time_struct, parse_status = self.calendar.parse(string)
+        # time_struct, parse_status = self.calendar.parse(string) original, pylint said to remove it
+        time_struct = self.calendar.parse(string)
         return datetime.datetime(*time_struct[:6]).timestamp()
 
     async def warn(
@@ -62,9 +63,9 @@ class ModerationManager:
 
         if future_time <= current_time:
             await self.db.execute(
-                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
+                """INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
                 (
-                    await self.get_count(),
+                    await self.get_count(str(ctx.guild.id)),
                     member.id,
                     ctx.author.id,
                     reason,
@@ -76,9 +77,9 @@ class ModerationManager:
 
         else:
             await self.db.execute(
-                f"""INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
+                """INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
                 (
-                    await self.get_count(),
+                    await self.get_count(str(ctx.guild.id)),
                     member.id,
                     ctx.author.id,
                     reason,
@@ -111,6 +112,8 @@ class Mod(commands.Cog):
         Init with moderationmanager short mm
         """
         self.bot = bot
+        self.db: asqlite.Connection = None
+        self.mm: ModerationManager = None
 
     async def cog_load(self) -> None:
         """
@@ -203,8 +206,8 @@ class Mod(commands.Cog):
         """
         if user == ctx.author:
             same_user_embed = discord.Embed(
-                title=f"Error",
-                description=f"""You cannot ban yourself!""",
+                title="Error",
+                description="""You cannot ban yourself!""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -218,8 +221,8 @@ class Mod(commands.Cog):
 
         elif not user:
             none_mentioned = discord.Embed(
-                title=f"Error",
-                description=f"""The user {user} was not found.""",
+                title="Error",
+                description="""The user {user} was not found.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -227,8 +230,8 @@ class Mod(commands.Cog):
 
         elif user.id == self.bot.user.id:
             ban_bot = discord.Embed(
-                title=f"Rude",
-                description=f"""After all I've done for you, you try to ban me?""",
+                title="Rude",
+                description="""After all I've done for you, you try to ban me?""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.YELLOW,
             )
@@ -243,7 +246,7 @@ class Mod(commands.Cog):
                     reason = user_reason + reason
                 await user.ban(reason=reason)
                 await self.db.execute(
-                    f"""INSERT INTO bans VALUES(?, ?, ?, ?);""",
+                    """INSERT INTO bans VALUES(?, ?, ?, ?);""",
                     (user.id, ctx.author.id, reason, int(time.time())),
                 )
                 await self.db.commit()
@@ -259,7 +262,7 @@ class Mod(commands.Cog):
 
             except Exception as e:
                 error = discord.Embed(
-                    title=f"Error",
+                    title="Error",
                     description=f"""```diff
 - {e}
 ```""",
@@ -287,7 +290,7 @@ class Mod(commands.Cog):
         """
         if not re.match(r"[0-9]{15,19}", str(member)):
             embed = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""Sorry but `{member}` doesn't seem to be a valid id.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -298,15 +301,15 @@ class Mod(commands.Cog):
                 member = await ctx.guild.fetch_ban(discord.Object(id=member))
             except discord.NotFound:
                 embed = discord.Embed(
-                    title=f"Not Banned",
-                    description=f"""This user doesn't seem to be banned...""",
+                    title="Not Banned",
+                    description="""This user doesn't seem to be banned...""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.YELLOW,
                 )
                 await ctx.send(embed=embed)
                 return
 
-            reason = f"Unbanned by: "
+            reason = "Unbanned by: "
 
             await ctx.guild.unban(discord.Object(id=member), reason)
 
@@ -352,7 +355,7 @@ class Mod(commands.Cog):
             await self.db_modlogs.insert_one(document)
 
             modlogs_set = discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"""Modlogs channel set to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
@@ -362,7 +365,7 @@ class Mod(commands.Cog):
 
         if data.get("channel") == channel.id:
             same_thing = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""Modlogs channel is already set to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.YELLOW,
@@ -375,7 +378,7 @@ class Mod(commands.Cog):
             )
 
             modlogs_changed = discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"""Modlogs channel changed to {channel.mention}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
@@ -384,15 +387,14 @@ class Mod(commands.Cog):
             await ctx.send(embed=modlogs_changed)
 
     @commands.Cog.listener()
-    async def on_send_modlog(self, type: str, modlog: str) -> None:
+    async def on_send_modlog(self, _type: str, modlog: str) -> None:
         """Send modlogs to the specified channel if not just return"""
-        pass
+        return
 
 
 async def setup(bot: commands.Bot) -> None:
     """
-    Setup the Cog.
+    Setup the Cog. Still need to fix this
     """
-    """Still need to fix this"""
-    pass
+    return
     # await bot.add_cog(Mod(bot))

@@ -1,5 +1,3 @@
-import asyncio
-
 import aiogtrans
 import discord
 import discord.app_commands as app_commands
@@ -29,7 +27,7 @@ class Translator:
         translated = await self.translator.translate(text)
 
         embed = discord.Embed(
-            title=f"Translating Text",
+            title="Translating Text",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK,
         )

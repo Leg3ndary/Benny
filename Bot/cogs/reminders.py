@@ -1,8 +1,4 @@
-import asyncio
-
 import asqlite
-import discord
-import discord.utils
 from discord.ext import commands
 from gears import style
 
@@ -96,22 +92,24 @@ class ReminderManager:
             results = await cursor.fetchall()
 
         for reminder in results:
-            await self.create_timer(reminder[0], reminder[1])
+            await self.create_timer(reminder[0], reminder[1], 0, "reminder") # not done
 
     async def create_timer(self, rid: int, uid: str, time, reminder: str) -> None:
         """
         Create a timer and dispatch.
         Timer id in active_reminders is `timer:rid-uid`
-        """
+
+        FINISH LATER PLEASE
         timer = asyncio.create_task(
             self.bot.dispatch("on_create_timer"), rid, id, time, reminder
         )
+        """
         query = """INSERT INTO reminders VALUES(?, ?, 0, "");"""
         await self.db.execute(
             query,
         )
         await self.db.commit()
-        self.active_reminders.update(f"{rid}-{uid}", timer)
+        self.active_reminders.update(f"{rid}-{uid}")#, timer)
 
 
 class Reminders(commands.Cog):
@@ -127,6 +125,8 @@ class Reminders(commands.Cog):
         Construct the reminder cog
         """
         self.bot = bot
+        self.reminders_db: asqlite.Connection = None
+        self.rm: ReminderManager = None
 
     async def cog_load(self):
         """
@@ -160,7 +160,7 @@ class Reminders(commands.Cog):
         """
         Remind yourself of something
         """
-        await self.rm.create_timer()
+        #await self.rm.create_timer()
 
 
 async def setup(bot: commands.Bot) -> None:

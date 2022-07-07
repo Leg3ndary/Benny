@@ -33,7 +33,7 @@ class LoggerPaginator(discord.ui.View):
         Construct the paginator
         """
         super().__init__()
-        lines = (x for x in open("Logs/benny.log", "r").readlines())
+        lines = (x for x in open("Logs/benny.log", "r", encoding="utf8").readlines())
         pages = []
         ctotal = 10
         current = []
@@ -56,7 +56,7 @@ class LoggerPaginator(discord.ui.View):
         Generate the new page based on current page
         """
         embed = discord.Embed(
-            title=f"Benny Logs",
+            title="Benny Logs",
             description=f"""```
 {self.pages[self.current_page]}
             ```""",
@@ -130,7 +130,7 @@ class LoggerPaginator(discord.ui.View):
         """
         self.current_page = 0
         embed = discord.Embed(
-            title=f"Benny Logs",
+            title="Benny Logs",
             description=f"""```
 {self.pages[self.current_page]}
             ```""",
@@ -196,7 +196,7 @@ class Events(commands.Cog):
         if bot_percentage > 20 and humans < 5:
             sent = False
             embed = discord.Embed(
-                title=f"Sorry!",
+                title="Sorry!",
                 description=f"""Your server has **{guild_bots} Bots ** compared to **{len(guild.members)} Members**
                 Either:
                 - Have `6+` humans
@@ -307,7 +307,7 @@ class Events(commands.Cog):
         """
         Log warning
         """
-        self.logger.warn(msg)
+        self.logger.warning(msg)
 
     @commands.Cog.listener()
     async def on_log_error(self, msg: str) -> None:

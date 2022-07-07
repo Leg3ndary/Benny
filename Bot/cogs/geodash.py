@@ -1,5 +1,3 @@
-import asyncio
-
 import discord
 import discord.utils
 import gd
@@ -47,12 +45,7 @@ class GeometryDash(commands.Cog):
         """
         On a new daily, post to a channel
         """
-        embed = discord.Embed(
-            title=f"",
-            description=f"""""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
-        )
+        return
 
     @commands.hybrid_group(
         name="gd",

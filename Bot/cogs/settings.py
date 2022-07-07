@@ -130,10 +130,10 @@ class PrefixManager:
             )
 
         elif len(prefixes) >= 15:
-            raise commands.BadArgument(f"You can only have up to 15 prefixes")
+            raise commands.BadArgument("You can only have up to 15 prefixes")
 
         elif prefix == "":
-            raise commands.BadArgument(f"You cannot have an empty prefix")
+            raise commands.BadArgument("You cannot have an empty prefix")
 
         else:
             prefixes.append(prefix)
@@ -141,7 +141,7 @@ class PrefixManager:
                 prefixes = sorted(prefixes, key=len)
             self.bot.prefixes[str(guild)] = prefixes
             await self.db.execute(
-                f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                """UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
                 (self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
@@ -173,7 +173,7 @@ class PrefixManager:
             prefixes.remove(prefix)
             self.bot.prefixes[str(guild)] = prefixes
             await self.db.execute(
-                f"""UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                """UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
                 (self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
@@ -241,6 +241,8 @@ class Settings(commands.Cog):
         Init for the bot
         """
         self.bot = bot
+        self.users_db: asqlite.Connection = None
+        self.server_db: asqlite.Connection = None
 
     async def cog_load(self) -> None:
         """
@@ -344,7 +346,7 @@ class Settings(commands.Cog):
         for count, prefix in enumerate(prefixes, start=1):
             prefix_visual += f"\n{count}. {prefix}"
         embed = discord.Embed(
-            title=f"Prefixes",
+            title="Prefixes",
             description=f"""Viewing prefixes for {ctx.guild.name}
 ```md
 {prefix_visual}
@@ -373,7 +375,7 @@ class Settings(commands.Cog):
         await self.bot.prefix_manager.add_prefix(ctx.guild.id, prefix)
 
         embed = discord.Embed(
-            title=f"Success",
+            title="Success",
             description=f"""Successfully added `{prefix}` to your server""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
@@ -398,7 +400,7 @@ class Settings(commands.Cog):
         await self.bot.prefix_manager.delete_prefix(ctx.guild.id, prefix)
 
         embed = discord.Embed(
-            title=f"Prefix Removed",
+            title="Prefix Removed",
             description=f"""Successfully removed `{prefix}` from your server""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
@@ -437,7 +439,7 @@ class Settings(commands.Cog):
         """
         Add premium to the bot
         """
-        pass
+        return
 
     @premium_info.command(
         name="remove",
@@ -454,7 +456,7 @@ class Settings(commands.Cog):
         """
         Remove premium from a server
         """
-        pass
+        return
 
 
 async def setup(bot: commands.Bot) -> None:

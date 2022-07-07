@@ -1,5 +1,3 @@
-import asyncio
-
 import asqlite
 import discord
 import discord.utils
@@ -26,6 +24,7 @@ class LoggingManager:
         Init
         """
         self.bot = bot
+        self.db: asqlite.Connection = None
 
     async def load_db(self) -> None:
         """
@@ -65,6 +64,7 @@ class Logging(commands.Cog):
         Logging init
         """
         self.bot = bot
+        self.logging_manager: LoggingManager = None
 
     async def cog_load(self) -> None:
         """

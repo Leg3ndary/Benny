@@ -9,7 +9,7 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
-from gears.music_exceptions import *
+from gears.music_exceptions import QueueFull, QueueEmpty, NothingPlaying
 from wavelink.ext import spotify
 
 
@@ -117,7 +117,7 @@ class PlayerDropdown(discord.ui.Select):
         track = self.songs[int(self.values[0])]
 
         embed = discord.Embed(
-            title=f"Track Queued",
+            title="Track Queued",
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
@@ -167,8 +167,8 @@ class PlayerSelector(discord.ui.View):
             item.disabled = True
 
         embed = discord.Embed(
-            title=f"Select a Song to Play",
-            description=f"""Timed out""",
+            title="Select a Song to Play",
+            description="""Timed out""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
         )
@@ -264,10 +264,12 @@ class QueueView(discord.ui.View):
         self.play_embed = None
         super().__init__(timeout=60)
 
-        self.add_item(QueueDropdown(ctx, player, songs))
+        self.add_item(QueueDropdown(ctx, player, songs, 1)) # not finished
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """If the interaction isn't by the user, return a fail."""
+        """
+        If the interaction isn't by the user, return a fail.
+        """
         if interaction.user != self.ctx.author:
             return False
         return True
@@ -280,8 +282,8 @@ class QueueView(discord.ui.View):
             item.disabled = True
 
         embed = discord.Embed(
-            title=f"Viewing Queue",
-            description=f"""Timed out""",
+            title="Viewing Queue",
+            description="""Timed out""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
         )
@@ -333,8 +335,8 @@ class FilterSpinView(discord.ui.View):
             item.disabled = True
 
         embed = discord.Embed(
-            title=f"Spin Mode",
-            description=f"""Timed out""",
+            title="Spin Mode",
+            description="""Timed out""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
         )
@@ -352,14 +354,13 @@ class FilterSpinView(discord.ui.View):
         """
         Edit the spin embed
         """
-        if self.spin > 5.0:
-            self.spin = 5.0
+        self.spin = min(self.spin, 5.0)
         if self.spin < -5.0:
             self.spin = -5.0
         await self.set_spin()
 
         embed = discord.Embed(
-            title=f"Spin Mode",
+            title="Spin Mode",
             description=f"""Set a spin mode below!
             
             Note the max values of this are 5 and -5, don't get too dizzy!
@@ -452,6 +453,8 @@ class Music(commands.Cog):
         Construct the music cog
         """
         self.bot = bot
+        self.wavelink: wavelink.Node = None
+        self.musicDB: asqlite.Connection = None
 
         app_token = tekore.request_client_token(
             bot.config.get("Spotify").get("ID"), bot.config.get("Spotify").get("Secret")
@@ -502,8 +505,8 @@ class Music(commands.Cog):
         """
         if not ctx.author.voice:
             embed = discord.Embed(
-                title=f"Error",
-                description=f"""You need to be connected to a voice channel for this command to work""",
+                title="Error",
+                description="""You need to be connected to a voice channel for this command to work""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -633,9 +636,9 @@ class Music(commands.Cog):
 
                 elif player.queue.is_full:
                     embed = discord.Embed(
-                        title=f"Max Queue Size Reached",
+                        title="Max Queue Size Reached",
                         url=track.uri,
-                        description=f"""Sorry but you only may have 250 songs queued at a time""",
+                        description="""Sorry but you only may have 250 songs queued at a time""",
                         timestamp=discord.utils.utcnow(),
                         color=style.Color.RED,
                     )
@@ -674,8 +677,8 @@ class Music(commands.Cog):
 
                 if length >= 100:
                     embed = discord.Embed(
-                        title=f"Playlist Song Limit Reached",
-                        description=f"""You may only add up to 100 songs through spotify playlists at this time""",
+                        title="Playlist Song Limit Reached",
+                        description="""You may only add up to 100 songs through spotify playlists at this time""",
                         timestamp=discord.utils.utcnow(),
                         color=style.Color.RED,
                     )
@@ -748,8 +751,8 @@ class Music(commands.Cog):
 
         if not player.track:
             nothing_playing = discord.Embed(
-                title=f"Nothing Playing",
-                description=f"""Nothing's currently playing!""",
+                title="Nothing Playing",
+                description="""Nothing's currently playing!""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -757,8 +760,8 @@ class Music(commands.Cog):
 
         elif player.queue.is_empty:
             emptyqueue = discord.Embed(
-                title=f"Empty Queue",
-                description=f"""Nothing's currently queued!""",
+                title="Empty Queue",
+                description="""Nothing's currently queued!""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -804,8 +807,8 @@ class Music(commands.Cog):
 
         if not player.is_playing:
             nothing_playing = discord.Embed(
-                title=f"Nothing is playing!",
-                description=f"""Use the play command to queue a song!""",
+                title="Nothing is playing!",
+                description="""Use the play command to queue a song!""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.AQUA,
             )
@@ -815,7 +818,7 @@ class Music(commands.Cog):
             current = player.track
 
             embed = discord.Embed(
-                title=f"Now Playing",
+                title="Now Playing",
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
@@ -847,7 +850,7 @@ class Music(commands.Cog):
             current = player.track
             await player.skip()
             embed = discord.Embed(
-                title=f"Skipped",
+                title="Skipped",
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
@@ -861,7 +864,7 @@ class Music(commands.Cog):
             current = player.track
 
             embed2 = discord.Embed(
-                title=f"Now Playing",
+                title="Now Playing",
                 url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
@@ -875,7 +878,7 @@ class Music(commands.Cog):
 
         except NothingPlaying as e:
             embed = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -901,7 +904,7 @@ class Music(commands.Cog):
         await player.disconnect()
 
         embed = discord.Embed(
-            title=f"Disconnected",
+            title="Disconnected",
             description=f"""Disconnected from {player.channel.mention}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
@@ -932,7 +935,7 @@ class Music(commands.Cog):
                 song = player.queue._queue[index]
 
                 embed = discord.Embed(
-                    title=f"Removed",
+                    title="Removed",
                     url=song.uri,
                     description=f"""```asciidoc
 [ {song.title} ]
@@ -979,7 +982,7 @@ class Music(commands.Cog):
 
         except QueueEmpty as e:
             embed = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -1016,7 +1019,7 @@ class Music(commands.Cog):
 
         except QueueEmpty as e:
             embed = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -1041,8 +1044,8 @@ class Music(commands.Cog):
         try:
             if player.is_paused:
                 embed = discord.Embed(
-                    title=f"Error",
-                    description=f"""The player is already paused!""",
+                    title="Error",
+                    description="""The player is already paused!""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.YELLOW,
                 )
@@ -1050,8 +1053,8 @@ class Music(commands.Cog):
             else:
                 await player.set_pause(True)
                 embed = discord.Embed(
-                    title=f"Paused",
-                    description=f"""Paused the queue""",
+                    title="Paused",
+                    description="""Paused the queue""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.GREEN,
                 )
@@ -1059,7 +1062,7 @@ class Music(commands.Cog):
 
         except QueueEmpty as e:
             embed = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -1085,8 +1088,8 @@ class Music(commands.Cog):
         try:
             if not player.is_paused:
                 embed = discord.Embed(
-                    title=f"Error",
-                    description=f"""The player isn't paused!""",
+                    title="Error",
+                    description="""The player isn't paused!""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.YELLOW,
                 )
@@ -1094,8 +1097,8 @@ class Music(commands.Cog):
             else:
                 await player.set_pause(False)
                 embed = discord.Embed(
-                    title=f"Unpaused",
-                    description=f"""Unpaused the queue""",
+                    title="Unpaused",
+                    description="""Unpaused the queue""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.GREEN,
                 )
@@ -1103,7 +1106,7 @@ class Music(commands.Cog):
 
         except QueueEmpty as e:
             embed = discord.Embed(
-                title=f"Error",
+                title="Error",
                 description=f"""{e}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -1146,8 +1149,8 @@ class Music(commands.Cog):
         await player.set_filter(wavelink.Filter(), seek=True)
 
         embed = discord.Embed(
-            title=f"Success",
-            description=f"""Successfully removed all filters!""",
+            title="Success",
+            description="""Successfully removed all filters!""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
@@ -1190,8 +1193,8 @@ class Music(commands.Cog):
         await player.set_filter(wavelink.Filter(equalizer=boost), seek=True)
 
         embed = discord.Embed(
-            title=f"Set Boost Equalizer",
-            description=f"""Successfully set a boost equalizer""",
+            title="Set Boost Equalizer",
+            description="""Successfully set a boost equalizer""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
@@ -1217,8 +1220,8 @@ class Music(commands.Cog):
         await player.set_filter(wavelink.Filter(karaoke=karaoke), seek=True)
 
         embed = discord.Embed(
-            title=f"Karaoke Mode Enabled",
-            description=f"""Successfully set track to Karaoke mode""",
+            title="Karaoke Mode Enabled",
+            description="""Successfully set track to Karaoke mode""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK,
         )
@@ -1242,8 +1245,8 @@ class Music(commands.Cog):
         view = FilterSpinView(ctx, player)
 
         embed = discord.Embed(
-            title=f"Spin Mode",
-            description=f"""Set a spin mode below!
+            title="Spin Mode",
+            description="""Set a spin mode below!
             
             Note the max values of this are 5 and -5, don't get too dizzy!""",
             timestamp=discord.utils.utcnow(),

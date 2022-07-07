@@ -16,7 +16,8 @@ class BotUtil:
 
     def __init__(self, bot: commands.Bot) -> None:
         """
-        Init the bot"""
+        Init the bot
+        """
         self.bot = bot
 
     async def len_file(self, file: str) -> int:

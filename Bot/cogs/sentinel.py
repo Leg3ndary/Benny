@@ -24,6 +24,8 @@ class Toxicity:
 
     """
 
+    __slots__ = ("toxicity", "severe_toxicity", "obscene", "identity_attack", "insult", "threat", "sexual_explicit", "average")
+
     def __init__(self, prediction: dict) -> None:
         """
         Init
@@ -59,6 +61,8 @@ class SentinelConfig:
     """
     Config object
     """
+
+    __slots__ = ("channels", "premium", "webhook", "username", "avatar", "toxicity", "severe_toxicity", "obscene", "identity_attack", "insult", "threat", "sexual_explicit", "average")
 
     def __init__(
         self,
@@ -164,7 +168,7 @@ class SentinelManager:
                 values.append(f"{toxicity.average}-{sentinel.average}")
 
                 embed = discord.Embed(
-                    title=f"Sentinel Alert",
+                    title="Sentinel Alert",
                     description=await self.gen_toxicity_bar(values),
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED,
@@ -319,8 +323,8 @@ Average                                     {bars_colors[7]}{round(float(values[
                 reason="BennyBot Sentinel Webhook",
             )
             webhook_success = discord.Embed(
-                title=f"Successfully created channel and webhook!",
-                description=f"""Sentinel Alerts will now be sent here""",
+                title="Successfully created channel and webhook!",
+                description="""Sentinel Alerts will now be sent here""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
             )
@@ -329,8 +333,8 @@ Average                                     {bars_colors[7]}{round(float(values[
             await self.new_guild(ctx.guild.id, ctx.channel.id, webhook.url)
 
             embed = discord.Embed(
-                title=f"Success",
-                description=f"""Set default sentinel config.""",
+                title="Success",
+                description="""Set default sentinel config.""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
             )
@@ -379,14 +383,14 @@ Average                                     {bars_colors[7]}{round(float(values[
             )
 
         embed = discord.Embed(
-            title=f"Sentinel Config",
+            title="Sentinel Config",
             description=f"""This server is {"marked Premium" if sentinel.premium else "not marked Premium."}
             """,
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
         )
         embed.add_field(name="Current Config", value="Stuff")
-        await ctx.send(embed=embed, view=SentinelConfigView(sentinel))
+        await ctx.send(embed=embed, view=SentinelConfigView(sentinel, "")) # needs omsg var
 
     async def edit_config(self, ctx: commands.Context) -> None:
         """
@@ -419,7 +423,7 @@ class DecancerManager:
             if not await check.fetchone():
                 # second false needs to be changed later to premium
                 await cur.execute(
-                    f"""INSERT INTO decancer VALUES(?, ?, ?, ?, ?,?);""",
+                    """INSERT INTO decancer VALUES(?, ?, ?, ?, ?,?);""",
                     (str(guild), None, False, False, self.username, self.avatar),
                 )
                 await self.db.commit()
@@ -593,8 +597,8 @@ class SentinelConfigModal(discord.ui.Modal, title="Sentinel Config"):
         On submit, save config
         """
         embed = discord.Embed(
-            title=f"Success",
-            description=f"""Config successfully saved""",
+            title="Success",
+            description="""Config successfully saved""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
@@ -652,14 +656,20 @@ class SentinelConfigView(discord.ui.View):
     async def update_config(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
+        """
+        Update config
+        """
         await interaction.send_modal(SentinelConfigModal(self.config))
 
     @discord.ui.button(
         label="Update Watched Channels", emoji=":eyes:", style=discord.ButtonStyle.grey
     )
-    async def update_config(
+    async def update_watched_channels(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
+        """
+        Update config with appropriate values
+        """
         await interaction.send_modal(SentinelConfigModal(self.config))
 
 
@@ -676,6 +686,9 @@ class Sentinel(commands.Cog):
         Init the detoxify models and get sessions ready!
         """
         self.bot = bot
+        self.sm: SentinelManager = None
+        self.decancer: DecancerManager = None
+        self.db: asqlite.Connection = None
 
     async def clean_username(self, username: str) -> str:
         """
@@ -798,7 +811,7 @@ class Sentinel(commands.Cog):
 
             if webhook_url:
                 embed = discord.Embed(
-                    title=f"Decancer Automatic Action",
+                    title="Decancer Automatic Action",
                     description=f"""{original} >> **{new_nick}**""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.BLUE,
@@ -891,7 +904,7 @@ class Sentinel(commands.Cog):
         await self.decancer.enable(ctx.message.guild.id)
 
         embed = discord.Embed(
-            title=f"Enabled Decancer",
+            title="Enabled Decancer",
             description=f"""Successfully enabled the Decancer feature for {ctx.guild.name}.""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
@@ -918,7 +931,7 @@ class Sentinel(commands.Cog):
         """
         await self.decancer.disable(ctx.message.guild.id)
         embed = discord.Embed(
-            title=f"Disabled Decancer",
+            title="Disabled Decancer",
             description=f"""Successfully enabled the Decancer feature for {ctx.guild.name}.""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
@@ -961,7 +974,7 @@ class Sentinel(commands.Cog):
         )
         await self.decancer.set_webhook(ctx.message.guild.id, webhook.url)
         embed = discord.Embed(
-            title=f"Decancer Logs Channel Updated",
+            title="Decancer Logs Channel Updated",
             description=f"""Set Decancer Logs to {channel.mention}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
@@ -995,6 +1008,7 @@ class Sentinel(commands.Cog):
         channel = await ctx.guild.create_text_channel(
             "decancer-logs", overwrites=overwrites
         )
+        return channel
 
         # ill finish this later because I really don't want to do it now
 
@@ -1021,7 +1035,7 @@ class Sentinel(commands.Cog):
             await user.edit(nick=new_nick)
 
         embed = discord.Embed(
-            title=f"Decancer Action",
+            title="Decancer Action",
             description=f"""{original} >> **{new_nick}**""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.BLUE,

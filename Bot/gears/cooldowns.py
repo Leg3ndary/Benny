@@ -1,6 +1,3 @@
-import asyncio
-
-import asqlite
 import discord
 from discord.ext import commands
 

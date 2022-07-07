@@ -1,5 +1,4 @@
 import asyncio
-import random
 import time
 from typing import List
 
@@ -13,7 +12,7 @@ from gears import style
 from .tblocks import DeleteBlock
 
 
-def is_a_nerd() -> bool:  # I think its bool
+def is_a_nerd() -> bool: # I think its bool
     """
     Check if this person is part of the nerd thingy for asty
     """
@@ -119,13 +118,15 @@ class Tags(commands.Cog):
     COLOR = style.Color.ORANGE
     ICON = "<:_:992082395748634724>"
 
-    custom_tags = {}
+    custom_tags: dict = {}
+    latest_tag: int = None
 
     def __init__(self, bot: commands.Bot):
         """
         Init the bot with all the blocks the bot needs
         """
         self.bot = bot
+        self.db: asqlite.Connection = None
         bot.custom_tags = self.custom_tags
         tse_blocks = [
             tse.block.MathBlock(),
@@ -238,7 +239,7 @@ class Tags(commands.Cog):
 
             @commands.command(
                 name=tag.name,
-                help=f"Custom command: Outputs your custom provided output",
+                help="Custom command: Outputs your custom provided output",
             )
             @guild_check(self.custom_tags)
             async def custom_tag_cmd(
@@ -344,7 +345,7 @@ class Tags(commands.Cog):
             defaults = ""
 
             for k, v in response.debug.items():
-                if k in seeds.keys():
+                if k in seeds:
                     defaults += f"{clean(k)}, {clean(seeds.get(k).get_value())}"
                 else:
                     debug += f"{clean(k)}: {clean(v)}\n"
@@ -353,8 +354,8 @@ class Tags(commands.Cog):
 {debug.strip()}         
 ```"""
             dembed = discord.Embed(
-                title=f"",
-                description=f"""""",
+                title="Something",
+                description="""Not Finished""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
@@ -439,7 +440,7 @@ class Tags(commands.Cog):
             )
             await self.db.commit()
             embed = discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"""Edited tag `{name}`, new length `{len(content)}`""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
@@ -474,7 +475,7 @@ class Tags(commands.Cog):
             await self.create_tag(tag_mod)
 
             embed = discord.Embed(
-                title=f"Success",
+                title="Success",
                 description=f"""Created tag `{name}`, length `{len(content)}`""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
@@ -502,7 +503,7 @@ class Tags(commands.Cog):
             if tag:
                 await self.remove_tag(tag)
                 embed = discord.Embed(
-                    title=f"Success",
+                    title="Success",
                     description=f"""Removed tag `{name.lower()}`""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED,
@@ -528,7 +529,7 @@ class Tags(commands.Cog):
         vis_list = []
 
         for tag in tags:
-            vis.append(f"{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}")
+            vis_list.append(f"{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}")
 
         vis = vis_list.join("\n")
 

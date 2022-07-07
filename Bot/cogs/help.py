@@ -72,10 +72,10 @@ class BennyHelp(commands.HelpCommand):
         When help is ran on its own no args
         """
         embed = discord.Embed(title="Benny Help", color=style.Color.AQUA)
-        for cog, commands in mapping.items():
+        for cog, _commands in mapping.items():
             command_signatures = []
 
-            for command in commands:
+            for command in _commands:
                 command_signatures.append(self.get_command_signature(command))
 
             if command_signatures:
@@ -83,7 +83,7 @@ class BennyHelp(commands.HelpCommand):
                 if cog_name not in ("Errors", "Dev", "Events", "ERROR", "Help"):
                     embed.add_field(
                         name=f"{cog.ICON} {cog_name}",
-                        value=f"Not finished as of yet",
+                        value="Not finished as of yet",
                         inline=True,
                     )
 

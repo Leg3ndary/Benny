@@ -3,7 +3,7 @@ import datetime
 import discord
 from discord.ext import commands
 from gears import style
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
 
 
 class DictDropdown(discord.ui.Select):
@@ -22,7 +22,7 @@ class DictDropdown(discord.ui.Select):
         for entry in entries:
             options.append(
                 discord.SelectOption(
-                    label="Red", description="Your favourite colour is red"
+                    label=entry, description="Your favourite colour is red"
                 )
             )
 
@@ -54,7 +54,7 @@ class DictionaryMenu(discord.ui.View):
         """
         super().__init__()
         self.entries = entries
-        self.add_item(DictDropdown())
+        self.add_item(DictDropdown(entries))
 
 
 class WordNotFound(Exception):
@@ -79,6 +79,9 @@ class Dictionary(commands.Cog):
         self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
         self.session = bot.sessions.get("main")
+        self.con: AsyncIOMotorClient = None
+        self.db: AsyncIOMotorDatabase = None
+        self.dict: AsyncIOMotorCollection = None
 
     async def cog_load(self) -> None:
         """
@@ -154,6 +157,7 @@ class Dictionary(commands.Cog):
     async def define_cmd(self, ctx: commands.Context, *, word: str) -> None:
         """Define a word"""
         data = await self.get_word(word)
+        print(data)
         await ctx.send("Sorry, this command doesn't actually do anything as of now")
 
 

@@ -24,10 +24,10 @@ async def format_git_msg(content: str) -> str:
         if "Fast-forward" == line:
             line_temp = line.replace("Fast-foward", "[0;35mFast-forward[0;0m")
         else:
-            line_temp = re.sub("\+", f"[0;32m+", line, 1)
-            line_temp = re.sub("(\+)(?!.*\+)", f"+[0;0m", line_temp)
-            line_temp = re.sub("\-", f"[0;31m-", line_temp, 1)
-            line_temp = re.sub("(\-)(?!.*\-)", f"-[0;0m", line_temp)
+            line_temp = re.sub(r"\+", "[0;32m+", line, 1)
+            line_temp = re.sub(r"(\+)(?!.*\+)", "+[0;0m", line_temp)
+            line_temp = re.sub(r"\-", "[0;31m-", line_temp, 1)
+            line_temp = re.sub(r"(\-)(?!.*\-)", "-[0;0m", line_temp)
 
         temp.append(line_temp)
 
@@ -232,7 +232,7 @@ class Dev(commands.Cog):
         cmd = os.popen("git pull").read()
 
         embed = discord.Embed(
-            title=f"Git Pull",
+            title="Git Pull",
             description=f"""```ansi
 {await format_git_msg(cmd)}
 ```""",
@@ -281,7 +281,7 @@ class Dev(commands.Cog):
         else:
             embed_color = style.Color.GREEN
 
-        cog_visual = f"\n".join(cog_statuslist)
+        cog_visual = "\n".join(cog_statuslist)
 
         embed = discord.Embed(
             title=f"{self.bot.user.name} Sync",
@@ -309,8 +309,8 @@ class Dev(commands.Cog):
         """
         await self.bot.tree.sync()
         embed = discord.Embed(
-            title=f"Tree Sync",
-            description=f"""Bot sync has been completed""",
+            title="Tree Sync",
+            description="""Bot sync has been completed""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
@@ -397,7 +397,7 @@ class Dev(commands.Cog):
             with redirect_stdout(stdout):
                 out = await func()
 
-        except Exception as e:
+        except Exception:
             value = stdout.getvalue()
             embed_e2 = discord.Embed(
                 title="Error",
@@ -472,8 +472,8 @@ class Dev(commands.Cog):
         """
         await ctx.message.add_reaction(style.Emojis.REGULAR.check)
         embed = discord.Embed(
-            title=f"Shutting Down Bot",
-            description=f"""```diff
+            title="Shutting Down Bot",
+            description="""```diff
 Shutting down the bot...
 ```""",
             timestamp=discord.utils.utcnow(),

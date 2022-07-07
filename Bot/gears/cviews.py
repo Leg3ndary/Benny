@@ -16,6 +16,9 @@ class DeleteView(discord.ui.View):
     async def button_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
+        """
+        Delete the message
+        """
         if not self.slash:
             await self.bctx.delete()
         else:

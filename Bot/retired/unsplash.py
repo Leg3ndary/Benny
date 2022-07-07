@@ -28,9 +28,9 @@ class UnsplashClient:
         """Get rate limit remaining on requests"""
         return self.latest_header.get("X-Ratelimit-Remaining", -1)
 
-    async def get_random_photo(self, params: dict = {}):
+    async def get_random_photo(self, params: dict = None):
         """Get a completely random photo from unsplash"""
-        request_string = await self.to_url(params)
+        request_string = await self.to_url(params if params else {})
         return await self.request_url(f"""/photos/random/{request_string}""")
 
     async def get_photo_by_id(self, photo_id: str):

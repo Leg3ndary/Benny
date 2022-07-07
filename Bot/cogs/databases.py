@@ -124,7 +124,7 @@ class Databases(commands.Cog):
         try:
             await self.bot.redis.set(key, value)
             embed = discord.Embed(
-                title=f"""Added Key""",
+                title="""Added Key""",
                 description=f"""```md
 [{key}]({value})
 ```""",
