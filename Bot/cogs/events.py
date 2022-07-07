@@ -270,6 +270,41 @@ class Events(commands.Cog):
         paginator = LoggerPaginator()
         await paginator.start(ctx)
 
+    @commands.Cog.listener()
+    async def on_log_info(self, msg: str) -> None:
+        """
+        Log info
+        """
+        self.logger.info(msg)
+
+    @commands.Cog.listener()
+    async def on_log_debug(self, msg: str) -> None:
+        """
+        Log debug
+        """
+        self.logger.debug(msg)
+
+    @commands.Cog.listener()
+    async def on_log_warn(self, msg: str) -> None:
+        """
+        Log warning
+        """
+        self.logger.warn(msg)
+
+    @commands.Cog.listener()
+    async def on_log_error(self, msg: str) -> None:
+        """
+        Log error
+        """
+        self.logger.error(msg)
+
+    @commands.Cog.listener()
+    async def on_log_critical(self, msg: str) -> None:
+        """
+        Log critical
+        """
+        self.logger.critical(msg)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Events(bot))
