@@ -23,7 +23,9 @@ class WelcomeManager:
         """
         Convert a discord embed object into a string to save to our db
         """
-        data = await self.bot.loop.run_in_executor(None, json.dumps(), embed.to_dict()) # pylint: disable=no-value-for-parameter
+        data = await self.bot.loop.run_in_executor(
+            None, json.dumps(), embed.to_dict()
+        )  # pylint: disable=no-value-for-parameter
         return data
 
     async def to_embed(self, data: str) -> discord.Embed:
@@ -31,7 +33,9 @@ class WelcomeManager:
         Convert a json serializable string into a discord embed
         """
         embed = discord.Embed.from_dict(
-            await self.bot.loop.run_in_executor(None, json.loads(), data) # pylint: disable=no-value-for-parameter
+            await self.bot.loop.run_in_executor(
+                None, json.loads(), data
+            )  # pylint: disable=no-value-for-parameter
         )
         return embed
 
@@ -102,7 +106,8 @@ class Welcome(commands.Cog):
         """
         self.db: asqlite.Connection = await asqlite.connect("Databases/server.db")
 
-        await self.db.execute("""
+        await self.db.execute(
+            """
         CREATE TABLE IF NOT EXISTS welcome (
             guild           TEXT    PRIMARY KEY
                                         NOT NULL,
@@ -111,7 +116,8 @@ class Welcome(commands.Cog):
             goodbye         TEXT,
             goodbye_channel TEXT
         );
-        """)
+        """
+        )
 
         self.wm = WelcomeManager(self.bot, self.db)
 

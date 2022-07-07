@@ -250,10 +250,15 @@ class Errors(commands.Cog):
             colored_prefix = f"{Fore.BLACK}{ctx.clean_prefix}"
             colored_command_name = f"{command_name}{Fore.WHITE}"
             colored_signature = (
-                ctx.command.signature
-                .replace("[", f"{Fore.WHITE}[{Fore.GREEN}",)
+                ctx.command.signature.replace(
+                    "[",
+                    f"{Fore.WHITE}[{Fore.GREEN}",
+                )
                 .replace("]", f"{Fore.WHITE}]")
-                .replace("<", f"{Fore.WHITE}<{Fore.GREEN}",)
+                .replace(
+                    "<",
+                    f"{Fore.WHITE}<{Fore.GREEN}",
+                )
                 .replace(">", f"{Fore.WHITE}>")
                 .replace(
                     f"{Fore.WHITE}<{Fore.GREEN}{error.param.name}{Fore.WHITE}>",

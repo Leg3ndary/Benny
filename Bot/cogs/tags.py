@@ -12,7 +12,7 @@ from gears import style
 from .tblocks import DeleteBlock
 
 
-def is_a_nerd() -> bool: # I think its bool
+def is_a_nerd() -> bool:  # I think its bool
     """
     Check if this person is part of the nerd thingy for asty
     """
@@ -529,7 +529,9 @@ class Tags(commands.Cog):
         vis_list = []
 
         for tag in tags:
-            vis_list.append(f"{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}")
+            vis_list.append(
+                f"{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}"
+            )
 
         vis = vis_list.join("\n")
 

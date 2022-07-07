@@ -109,7 +109,6 @@ class Snipe(commands.Cog):
             return
 
 
-
 async def setup(bot: commands.Bot) -> None:
     """
     Setup the Cog.

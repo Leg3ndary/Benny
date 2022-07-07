@@ -9,7 +9,7 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
-from gears.music_exceptions import QueueFull, QueueEmpty, NothingPlaying
+from gears.music_exceptions import NothingPlaying, QueueEmpty, QueueFull
 from wavelink.ext import spotify
 
 
@@ -264,7 +264,7 @@ class QueueView(discord.ui.View):
         self.play_embed = None
         super().__init__(timeout=60)
 
-        self.add_item(QueueDropdown(ctx, player, songs, 1)) # not finished
+        self.add_item(QueueDropdown(ctx, player, songs, 1))  # not finished
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """

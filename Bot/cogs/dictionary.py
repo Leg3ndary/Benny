@@ -3,7 +3,8 @@ import datetime
 import discord
 from discord.ext import commands
 from gears import style
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase, AsyncIOMotorCollection
+from motor.motor_asyncio import (AsyncIOMotorClient, AsyncIOMotorCollection,
+                                 AsyncIOMotorDatabase)
 
 
 class DictDropdown(discord.ui.Select):

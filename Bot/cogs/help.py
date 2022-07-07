@@ -112,9 +112,7 @@ class BennyHelp(commands.HelpCommand):
                 cog_commands.append(command.name)
             else:
                 cog_commands.append(command.name)
-        embed.add_field(
-            name="Commands", value="\n".join(cog_commands), inline=False
-        )
+        embed.add_field(name="Commands", value="\n".join(cog_commands), inline=False)
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
             icon_url=self.context.author.avatar,

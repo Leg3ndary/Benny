@@ -24,7 +24,16 @@ class Toxicity:
 
     """
 
-    __slots__ = ("toxicity", "severe_toxicity", "obscene", "identity_attack", "insult", "threat", "sexual_explicit", "average")
+    __slots__ = (
+        "toxicity",
+        "severe_toxicity",
+        "obscene",
+        "identity_attack",
+        "insult",
+        "threat",
+        "sexual_explicit",
+        "average",
+    )
 
     def __init__(self, prediction: dict) -> None:
         """
@@ -62,7 +71,21 @@ class SentinelConfig:
     Config object
     """
 
-    __slots__ = ("channels", "premium", "webhook", "username", "avatar", "toxicity", "severe_toxicity", "obscene", "identity_attack", "insult", "threat", "sexual_explicit", "average")
+    __slots__ = (
+        "channels",
+        "premium",
+        "webhook",
+        "username",
+        "avatar",
+        "toxicity",
+        "severe_toxicity",
+        "obscene",
+        "identity_attack",
+        "insult",
+        "threat",
+        "sexual_explicit",
+        "average",
+    )
 
     def __init__(
         self,
@@ -390,7 +413,9 @@ Average                                     {bars_colors[7]}{round(float(values[
             color=style.Color.RED,
         )
         embed.add_field(name="Current Config", value="Stuff")
-        await ctx.send(embed=embed, view=SentinelConfigView(sentinel, "")) # needs omsg var
+        await ctx.send(
+            embed=embed, view=SentinelConfigView(sentinel, "")
+        )  # needs omsg var
 
     async def edit_config(self, ctx: commands.Context) -> None:
         """

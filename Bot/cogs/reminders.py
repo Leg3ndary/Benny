@@ -92,7 +92,7 @@ class ReminderManager:
             results = await cursor.fetchall()
 
         for reminder in results:
-            await self.create_timer(reminder[0], reminder[1], 0, "reminder") # not done
+            await self.create_timer(reminder[0], reminder[1], 0, "reminder")  # not done
 
     async def create_timer(self, rid: int, uid: str, time, reminder: str) -> None:
         """
@@ -109,7 +109,7 @@ class ReminderManager:
             query,
         )
         await self.db.commit()
-        self.active_reminders.update(f"{rid}-{uid}")#, timer)
+        self.active_reminders.update(f"{rid}-{uid}")  # , timer)
 
 
 class Reminders(commands.Cog):
@@ -160,7 +160,7 @@ class Reminders(commands.Cog):
         """
         Remind yourself of something
         """
-        #await self.rm.create_timer()
+        # await self.rm.create_timer()
 
 
 async def setup(bot: commands.Bot) -> None:

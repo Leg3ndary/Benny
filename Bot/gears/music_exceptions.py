@@ -2,6 +2,7 @@
 Music Exceptions
 """
 
+
 class MusicException(Exception):
     """
     Music exception meh
