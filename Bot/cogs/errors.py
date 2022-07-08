@@ -328,12 +328,11 @@ class Errors(commands.Cog):
 
         elif isinstance(error, commands.BadArgument):
             embed = discord.Embed(
-                title="Not found",
+                title="Error - Bad Argument",
                 description=f"""{error.args}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            await ctx.send(embed=embed)
 
         elif isinstance(error, commands.BadInviteArgument):
             pass
