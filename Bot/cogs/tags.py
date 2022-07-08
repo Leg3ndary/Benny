@@ -12,6 +12,18 @@ from gears import style
 from .tblocks import DeleteBlock
 
 
+FAKE_SEED = {
+    "author": None,
+    "user": None,
+    "target": None,
+    "member": None,
+    "channel": None,
+    "guild": None,
+    "server": None,
+    "args": None
+}
+
+
 def is_a_nerd() -> bool:  # I think its bool
     """
     Check if this person is part of the nerd thingy for asty
@@ -349,13 +361,16 @@ class Tags(commands.Cog):
             defaults = ""
 
             for k, v in response.debug.items():
-                if k in seeds:
-                    defaults += f"{clean(k)}, {clean(seeds.get(k))}"
+                if k in FAKE_SEED:
+                    defaults += f"{clean(k)}: {clean(v)}\n"
                 else:
                     debug += f"{clean(k)}: {clean(v)}\n"
 
-            debug = f"""```yaml
+            debug_c = f"""```yaml
 {debug.strip()}         
+```"""
+            defaults_c = f"""```yaml
+{defaults.strip()}
 ```"""
             dembed = discord.Embed(
                 title="Something",
@@ -363,8 +378,10 @@ class Tags(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
-            dembed.add_field(name="Debug Values", value=debug, inline=False)
-            dembed.add_field(name="Default Values", value=defaults, inline=False)
+            if debug:
+                dembed.add_field(name="Debug Values", value=debug_c, inline=False)
+            if defaults:
+                dembed.add_field(name="Default Values", value=defaults_c, inline=False)
             embeds.append(dembed)
 
         if can_send:
@@ -443,6 +460,17 @@ class Tags(commands.Cog):
                 (content, tag.tag_id),
             )
             await self.db.commit()
+            new_tag = Tag(
+                self.latest_tag,
+                str(ctx.guild.id),
+                name,
+                tag.creator,
+                round(time.time()),
+                tag.uses,
+                content,
+            )
+            guild_tags[str(ctx.guild.id)] = new_tag
+            
             embed = discord.Embed(
                 title="Success",
                 description=f"""Edited tag `{name}`, new length `{len(content)}`""",
@@ -450,6 +478,7 @@ class Tags(commands.Cog):
                 color=style.Color.GREEN,
             )
             await ctx.send(embed=embed)
+
         else:
             self.latest_tag += 1
             tag_data = (
