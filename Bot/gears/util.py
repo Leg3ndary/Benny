@@ -38,8 +38,7 @@ class BotUtil:
             with open(file, encoding="utf8") as _file:
                 chars = len(_file.read())
             return (lines, chars)
-        else:
-            return (0, 0)
+        return (0, 0)
 
     async def get_files(self, directory: str = None) -> list:
         """
@@ -73,14 +72,7 @@ class BotUtil:
             directories = os.listdir()
 
         for file in directories:
-            if (
-                file.endswith(".exe")
-                or file.endswith(".png")
-                or file.endswith(".pyc")
-                or file.endswith(".jar")
-                or file.endswith(".git")
-                or file.endswith(".pytest_cache")
-            ):
+            if True in map(file.endswith, (".exe", ".png", ".pyc", ".git", ".gitignore", ".jar", "pytest_cache", ".vscode", ".github")):
                 pass
             elif "." not in file:
                 recursion = await self.get_files(f"{filepath}{file}")
