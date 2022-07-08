@@ -75,6 +75,8 @@ class Tag:
     Tag class
     """
 
+    __slots__ = ("tag_id", "guild", "name", "creator", "created_at", "uses", "tagscript")
+
     def __init__(
         self,
         tag_id: str,
@@ -237,6 +239,7 @@ class Tags(commands.Cog):
 
         else:
 
+            '''
             @commands.command(
                 name=tag.name,
                 help="Custom command: Outputs your custom provided output",
@@ -252,6 +255,7 @@ class Tags(commands.Cog):
                 await self.invoke_custom_command(ctx, args, _tag, True)
 
             self.bot.add_command(custom_tag_cmd)
+            '''
             self.custom_tags[tag.name] = {tag.guild: tag}
             self.latest_tag += 1
 
@@ -346,7 +350,7 @@ class Tags(commands.Cog):
 
             for k, v in response.debug.items():
                 if k in seeds:
-                    defaults += f"{clean(k)}, {clean(seeds.get(k).get_value())}"
+                    defaults += f"{clean(k)}, {clean(seeds.get(k))}"
                 else:
                     debug += f"{clean(k)}: {clean(v)}\n"
 
@@ -533,7 +537,7 @@ class Tags(commands.Cog):
                 f"{tag.name} - Uses: {tag.uses} Length: {len(tag.tagscript)}"
             )
 
-        vis = vis_list.join("\n")
+        vis = "\n".join(vis_list)
 
         embed = discord.Embed(
             title=f"{ctx.guild.name} Tags",

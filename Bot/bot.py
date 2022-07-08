@@ -1,4 +1,5 @@
 import asyncio
+from copy import copy
 import datetime
 import json
 import logging
@@ -11,6 +12,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears import cooldowns, util
+from cogs.tags import Tags
 
 load_dotenv()
 
@@ -102,6 +104,7 @@ class BennyBot(commands.Bot):
         )
         self.util: util.BotUtil = None
         self.pcc: cooldowns.PremiumChecker = None
+        self.tag_cog: Tags = None
 
     async def async_init(self) -> None:
         """
@@ -137,6 +140,26 @@ class BennyBot(commands.Bot):
         await super().close()
         for session in self.sessions.values():
             await session.close()
+
+    async def on_message(self, message: discord.Message) -> None:
+        """
+        On message, do all the stuff you need to do before it's processed
+        """
+        if message.author.bot:
+            return
+        await self.process_commands(message)
+        ctx = await self.get_context(message)
+
+        # Tags
+        if ctx.invoked_with and ctx.invoked_with.lower() not in self.commands and ctx.command is None:
+            msg = copy(message)
+            if ctx.prefix and ctx.guild:
+                args = msg.content[len(ctx.prefix):].split(" ", 1)[-1]
+                named_tags = self.tag_cog.custom_tags.get(ctx.invoked_with)
+                if named_tags:
+                    _tag = named_tags.get(str(ctx.guild.id))
+                    if _tag:
+                        await self.tag_cog.invoke_custom_command(ctx, args, _tag, True)
 
 
 bot = BennyBot()
@@ -179,6 +202,7 @@ async def start_bot() -> None:
             await bot.blogger.bot_update("LOGGED IN")
 
         await bot.util.load_cogs(os.listdir("Bot/cogs"))
+        bot.tag_cog = bot.get_cog("Tags")
 
         end = time.monotonic()
         total_load = (round((end - start) * 1000, 2)) / 1000
