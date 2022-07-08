@@ -118,7 +118,9 @@ class IMGReader:
     """
 
     def __init__(self, bot: commands.Bot) -> None:
-        """Init"""
+        """
+        construct the image reader
+        """
         self.bot = bot
         self.loop = bot.loop
 

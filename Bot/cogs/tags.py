@@ -422,13 +422,13 @@ class Tags(commands.Cog):
         """
         Create a new tag
         """
-        guild_tags = self.custom_tags.get(name.lower())
+        guild_tags = self.custom_tags.get(name)
         tag = None
         if guild_tags:
             tag = guild_tags.get(str(ctx.guild.id))
 
         for x in self.bot.commands:
-            if x.name == name:
+            if x.name == name and x.name not in self.custom_tags.get(name):
                 raise commands.BadArgument(
                     f"A command with the name {name} already exists. Please choose a different name."
                 )
