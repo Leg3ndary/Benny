@@ -154,7 +154,11 @@ class BennyBot(commands.Bot):
         if ctx.invoked_with and ctx.invoked_with.lower() not in self.commands and ctx.command is None:
             msg = copy(message)
             if ctx.prefix and ctx.guild:
-                args = msg.content[len(ctx.prefix):].split(" ", 1)[-1]
+                args = msg.content[len(ctx.prefix):].split(" ", 1)
+                if len(args) > 1:
+                    args = args[-1]
+                else:
+                    args = ""
                 named_tags = self.tag_cog.custom_tags.get(ctx.invoked_with)
                 if named_tags:
                     _tag = named_tags.get(str(ctx.guild.id))
