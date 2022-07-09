@@ -13,12 +13,9 @@ from .tblocks import DeleteBlock
 
 
 FAKE_SEED = {
-    "author": None,
     "user": None,
     "target": None,
-    "member": None,
     "channel": None,
-    "guild": None,
     "server": None,
     "args": None
 }
@@ -64,21 +61,19 @@ def to_seed(ctx: commands.Context) -> dict:
     """
     Grab seed from context
     """
-    author = tse.MemberAdapter(ctx.author)
+    user = tse.MemberAdapter(ctx.author)
     target = (
-        tse.MemberAdapter(ctx.message.mentions[0]) if ctx.message.mentions else author
+        tse.MemberAdapter(ctx.message.mentions[0]) if ctx.message.mentions else user
     )
     channel = tse.ChannelAdapter(ctx.channel)
     seed = {
-        "author": author,
-        "user": author,
+        "user": user,
         "target": target,
-        "member": target,
         "channel": channel,
     }
     if ctx.guild:
         guild = tse.GuildAdapter(ctx.guild)
-        seed.update(guild=guild, server=guild)
+        seed.update(server=guild)
     return seed
 
 
@@ -359,6 +354,13 @@ class Tags(commands.Cog):
         if response.debug:
             debug = ""
             defaults = ""
+
+            response.debug.update({
+                "user": f"{ctx.author.name}#{ctx.author.discriminator}",
+                "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator}" if ctx.message.mentions else f"{ctx.author.name}#{ctx.author.discriminator}",
+                "channel": ctx.channel.name,
+                "server": ctx.guild.name
+            })
 
             for k, v in response.debug.items():
                 if k in FAKE_SEED:
