@@ -376,7 +376,7 @@ class Tags(commands.Cog):
 ```"""
             dembed = discord.Embed(
                 title="Something",
-                description="""Not Finished""",
+                description=f"""Tag Content Length: {len(tag.tagscript)}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
@@ -573,7 +573,7 @@ class Tags(commands.Cog):
         embed = discord.Embed(
             title=f"{ctx.guild.name} Tags",
             description=f"""```yaml
-{vis}
+{vis.strip()}
             ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK,
