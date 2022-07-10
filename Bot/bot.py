@@ -65,10 +65,8 @@ async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> list:
     if _bot.LOADED_PREFIXES:
         if msg.guild:
             return prefixes + _bot.prefixes.get(str(msg.guild.id), "")
-        else:
-            return prefixes.append(_bot.prefix)
-    else:
-        return ""
+        return prefixes.append(_bot.prefix)
+    return ""
 
 
 class BennyBot(commands.Bot):
@@ -137,6 +135,9 @@ class BennyBot(commands.Bot):
             self.sessions[k] = aiohttp.ClientSession(loop=self.loop)
 
     async def close(self) -> None:
+        """
+        Close all aiohttp sessions on close
+        """
         await super().close()
         for session in self.sessions.values():
             await session.close()

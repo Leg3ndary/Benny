@@ -171,6 +171,8 @@ class Tags(commands.Cog):
         externals = [DeleteBlock()]
         self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks + externals)
         self.channel_converter = commands.TextChannelConverter()
+        self.member_converter = commands.MemberConverter()
+        self.role_converter = commands.RoleConverter()
 
     async def cog_load(self) -> None:
         """
@@ -350,6 +352,77 @@ class Tags(commands.Cog):
                             can_send = dest.permissions_for(ctx.author).send_messages
                 elif action == "override":
                     can_send = value.get("permissions")
+                elif action == "requires":
+                    for i in action["items"]:
+                        roles = []
+                        channels = []
+                        members = []
+                        try:
+                            roles.append(await self.role_converter.convert(ctx, i))
+                        except commands.RoleNotFound:
+                            try:
+                                channels.append(await self.channel_converter.convert(ctx, i))
+                            except commands.ChannelNotFound:
+                                try:
+                                    members.append(await self.member_converter.convert(ctx, i))
+                                except commands.MemberNotFound:
+                                    pass
+
+                    send_require = True
+                    if roles:
+                        if not any(
+                            role.id in ctx.author.roles for role in roles
+                        ):
+                            send_require = False
+                            can_send = False
+                    if channels:
+                        if ctx.channel not in channels:
+                            send_require = False
+                            can_send = False
+                    if members:
+                        if not any(
+                            member.id in ctx.author.id for member in members
+                        ):
+                            send_require = False
+                            can_send = False
+                    if send_require:
+                        await ctx.send(action["response"])
+
+                elif action == "blacklist":
+                    for i in action["items"]:
+                        roles = []
+                        channels = []
+                        members = []
+                        try:
+                            roles.append(await self.role_converter.convert(ctx, i))
+                        except commands.RoleNotFound:
+                            try:
+                                channels.append(await self.channel_converter.convert(ctx, i))
+                            except commands.ChannelNotFound:
+                                try:
+                                    members.append(await self.member_converter.convert(ctx, i))
+                                except commands.MemberNotFound:
+                                    pass
+
+                    send_blacklist = False
+                    if roles:
+                        if any(
+                            role.id in ctx.author.roles for role in roles
+                        ):
+                            send_blacklist = True
+                            can_send = False
+                    if channels:
+                        if ctx.channel in channels:
+                            send_blacklist = True
+                            can_send = False
+                    if members:
+                        if any(
+                            member.id in ctx.author.id for member in members
+                        ):
+                            send_blacklist = True
+                            can_send = False
+                    if send_blacklist:
+                        await ctx.send(action["response"])
 
         if response.debug:
             debug = ""
@@ -472,7 +545,7 @@ class Tags(commands.Cog):
                 content,
             )
             guild_tags[str(ctx.guild.id)] = new_tag
-            
+
             embed = discord.Embed(
                 title="Success",
                 description=f"""Edited tag `{name}`, new length `{len(content)}`""",
