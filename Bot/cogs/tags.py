@@ -329,7 +329,9 @@ class Tags(commands.Cog):
             seeds.update({"args": tse.StringAdapter(args)})
         seeds.update(to_seed(ctx))
 
+        start_process = time.monotonic()
         response = await self.tsei.process(message=tag.tagscript, seed_variables=seeds)
+        end_process = time.monotonic()
 
         dest = None
         can_send = True
@@ -429,10 +431,10 @@ class Tags(commands.Cog):
             defaults = ""
 
             response.debug.update({
-                "user": f"{ctx.author.name}#{ctx.author.discriminator}",
-                "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator}" if ctx.message.mentions else f"{ctx.author.name}#{ctx.author.discriminator}",
-                "channel": ctx.channel.name,
-                "server": ctx.guild.name
+                "user": f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})" if ctx.message.mentions else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                "channel": f"{ctx.channel.name} ({ctx.channel.id})",
+                "server": f"{ctx.guild.name} ({ctx.guild.id})",
             })
 
             for k, v in response.debug.items():
@@ -448,8 +450,9 @@ class Tags(commands.Cog):
 {defaults.strip()}
 ```"""
             dembed = discord.Embed(
-                title="Something",
-                description=f"""Tag Content Length: {len(tag.tagscript)}""",
+                title=f"{tag.name} Debug",
+                description=f"""Tag Content Length: `{len(tag.tagscript)}`
+                Time to Process: `{(round((end_process - start_process) * 1000, 5)) / 1000} seconds`""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.random(),
             )
