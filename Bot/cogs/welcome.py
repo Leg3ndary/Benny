@@ -24,8 +24,8 @@ class WelcomeManager:
         Convert a discord embed object into a string to save to our db
         """
         data = await self.bot.loop.run_in_executor(
-            None, json.dumps(), embed.to_dict()
-        )  # pylint: disable=no-value-for-parameter
+            None, json.dumps(), embed.to_dict() # pylint: disable=no-value-for-parameter
+        )
         return data
 
     async def to_embed(self, data: str) -> discord.Embed:
@@ -34,8 +34,8 @@ class WelcomeManager:
         """
         embed = discord.Embed.from_dict(
             await self.bot.loop.run_in_executor(
-                None, json.loads(), data
-            )  # pylint: disable=no-value-for-parameter
+                None, json.loads(), data # pylint: disable=no-value-for-parameter
+            )
         )
         return embed
 
