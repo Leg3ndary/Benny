@@ -59,48 +59,6 @@ class Color:
         return random.choice(list(colors.values()))
 
 
-reversed_colors = {
-    7999: "navy",
-    29913: "blue",
-    8379391: "aqua",
-    3787980: "teal",
-    4036976: "olive",
-    3066944: "green",
-    130928: "lime",
-    16768000: "yellow",
-    16745755: "orange",
-    16728374: "red",
-    8721483: "maroon",
-    15733438: "pink",
-    11603401: "purple",
-    1118481: "black",
-    11184810: "gray",
-    14540253: "silver",
-    16777215: "white",
-}
-
-
-color_list = [
-    "navy",
-    "blue",
-    "aqua",
-    "teal",
-    "olive",
-    "green",
-    "lime",
-    "yellow",
-    "orange",
-    "red",
-    "maroon",
-    "pink",
-    "purple",
-    "black",
-    "gray",
-    "silver",
-    "white",
-]
-
-
 class RegularEmojis:
     """
     Regular emoji class
