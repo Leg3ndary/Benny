@@ -9,13 +9,12 @@ import discord.utils
 from discord.ext import commands
 from gears import style
 
-
 FAKE_SEED = {
     "user": None,
     "target": None,
     "channel": None,
     "server": None,
-    "args": None
+    "args": None,
 }
 
 
@@ -80,7 +79,15 @@ class Tag:
     Tag class
     """
 
-    __slots__ = ("tag_id", "guild", "name", "creator", "created_at", "uses", "tagscript")
+    __slots__ = (
+        "tag_id",
+        "guild",
+        "name",
+        "creator",
+        "created_at",
+        "uses",
+        "tagscript",
+    )
 
     def __init__(
         self,
@@ -164,7 +171,7 @@ class Tags(commands.Cog):
             tse.block.URLEncodeBlock(),
             tse.block.DebugBlock(),
             tse.block.VarBlock(),
-            tse.block.LooseVariableGetterBlock()
+            tse.block.LooseVariableGetterBlock(),
         ]
         self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks)
         self.channel_converter = commands.TextChannelConverter()
@@ -360,18 +367,20 @@ class Tags(commands.Cog):
                             roles.append(await self.role_converter.convert(ctx, i))
                         except commands.RoleNotFound:
                             try:
-                                channels.append(await self.channel_converter.convert(ctx, i))
+                                channels.append(
+                                    await self.channel_converter.convert(ctx, i)
+                                )
                             except commands.ChannelNotFound:
                                 try:
-                                    members.append(await self.member_converter.convert(ctx, i))
+                                    members.append(
+                                        await self.member_converter.convert(ctx, i)
+                                    )
                                 except commands.MemberNotFound:
                                     pass
 
                     send_require = True
                     if roles:
-                        if not any(
-                            role.id in ctx.author.roles for role in roles
-                        ):
+                        if not any(role.id in ctx.author.roles for role in roles):
                             send_require = False
                             can_send = False
                     if channels:
@@ -379,9 +388,7 @@ class Tags(commands.Cog):
                             send_require = False
                             can_send = False
                     if members:
-                        if not any(
-                            member.id in ctx.author.id for member in members
-                        ):
+                        if not any(member.id in ctx.author.id for member in members):
                             send_require = False
                             can_send = False
                     if send_require:
@@ -396,18 +403,20 @@ class Tags(commands.Cog):
                             roles.append(await self.role_converter.convert(ctx, i))
                         except commands.RoleNotFound:
                             try:
-                                channels.append(await self.channel_converter.convert(ctx, i))
+                                channels.append(
+                                    await self.channel_converter.convert(ctx, i)
+                                )
                             except commands.ChannelNotFound:
                                 try:
-                                    members.append(await self.member_converter.convert(ctx, i))
+                                    members.append(
+                                        await self.member_converter.convert(ctx, i)
+                                    )
                                 except commands.MemberNotFound:
                                     pass
 
                     send_blacklist = False
                     if roles:
-                        if any(
-                            role.id in ctx.author.roles for role in roles
-                        ):
+                        if any(role.id in ctx.author.roles for role in roles):
                             send_blacklist = True
                             can_send = False
                     if channels:
@@ -415,9 +424,7 @@ class Tags(commands.Cog):
                             send_blacklist = True
                             can_send = False
                     if members:
-                        if any(
-                            member.id in ctx.author.id for member in members
-                        ):
+                        if any(member.id in ctx.author.id for member in members):
                             send_blacklist = True
                             can_send = False
                     if send_blacklist:
@@ -427,12 +434,16 @@ class Tags(commands.Cog):
             debug = ""
             defaults = ""
 
-            response.debug.update({
-                "user": f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
-                "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})" if ctx.message.mentions else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
-                "channel": f"{ctx.channel.name} ({ctx.channel.id})",
-                "server": f"{ctx.guild.name} ({ctx.guild.id})",
-            })
+            response.debug.update(
+                {
+                    "user": f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                    "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})"
+                    if ctx.message.mentions
+                    else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                    "channel": f"{ctx.channel.name} ({ctx.channel.id})",
+                    "server": f"{ctx.guild.name} ({ctx.guild.id})",
+                }
+            )
 
             for k, v in response.debug.items():
                 if k in FAKE_SEED:

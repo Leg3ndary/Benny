@@ -1,10 +1,6 @@
 import random
 
-
-__all__ = (
-    "Color",
-    "Emoji"
-)
+__all__ = ("Color", "Emoji")
 
 
 class Color:

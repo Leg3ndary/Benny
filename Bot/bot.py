@@ -1,18 +1,18 @@
 import asyncio
-from copy import copy
 import datetime
 import json
 import logging
 import os
 import sys
 import time
+from copy import copy
 
 import aiohttp
 import discord
+from cogs.tags import Tags
 from discord.ext import commands
 from dotenv import load_dotenv
 from gears import cooldowns, util
-from cogs.tags import Tags
 
 load_dotenv()
 
@@ -152,10 +152,14 @@ class BennyBot(commands.Bot):
         ctx = await self.get_context(message)
 
         # Tags
-        if ctx.invoked_with and ctx.invoked_with.lower() not in self.commands and ctx.command is None:
+        if (
+            ctx.invoked_with
+            and ctx.invoked_with.lower() not in self.commands
+            and ctx.command is None
+        ):
             msg = copy(message)
             if ctx.prefix and ctx.guild:
-                args = msg.content[len(ctx.prefix):].split(" ", 1)
+                args = msg.content[len(ctx.prefix) :].split(" ", 1)
                 if len(args) > 1:
                     args = args[-1]
                 else:

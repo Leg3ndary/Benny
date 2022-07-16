@@ -72,7 +72,20 @@ class BotUtil:
             directories = os.listdir()
 
         for file in directories:
-            if True in map(file.endswith, (".exe", ".png", ".pyc", ".git", ".gitignore", ".jar", "pytest_cache", ".vscode", ".github")):
+            if True in map(
+                file.endswith,
+                (
+                    ".exe",
+                    ".png",
+                    ".pyc",
+                    ".git",
+                    ".gitignore",
+                    ".jar",
+                    "pytest_cache",
+                    ".vscode",
+                    ".github",
+                ),
+            ):
                 pass
             elif "." not in file:
                 recursion = await self.get_files(f"{filepath}{file}")

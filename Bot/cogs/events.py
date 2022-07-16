@@ -111,9 +111,7 @@ class LoggerPaginator(discord.ui.View):
         self.change_page(1)
         await self.generate_page(interaction)
 
-    @discord.ui.button(
-        emoji=style.Emoji.REGULAR.search, style=discord.ButtonStyle.grey
-    )
+    @discord.ui.button(emoji=style.Emoji.REGULAR.search, style=discord.ButtonStyle.grey)
     async def on_search(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
