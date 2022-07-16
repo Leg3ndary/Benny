@@ -413,7 +413,7 @@ class Dev(commands.Cog):
         else:
             value = stdout.getvalue()
             try:
-                await ctx.message.add_reaction(style.Emojis.REGULAR.check)
+                await ctx.message.add_reaction(style.Emoji.REGULAR.check)
             except:
                 pass
 
@@ -470,7 +470,7 @@ class Dev(commands.Cog):
         """
         Stopping the bot
         """
-        await ctx.message.add_reaction(style.Emojis.REGULAR.check)
+        await ctx.message.add_reaction(style.Emoji.REGULAR.check)
         embed = discord.Embed(
             title="Shutting Down Bot",
             description="""```diff

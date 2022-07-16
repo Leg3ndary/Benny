@@ -94,7 +94,7 @@ class PlayerDropdown(discord.ui.Select):
         for song in songs:
             options.append(
                 discord.SelectOption(
-                    emoji=style.Emojis.REGULAR.youtube,
+                    emoji=style.Emoji.REGULAR.youtube,
                     label=song.title,
                     description=f"""{song.author} - Duration: {duration(song.length)}""",
                     value=str(counter),
@@ -175,7 +175,7 @@ class PlayerSelector(discord.ui.View):
         await self.play_embed.edit(embed=embed, view=self)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.cancel,
+        emoji=style.Emoji.REGULAR.cancel,
         label="Cancel",
         style=discord.ButtonStyle.danger,
         row=2,
@@ -210,7 +210,7 @@ class QueueDropdown(discord.ui.Select):
         for song in songs:
             options.append(
                 discord.SelectOption(
-                    emoji=style.Emojis.REGULAR.youtube,
+                    emoji=style.Emoji.REGULAR.youtube,
                     label=song.title,
                     description=f"""{song.author} - Duration: {duration(song.length)}""",
                     value=str(counter),
@@ -290,7 +290,7 @@ class QueueView(discord.ui.View):
         await self.play_embed.edit(embed=embed, view=self)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.cancel,
+        emoji=style.Emoji.REGULAR.cancel,
         label="Cancel",
         style=discord.ButtonStyle.danger,
         row=2,
@@ -373,7 +373,7 @@ class FilterSpinView(discord.ui.View):
         await interaction.response.edit_message(embed=embed)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.left, label="-1", style=discord.ButtonStyle.danger
+        emoji=style.Emoji.REGULAR.left, label="-1", style=discord.ButtonStyle.danger
     )
     async def button2_callback(
         self, interaction: discord.Interaction, button: discord.Button
@@ -385,7 +385,7 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.left, label="-0.1", style=discord.ButtonStyle.danger
+        emoji=style.Emoji.REGULAR.left, label="-0.1", style=discord.ButtonStyle.danger
     )
     async def button1_callback(
         self, interaction: discord.Interaction, button: discord.Button
@@ -397,7 +397,7 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.stop, label="Reset", style=discord.ButtonStyle.grey
+        emoji=style.Emoji.REGULAR.stop, label="Reset", style=discord.ButtonStyle.grey
     )
     async def button3_callback(
         self, interaction: discord.Interaction, button: discord.Button
@@ -409,7 +409,7 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.right, label="+0.1", style=discord.ButtonStyle.green
+        emoji=style.Emoji.REGULAR.right, label="+0.1", style=discord.ButtonStyle.green
     )
     async def button4_callback(
         self, interaction: discord.Interaction, button: discord.Button
@@ -421,7 +421,7 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.right, label="+1", style=discord.ButtonStyle.green
+        emoji=style.Emoji.REGULAR.right, label="+1", style=discord.ButtonStyle.green
     )
     async def button5_callback(
         self, interaction: discord.Interaction, button: discord.Button
@@ -615,7 +615,7 @@ class Music(commands.Cog):
             view = PlayerSelector(ctx, player, tracks[:25])
 
             embed = discord.Embed(
-                title=f"{style.Emojis.REGULAR.youtube} Select a Song to Play",
+                title=f"{style.Emoji.REGULAR.youtube} Select a Song to Play",
                 description=f"""```asciidoc
 = Showing Song Results for: =
 [ {song} ]
@@ -652,7 +652,7 @@ class Music(commands.Cog):
                     player.queue.put(track)
 
                 embed = discord.Embed(
-                    title=f"{style.Emojis.REGULAR.spotify} Playing Track",
+                    title=f"{style.Emoji.REGULAR.spotify} Playing Track",
                     url=track.uri,
                     description=f"""```asciidoc
 [ {track.title} ]
@@ -694,7 +694,7 @@ class Music(commands.Cog):
                     author = "Featured Playlist"
 
                 embed = discord.Embed(
-                    title=f"{style.Emojis.REGULAR.spotify} Queueing {playlist.name}",
+                    title=f"{style.Emoji.REGULAR.spotify} Queueing {playlist.name}",
                     description=f"""```asciidoc
 [ Adding {length} Songs ]
 = Duration: Calculating =
@@ -717,7 +717,7 @@ class Music(commands.Cog):
                     total_dur += song.length
 
                 finished = discord.Embed(
-                    title=f"{style.Emojis.REGULAR.spotify} Playing {playlist.name}",
+                    title=f"{style.Emoji.REGULAR.spotify} Playing {playlist.name}",
                     url=playlist.href,
                     description=f"""```asciidoc
 [ Added {length} Songs ]
@@ -972,7 +972,7 @@ class Music(commands.Cog):
             current = player.track
             await player.shuffle()
             embed = discord.Embed(
-                title=f"{style.Emojis.REGULAR.shuffle} Shuffling",
+                title=f"{style.Emoji.REGULAR.shuffle} Shuffling",
                 url=current.uri,
                 description=f"""Shuffled {len(player.queue._queue)} songs""",
                 timestamp=discord.utils.utcnow(),
@@ -1009,7 +1009,7 @@ class Music(commands.Cog):
             current = player.track
             await player.loop()
             embed = discord.Embed(
-                title=f"{style.Emojis.REGULAR.loop} {'Looping' if player.loop else 'Unlooping'}",
+                title=f"{style.Emoji.REGULAR.loop} {'Looping' if player.loop else 'Unlooping'}",
                 url=current.uri,
                 description=f"""{'Looped' if player.loop else 'Unlooped'} the queue""",
                 timestamp=discord.utils.utcnow(),
@@ -1247,7 +1247,7 @@ class Music(commands.Cog):
         embed = discord.Embed(
             title="Spin Mode",
             description="""Set a spin mode below!
-            
+
             Note the max values of this are 5 and -5, don't get too dizzy!""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.PURPLE,

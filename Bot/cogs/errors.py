@@ -56,7 +56,7 @@ class Errors(commands.Cog):
     """
 
     COLOR = style.Color.RED
-    ICON = style.Emojis.REGULAR.cancel
+    ICON = style.Emoji.REGULAR.cancel
 
     def __init__(self, bot: commands.Bot) -> None:
         """
@@ -316,7 +316,7 @@ class Errors(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            embed.set_thumbnail(url=style.Emojis.IMAGE.cancel)
+            embed.set_thumbnail(url=style.Emoji.IMAGE.cancel)
 
         elif isinstance(error, commands.CommandOnCooldown):
             embed = discord.Embed(

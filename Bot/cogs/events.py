@@ -79,7 +79,7 @@ class LoggerPaginator(discord.ui.View):
             self.current_page = len(self.pages) - 1
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.left, style=discord.ButtonStyle.blurple
+        emoji=style.Emoji.REGULAR.left, style=discord.ButtonStyle.blurple
     )
     async def on_backward(
         self, interaction: discord.Interaction, button: discord.ui.Button
@@ -90,7 +90,7 @@ class LoggerPaginator(discord.ui.View):
         self.change_page(-1)
         await self.generate_page(interaction)
 
-    @discord.ui.button(emoji=style.Emojis.REGULAR.stop, style=discord.ButtonStyle.red)
+    @discord.ui.button(emoji=style.Emoji.REGULAR.stop, style=discord.ButtonStyle.red)
     async def on_stop(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
@@ -100,7 +100,7 @@ class LoggerPaginator(discord.ui.View):
         await interaction.response.edit_message(view=self)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.right, style=discord.ButtonStyle.blurple
+        emoji=style.Emoji.REGULAR.right, style=discord.ButtonStyle.blurple
     )
     async def on_forward(
         self, interaction: discord.Interaction, button: discord.ui.Button
@@ -112,7 +112,7 @@ class LoggerPaginator(discord.ui.View):
         await self.generate_page(interaction)
 
     @discord.ui.button(
-        emoji=style.Emojis.REGULAR.search, style=discord.ButtonStyle.grey
+        emoji=style.Emoji.REGULAR.search, style=discord.ButtonStyle.grey
     )
     async def on_search(
         self, interaction: discord.Interaction, button: discord.ui.Button
