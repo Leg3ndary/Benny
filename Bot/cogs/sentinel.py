@@ -817,7 +817,8 @@ class Sentinel(commands.Cog):
         """
         Sentinels time :)
         """
-        await self.sm.process(msg)
+        if len(msg.clean_content) > 25:
+            await self.sm.process(msg)
 
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
