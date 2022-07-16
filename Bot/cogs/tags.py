@@ -9,8 +9,6 @@ import discord.utils
 from discord.ext import commands
 from gears import style
 
-from .tblocks import DeleteBlock
-
 
 FAKE_SEED = {
     "user": None,
@@ -138,38 +136,37 @@ class Tags(commands.Cog):
         self.db: asqlite.Connection = None
         bot.custom_tags = self.custom_tags
         tse_blocks = [
-            tse.block.MathBlock(),
-            tse.block.RandomBlock(),
-            tse.block.RangeBlock(),
+            tse.block.BreakBlock(),
+            tse.block.CommentBlock(),
+            tse.block.AllBlock(),
             tse.block.AnyBlock(),
             tse.block.IfBlock(),
-            tse.block.AllBlock(),
-            tse.block.BreakBlock(),
-            tse.block.StrfBlock(),
-            tse.block.StopBlock(),
-            tse.block.AssignmentBlock(),
-            tse.block.FiftyFiftyBlock(),
-            tse.block.ShortCutRedirectBlock("args"),
-            tse.block.LooseVariableGetterBlock(),
-            tse.block.EmbedBlock(),
-            tse.block.ReplaceBlock(),
-            tse.block.PythonBlock(),
-            tse.block.URLEncodeBlock(),
-            tse.block.URLDecodeBlock(),
-            tse.block.RequireBlock(),
+            tse.block.CountBlock(),
+            tse.block.LengthBlock(),
             tse.block.BlacklistBlock(),
             tse.block.CommandBlock(),
-            tse.block.OverrideBlock(),
-            tse.block.RedirectBlock(),
             tse.block.CooldownBlock(),
-            tse.block.LengthBlock(),
-            tse.block.CountBlock(),
-            tse.block.CommentBlock(),
+            tse.block.DeleteBlock(),
+            tse.block.EmbedBlock(),
+            tse.block.OverrideBlock(),
+            tse.block.ReactBlock(),
+            tse.block.RedirectBlock(),
+            tse.block.RequireBlock(),
+            tse.block.MathBlock(),
             tse.block.OrdinalAbbreviationBlock(),
+            tse.block.RandomBlock(),
+            tse.block.RangeBlock(),
+            tse.block.PythonBlock(),
+            tse.block.ReplaceBlock(),
+            tse.block.StopBlock(),
+            tse.block.StrfBlock(),
+            tse.block.URLDecodeBlock(),
+            tse.block.URLEncodeBlock(),
             tse.block.DebugBlock(),
+            tse.block.VarBlock(),
+            tse.block.LooseVariableGetterBlock()
         ]
-        externals = [DeleteBlock()]
-        self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks + externals)
+        self.tsei = tse.interpreter.AsyncInterpreter(blocks=tse_blocks)
         self.channel_converter = commands.TextChannelConverter()
         self.member_converter = commands.MemberConverter()
         self.role_converter = commands.RoleConverter()
