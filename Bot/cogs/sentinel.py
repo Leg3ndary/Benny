@@ -980,7 +980,9 @@ class Sentinel(commands.Cog):
     async def decancer_logs_cmd(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ) -> None:
-        """Set the decancer logs channel"""
+        """
+        Set the decancer logs channel
+        """
         old_webhook = await self.decancer.get_webhook(ctx.message.guild.id)
 
         if not channel:
