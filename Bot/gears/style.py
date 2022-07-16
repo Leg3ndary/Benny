@@ -1,6 +1,12 @@
 import random
 
 
+__all__ = (
+    "Color",
+    "Emoji"
+)
+
+
 class Color:
     """
     Our base colors
@@ -152,7 +158,7 @@ class ImageEmojis:
     youtube = "https://cdn.discordapp.com/emojis/927005602964729887?size=256"
 
 
-class Emojis:
+class Emoji:
     """
     Base class for all emojis
     """
