@@ -3,11 +3,8 @@ import datetime
 import discord
 from discord.ext import commands
 from gears import style
-from motor.motor_asyncio import (
-    AsyncIOMotorClient,
-    AsyncIOMotorCollection,
-    AsyncIOMotorDatabase,
-)
+from motor.motor_asyncio import (AsyncIOMotorClient, AsyncIOMotorCollection,
+                                 AsyncIOMotorDatabase)
 
 
 class DictDropdown(discord.ui.Select):
@@ -38,10 +35,9 @@ class DictDropdown(discord.ui.Select):
         )
 
     async def callback(self, interaction: discord.Interaction):
-        # Use the interaction object to send a response message containing
-        # the user's favourite colour or choice. The self object refers to the
-        # Select object, and the values attribute gets a list of the user's
-        # selected options. We only want the first one.
+        """
+        Select a word to define
+        """
         await interaction.response.send_message(
             f"Your favourite colour is {self.values[0]}"
         )
@@ -159,7 +155,9 @@ class Dictionary(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def define_cmd(self, ctx: commands.Context, *, word: str) -> None:
-        """Define a word"""
+        """
+        Define a word
+        """
         data = await self.get_word(word)
         print(data)
         await ctx.send("Sorry, this command doesn't actually do anything as of now")
