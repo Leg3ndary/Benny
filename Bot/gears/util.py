@@ -84,6 +84,7 @@ class BotUtil:
                     "pytest_cache",
                     ".vscode",
                     ".github",
+                    ".pdf"
                 ),
             ):
                 pass
