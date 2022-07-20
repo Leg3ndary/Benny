@@ -1,6 +1,8 @@
 import asyncio
 import datetime
 import random
+from typing import List
+from urllib.parse import urlparse
 
 import asqlite
 import discord
@@ -10,6 +12,7 @@ import wavelink
 from discord.ext import commands
 from gears import style, util
 from gears.music_exceptions import NothingPlaying, QueueEmpty, QueueFull
+from musescore_scraper import AsyncMuseScraper, QueriedSheetMusic
 from wavelink.ext import spotify
 
 
@@ -433,6 +436,211 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
 
+class MusescoreDropdown(discord.ui.Select):
+    """
+    Shows up to 25 sheets in a Select so you can choose one to download
+    """
+
+    def __init__(
+        self,
+        ctx: commands.Context,
+        ams: AsyncMuseScraper,
+        sheets: List[QueriedSheetMusic],
+    ) -> None:
+        """
+        Construct the queue dropdown view
+        """
+        self.ctx = ctx
+        self.ams = ams
+        options = []
+        counter = 1
+        self.sheets = sheets
+        for sheet in sheets[:25]:
+            options.append(
+                discord.SelectOption(
+                    label=sheet.title,
+                    description=f"""{sheet.author} - Pages: {sheet.pages} - Playtime: {sheet.ttp}""",
+                    value=str(counter),
+                )
+            )
+            counter += 1
+
+        super().__init__(
+            placeholder="Select a Sheet to Download",
+            min_values=1,
+            max_values=1,
+            options=options,
+            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=musescore",
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """
+        Callback for the queue
+        """
+        sheet = self.sheets[int(self.values[0])]
+        embed = discord.Embed(
+            title=f"Viewing Sheet {sheet.title}",
+            url=sheet.url,
+            description=f"""```yaml
+            Author   : {sheet.author}
+            Parts    : {sheet.parts}
+            Pages    : {sheet.pages}
+            Length   : {sheet.ttp}
+            Views    : {sheet.views}
+            Favorites: {sheet.favorites}
+            Votes    : {sheet.votes}
+            ```""",
+            timestamp=discord.utils.utcnow(),
+            color=0x3269BC,
+        )
+        embed.set_footer(
+            text=self.ctx.author.display_name,
+            icon_url=self.ctx.author.display_avatar.url,
+        )
+        await interaction.response.edit_message(embed=embed, view=MusescoreDownload(self.ctx, self.ams, sheet, self))
+class MusescoreView(discord.ui.View):
+    """
+    Display all sheets found during a search and display them
+    """
+
+    def __init__(
+        self,
+        ctx: commands.Context,
+        ams: AsyncMuseScraper,
+        sheets: List[QueriedSheetMusic],
+    ) -> None:
+        """
+        Construct the sheets view with dropdown attached
+        """
+        self.ctx = ctx
+        super().__init__(timeout=60)
+
+        self.add_item(MusescoreDropdown(ctx, ams, sheets))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        If the interaction isn't by the user, return a fail.
+        """
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        """
+        On timeout make this look cool
+        """
+        for item in self.children:
+            item.disabled = True
+
+        embed = discord.Embed(
+            title="Viewing Sheets",
+            description="""Timed out""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await self.play_embed.edit(embed=embed, view=self)
+
+    @discord.ui.button(
+        emoji=style.Emoji.REGULAR.cancel,
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+        row=2,
+    )
+    async def button_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Delete the message if clicked
+        """
+        await self.ctx.message.delete()
+        await interaction.response.send_message("Cancelled", ephemeral=True)
+
+class MusescoreDownload(discord.ui.View):
+    """
+    Provide a download button
+    """
+
+    def __init__(
+        self,
+        ctx: commands.Context,
+        ams: AsyncMuseScraper,
+        sheet: QueriedSheetMusic,
+        original_view: MusescoreView
+    ) -> None:
+        """
+        Construct the download view attached
+        """
+        self.ctx = ctx
+        self.ams = ams
+        self.sheet = sheet
+        self.ov = original_view
+        super().__init__(timeout=60)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        If the interaction isn't by the user, return a fail.
+        """
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        """
+        On timeout make this look cool
+        """
+        for item in self.children:
+            item.disabled = True
+
+        embed = discord.Embed(
+            title="Viewing Sheets",
+            description="""Timed out""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await self.play_embed.edit(embed=embed, view=self)
+
+    @discord.ui.button(
+        emoji=style.Emoji.REGULAR.check,
+        label="Download",
+        style=discord.ButtonStyle.green,
+    )
+    async def download_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Download and send the pdf if clicked
+        """
+        embed = discord.Embed(
+            title="Downloading...",
+            description="""Please be patient, this may take a while.""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY
+        )
+        await self.ctx.edit(embed=embed)
+        path = await self.ams.to_pdf(self.sheet.url)
+        embed = discord.Embed(
+            title="Downloaded",
+            description="""This will remain on discord as long as you save the original message, enjoy!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN
+        )
+        await self.ctx.edit(embed=embed, file=discord.File(path, filename=f"{self.sheet.title}.pdf"))
+
+    @discord.ui.button(
+        emoji=style.Emoji.REGULAR.cancel,
+        label="Cancel",
+        style=discord.ButtonStyle.danger,
+    )
+    async def cancel_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Delete the message if clicked
+        """
+        await self.play_embed.delete()
+        await interaction.response.send_message("Cancelled", ephemeral=True)
+
+
 def duration(seconds: float) -> str:
     """
     Return a human readable duration because
@@ -521,6 +729,11 @@ class Music(commands.Cog):
 
         return player
 
+    async def parse_track(self, query: str) -> str:
+        """
+        Parse a song to play? Idk
+        """
+
     @commands.Cog.listener()
     async def on_connect_wavelink(self) -> None:
         """
@@ -595,7 +808,7 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def play_cmd(self, ctx: commands.Context, *, song: str) -> None:
+    async def play_cmd(self, ctx: commands.Context, *, search: str) -> None:
         """
         Play a song with the given search query.
 
@@ -603,13 +816,13 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        decoded = spotify.decode_url(song)
+        decoded = spotify.decode_url(search)
 
         if not decoded:
 
             node = wavelink.NodePool.get_node()
 
-            query = "ytsearch:" + song
+            query = f"ytsearch:{search}"
             tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=query)
 
             view = PlayerSelector(ctx, player, tracks[:25])
@@ -618,7 +831,7 @@ class Music(commands.Cog):
                 title=f"{style.Emoji.REGULAR.youtube} Select a Song to Play",
                 description=f"""```asciidoc
 = Showing Song Results for: =
-[ {song} ]
+[ {search} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREEN,
@@ -1253,6 +1466,44 @@ class Music(commands.Cog):
             color=style.Color.PURPLE,
         )
         await ctx.send(embed=embed, view=view)
+
+    @commands.hybrid_command(
+        name="musescore",
+        description="""Get sheet music from musescore""",
+        help="""Get sheet music from musescore""",
+        brief="Get sheet music from musescore",
+        aliases=["sheet", "sheets"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(5.0, 30.0, commands.BucketType.default)
+    async def musescore_cmd(self, ctx: commands.Context, *, search: str) -> None:
+        """
+        Get sheet music from musescore
+        """
+        async with AsyncMuseScraper() as ms:
+            url = urlparse(search)
+
+            if url.scheme == "https" and url.netloc == "musescore.com":
+                if url.hostname == "musescore.com":
+                    path = await ms.to_pdf(search, "Musescore/")
+                    file = discord.File(path)
+                    await ctx.send(file=file)
+            
+            else:
+                sheets: List[QueriedSheetMusic] = (await ms.search(search))[:25]
+
+                embed = discord.Embed(
+                    title=f"Viewing Sheets for {search}",
+                    description=f"""Showing {len(sheets)} sheets""",
+                    timestamp=discord.utils.utcnow(),
+                    color=0x3269BC,
+                )
+                embed.set_footer(
+                    text=ctx.author.display_name,
+                    icon_url=ctx.author.display_avatar.url,
+                )
+                await ctx.send(embed=embed, view=MusescoreView(ctx, ms, sheets))
 
 
 async def setup(bot: commands.Bot) -> None:
