@@ -55,7 +55,7 @@ class Color:
         return random.choice(list(colors.values()))
 
 
-class RegularEmojis:
+class RegularEmoji:
     """
     Regular emoji class
     """
@@ -74,7 +74,7 @@ class RegularEmojis:
     youtube = "<:_:927005602964729887>"
 
 
-class IDEmojis:
+class IDEmoji:
     """
     Emojis ID's
     """
@@ -93,7 +93,7 @@ class IDEmojis:
     youtube = "927005602964729887"
 
 
-class ImageEmojis:
+class ImageEmoji:
     """
     Image urls for all our emojis
     """
@@ -117,6 +117,6 @@ class Emoji:
     Base class for all emojis
     """
 
-    REGULAR = RegularEmojis
-    ID = IDEmojis
-    IMAGE = ImageEmojis
+    REGULAR = RegularEmoji
+    ID = IDEmoji
+    IMAGE = ImageEmoji
