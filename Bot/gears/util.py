@@ -2,6 +2,7 @@ import datetime
 import math
 import os
 import time
+from enum import Enum
 from typing import Tuple
 
 import aiohttp
@@ -32,7 +33,7 @@ class BotUtil:
         -------
         Tuple[int, int]
         """
-        if file not in [".github", ".vscode"]:
+        if file not in (".github", ".vscode"):
             with open(file, encoding="utf8") as _file:
                 lines = len(_file.readlines())
             with open(file, encoding="utf8") as _file:
@@ -84,7 +85,7 @@ class BotUtil:
                     "pytest_cache",
                     ".vscode",
                     ".github",
-                    ".pdf"
+                    ".pdf",
                 ),
             ):
                 pass
@@ -205,53 +206,72 @@ async def gen_loading_bar(percentage: float) -> list:
     bars.append((60 - bar_num) * "█")
 
 
-ANSI_COLOR_DICT = {
-    "RESET": "0",
-    "CLEAR": "0",
-    "NORMAL": "0",
-    "GREY": "30",
-    "GRAY": "30",
-    "RED": "31",
-    "GREEN": "32",
-    "YELLOW": "33",
-    "BLUE": "34",
-    "PINK": "35",
-    "CYAN": "36",
-    "WHITE": "37",
-}
+class AnsiColor(Enum):
+    """
+    Ansi color codes
+    """
 
-BACKGROUND_DICT = {
-    "DARK": "40",
-    "DARKBLUE": "40",
-    "ORANGE": "41",
-    "GREY4": "42",
-    "GRAY4": "42",
-    "GREY3": "43",
-    "GRAY3": "43",
-    "GREY2": "44",
-    "GRAY2": "44",
-    "INDIGO": "45",
-    "GREY1": "46",
-    "GRAY1": "46",
-    "WHITE": "47",
-}
-
-STYLE_DICT = {"RESET": "0", "CLEAR": "0", "BOLD": "1", "UNDERLINE": "4"}
+    RESET = "0"
+    CLEAR = "0"
+    NORMAL = "0"
+    GREY = "30"
+    GRAY = "30"
+    RED = "31"
+    GREEN = "32"
+    YELLOW = "33"
+    BLUE = "34"
+    PINK = "35"
+    CYAN = "36"
+    WHITE = "37"
 
 
-def ansi(color, background=None, style=None, style2=None) -> str:
-    """Generates codes for you in a nice way"""
+class AnsiBackground(Enum):
+    """
+    Ansi background color codes
+    """
+
+    DARK = "40"
+    DARKBLUE = "40"
+    ORANGE = "41"
+    GREY4 = "42"
+    GRAY4 = "42"
+    GREY3 = "43"
+    GRAY3 = "43"
+    GREY2 = "44"
+    GRAY2 = "44"
+    INDIGO = "45"
+    GREY1 = "46"
+    GRAY1 = "46"
+    WHITE = "47"
+
+
+class AnsiStyle(Enum):
+    """
+    Ansi style color codes
+    """
+
+    RESET = "0"
+    CLEAR = "0"
+    BOLD = "1"
+    UNDERLINE = "4"
+
+
+def ansi(
+    color: str, background: str = None, style: str = None, style2: str = None
+) -> str:
+    """
+    Generates codes for you in a nice way
+    """
     origin = "["
     if style:
-        origin += STYLE_DICT.get(style.upper()) + ";"
+        origin += AnsiStyle[style.upper()] + ";"
     if background:
-        origin += BACKGROUND_DICT.get(background.upper()) + ";"
+        origin += AnsiBackground[background.upper()] + ";"
     if style2:
-        origin += STYLE_DICT.get(style2.upper()) + ";"
+        origin += AnsiStyle[style.upper()] + ";"
     if origin == "[":
         origin += "0;"
-
-    origin += ANSI_COLOR_DICT.get(color.upper()) + "m"
+    origin += AnsiColor[color.upper()] + "m"
     return origin
 
 
