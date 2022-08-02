@@ -3,6 +3,7 @@ import json
 import platform
 import time
 import unicodedata
+import aiohttp
 
 import discord
 import discord.utils
@@ -181,6 +182,7 @@ class Base(commands.Cog):
             if _bytes < factor:
                 return f"{_bytes:.2f}{unit}{suffix}"
             _bytes /= factor
+        return None
 
     @commands.command(
         name="about",
@@ -429,7 +431,9 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     async def system_info_cmd(self, ctx: commands.Context) -> None:
-        """Showing full system information"""
+        """
+        Showing full system information
+        """
         uname = platform.uname()
         embed = discord.Embed(
             title="================ System Information ================",
@@ -658,14 +662,19 @@ Total Uptime: {resolved_rel}"""
     @commands.cooldown(2.0, 8.0, commands.BucketType.user)
     async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
         """
-        Use pytesseract to read stuff yay."""
+        Use pytesseract to read stuff yay.
+        """
         if url:
             async with self.session as session:
-                async with session.get(url) as response:
+                timeout = aiohttp.ClientTimeout(total=10)
+                async with session.get(url, timeout=timeout) as response:
                     image_bytes = await response.read()
 
-        else:
+        elif ctx.message.attachments:
             image_bytes = await ctx.message.attachments[0].read()
+
+        else:
+            raise commands.BadArgument("Please provide an image or url to read.")
 
         text = await self.imgr.read_img(image_bytes)
         if len(text) > 2000:
