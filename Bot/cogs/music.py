@@ -497,7 +497,11 @@ class MusescoreDropdown(discord.ui.Select):
             text=self.ctx.author.display_name,
             icon_url=self.ctx.author.display_avatar.url,
         )
-        await interaction.response.edit_message(embed=embed, view=MusescoreDownload(self.ctx, self.ams, sheet, self))
+        await interaction.response.edit_message(
+            embed=embed, view=MusescoreDownload(self.ctx, self.ams, sheet, self)
+        )
+
+
 class MusescoreView(discord.ui.View):
     """
     Display all sheets found during a search and display them
@@ -555,6 +559,7 @@ class MusescoreView(discord.ui.View):
         await self.ctx.message.delete()
         await interaction.response.send_message("Cancelled", ephemeral=True)
 
+
 class MusescoreDownload(discord.ui.View):
     """
     Provide a download button
@@ -565,7 +570,7 @@ class MusescoreDownload(discord.ui.View):
         ctx: commands.Context,
         ams: AsyncMuseScraper,
         sheet: QueriedSheetMusic,
-        original_view: MusescoreView
+        original_view: MusescoreView,
     ) -> None:
         """
         Construct the download view attached
@@ -614,7 +619,7 @@ class MusescoreDownload(discord.ui.View):
             title="Downloading...",
             description="""Please be patient, this may take a while.""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.GREY
+            color=style.Color.GREY,
         )
         await self.ctx.edit(embed=embed)
         path = await self.ams.to_pdf(self.sheet.url)
@@ -622,9 +627,11 @@ class MusescoreDownload(discord.ui.View):
             title="Downloaded",
             description="""This will remain on discord as long as you save the original message, enjoy!""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.GREEN
+            color=style.Color.GREEN,
         )
-        await self.ctx.edit(embed=embed, file=discord.File(path, filename=f"{self.sheet.title}.pdf"))
+        await self.ctx.edit(
+            embed=embed, file=discord.File(path, filename=f"{self.sheet.title}.pdf")
+        )
 
     @discord.ui.button(
         emoji=style.Emoji.REGULAR.cancel,
@@ -1489,7 +1496,7 @@ class Music(commands.Cog):
                     path = await ms.to_pdf(search, "Musescore/")
                     file = discord.File(path)
                     await ctx.send(file=file)
-            
+
             else:
                 sheets: List[QueriedSheetMusic] = (await ms.search(search))[:25]
 
