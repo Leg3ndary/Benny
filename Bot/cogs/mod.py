@@ -123,36 +123,39 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (
-                case    TEXT    PRIMARY KEY,
+                case_id INT    PRIMARY KEY
+                                NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
-                reason  TEXT    NOT NULL,
                 time    INT     NOT NULL,
-                finish  INT
+                reason  TEXT,
+                active  BOOL
             );
             """
         )
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS bans (
-                case    TEXT    NOT NULL    PRIMARY KEY,
+                case_id INT    PRIMARY KEY
+                                NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
-                reason  TEXT    NOT NULL,
                 time    INT     NOT NULL,
-                finish  INT
+                reason  TEXT,
+                expires INT
             );
             """
         )
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS mutes (
-                case    TEXT    NOT NULL    PRIMARY KEY,
+                case_id INT    PRIMARY KEY
+                                NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
-                reason  TEXT    NOT NULL,
                 time    INT     NOT NULL,
-                finish  INT
+                reason  TEXT,
+                expires INT
             );
             """
         )
@@ -396,5 +399,4 @@ async def setup(bot: commands.Bot) -> None:
     """
     Setup the Cog. Still need to fix this
     """
-    return
-    # await bot.add_cog(Mod(bot))
+    await bot.add_cog(Mod(bot))
