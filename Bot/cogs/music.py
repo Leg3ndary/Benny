@@ -12,7 +12,7 @@ import wavelink
 from discord.ext import commands
 from gears import style, util
 from gears.music_exceptions import NothingPlaying, QueueEmpty, QueueFull
-from musescore_scraper import AsyncMuseScraper, QueriedSheetMusic
+from musescore_scraper import MuseScraper
 from wavelink.ext import spotify
 
 
@@ -444,8 +444,8 @@ class MusescoreDropdown(discord.ui.Select):
     def __init__(
         self,
         ctx: commands.Context,
-        ams: AsyncMuseScraper,
-        sheets: List[QueriedSheetMusic],
+        ams: MuseScraper,
+        sheets: None, # List[QueriedSheetMusic],
     ) -> None:
         """
         Construct the queue dropdown view
@@ -510,8 +510,8 @@ class MusescoreView(discord.ui.View):
     def __init__(
         self,
         ctx: commands.Context,
-        ams: AsyncMuseScraper,
-        sheets: List[QueriedSheetMusic],
+        ams: MuseScraper,
+        sheets: None, # List[QueriedSheetMusic],
     ) -> None:
         """
         Construct the sheets view with dropdown attached
@@ -568,8 +568,8 @@ class MusescoreDownload(discord.ui.View):
     def __init__(
         self,
         ctx: commands.Context,
-        ams: AsyncMuseScraper,
-        sheet: QueriedSheetMusic,
+        ams: MuseScraper,
+        sheet: None, #QueriedSheetMusic,
         original_view: MusescoreView,
     ) -> None:
         """
@@ -1480,15 +1480,15 @@ class Music(commands.Cog):
         help="""Get sheet music from musescore""",
         brief="Get sheet music from musescore",
         aliases=["sheet", "sheets"],
-        enabled=True,
+        enabled=False,
         hidden=False,
     )
-    @commands.cooldown(5.0, 30.0, commands.BucketType.default)
+    @commands.cooldown(1.0, 10.0, commands.BucketType.default)
     async def musescore_cmd(self, ctx: commands.Context, *, search: str) -> None:
         """
         Get sheet music from musescore
         """
-        async with AsyncMuseScraper() as ms:
+        async with MuseScraper() as ms:
             url = urlparse(search)
 
             if url.scheme == "https" and url.netloc == "musescore.com":
@@ -1498,8 +1498,8 @@ class Music(commands.Cog):
                     await ctx.send(file=file)
 
             else:
-                sheets: List[QueriedSheetMusic] = (await ms.search(search))[:25]
-
+                # sheets: List[QueriedSheetMusic] = (await ms.search(search))[:25]
+                sheets = []
                 embed = discord.Embed(
                     title=f"Viewing Sheets for {search}",
                     description=f"""Showing {len(sheets)} sheets""",
