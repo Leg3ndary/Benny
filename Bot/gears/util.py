@@ -264,14 +264,14 @@ def ansi(
     """
     origin = "["
     if style:
-        origin += AnsiStyle[style.upper()] + ";"
+        origin += AnsiStyle[style.upper()].value + ";"
     if background:
-        origin += AnsiBackground[background.upper()] + ";"
+        origin += AnsiBackground[background.upper()].value + ";"
     if style2:
-        origin += AnsiStyle[style.upper()] + ";"
+        origin += AnsiStyle[style.upper()].value + ";"
     if origin == "[":
         origin += "0;"
-    origin += AnsiColor[color.upper()] + "m"
+    origin += AnsiColor[color.upper()].value + "m"
     return origin
 
 
