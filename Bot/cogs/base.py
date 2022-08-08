@@ -436,7 +436,7 @@ Total Uptime: {resolved_rel}"""
         """
         uname = platform.uname()
         embed = discord.Embed(
-            title="================ System Information ================",
+            title="System Information",
             description=f"""```asciidoc
 [ System ]
 = {uname.system} =
@@ -452,7 +452,7 @@ Total Uptime: {resolved_rel}"""
 = {uname.processor} =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
+            color=style.Color.GREY,
         )
         await ctx.send(embed=embed)
 
