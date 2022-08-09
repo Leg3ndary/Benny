@@ -25,7 +25,7 @@ class WelcomeManager:
         """
         data = await self.bot.loop.run_in_executor(
             None,
-            json.dumps(), # pylint: disable=no-value-for-parameter
+            json.dumps(),  # pylint: disable=no-value-for-parameter
             embed.to_dict(),
         )
         return data

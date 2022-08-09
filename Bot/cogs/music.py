@@ -445,7 +445,7 @@ class MusescoreDropdown(discord.ui.Select):
         self,
         ctx: commands.Context,
         ams: MuseScraper,
-        sheets: None, # List[QueriedSheetMusic],
+        sheets: None,  # List[QueriedSheetMusic],
     ) -> None:
         """
         Construct the queue dropdown view
@@ -511,7 +511,7 @@ class MusescoreView(discord.ui.View):
         self,
         ctx: commands.Context,
         ams: MuseScraper,
-        sheets: None, # List[QueriedSheetMusic],
+        sheets: None,  # List[QueriedSheetMusic],
     ) -> None:
         """
         Construct the sheets view with dropdown attached
@@ -569,7 +569,7 @@ class MusescoreDownload(discord.ui.View):
         self,
         ctx: commands.Context,
         ams: MuseScraper,
-        sheet: None, #QueriedSheetMusic,
+        sheet: None,  # QueriedSheetMusic,
         original_view: MusescoreView,
     ) -> None:
         """

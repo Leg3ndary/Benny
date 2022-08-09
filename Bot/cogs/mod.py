@@ -23,6 +23,7 @@ class ModerationManager:
         self.calendar = parsedatetime.Calendar()
         self.db = db
         self.count_db = bot.mongo["Mod"]
+        self.infraction_tasks = {}
 
     async def get_count(self, guild: str) -> int:
         """

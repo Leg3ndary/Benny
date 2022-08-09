@@ -3,8 +3,8 @@ import json
 import platform
 import time
 import unicodedata
-import aiohttp
 
+import aiohttp
 import discord
 import discord.utils
 import PIL as pil
