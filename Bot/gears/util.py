@@ -56,14 +56,14 @@ class BotUtil:
         """
         files = []
         if directory:
-            if directory in [
+            if directory in (
                 "__pycache__",
                 "Databases",
                 "Logs",
                 ".vscode",
                 "Docs",
                 "Website",
-            ]:
+            ):
                 directories = []
             else:
                 directories = os.listdir(directory)
@@ -126,7 +126,7 @@ class BotUtil:
             for file in cogs:
                 try:
                     filename = file.split("/")[-1][:-3]
-                    if file.endswith(".py") and (filename not in ["cog_template"]):
+                    if file.endswith(".py") and (filename not in ("cog_template", "mod")):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
                         await self.bot.blogger.cog_update(file[:-3], "LOAD")
                         cog_list.append(f"cogs.{file[:-3]}")

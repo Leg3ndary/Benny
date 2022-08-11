@@ -1,13 +1,39 @@
+import asyncio
 import datetime
-import re
+from sqlite3 import Row as sqlRow
+from typing import Optional
 import time
 
 import asqlite
 import discord
 import discord.utils
 import parsedatetime
-from discord.ext import commands
+from discord.ext import commands, tasks
 from gears import style
+
+
+class Infraction:
+    """
+    Class for your standard infraction
+    """
+
+    __slots__ = ("case_id", "guild", "mod", "offender", "time", "reason", "active", "expires")
+
+    def __init__(self, row: sqlRow) -> None:
+        """
+        Construct the infraction
+        """
+        self.case_id: str = row[0]
+        self.guild: str = row[1]
+        self.mod: str = row[2]
+        self.offender: str = row[3]
+        self.time: int = row[4]
+        self.reason: Optional[str] = row[5]
+        if len(row) == 7:
+            self.active: bool = row[6]
+        else:
+            self.expires: int = row[6]
+            self.active: bool = row[7]
 
 
 class ModerationManager:
@@ -41,61 +67,122 @@ class ModerationManager:
 
         return count
 
-    async def pull_time(self, string: str) -> float:
+    async def pull_time(self, string: str) -> int:
         """
         Pull the time from a string
         """
-        # time_struct, parse_status = self.calendar.parse(string) original, pylint said to remove it
-        time_struct = self.calendar.parse(string)
-        return datetime.datetime(*time_struct[:6]).timestamp()
+        time_struct, parse_status = self.calendar.parse(string) # pylint: disable=unused-variable
+        '''if parse_status == 0:
+            raise commands.BadArgument("Time not found")'''
+        return int(datetime.datetime(*time_struct[:6]).timestamp())
 
     async def warn(
-        self, ctx: commands.Context, member: discord.Member, reason: str
+        self, ctx: commands.Context, mod: discord.Member, member: discord.Member, reason: str
     ) -> None:
         """
         Warn a member
         """
-        future_time = await self.pull_time(reason)
         current_time = int(time.time())
 
-        user = self.bot.get_user(ctx.author.id) or (
-            await self.bot.fetch_user(ctx.author.id)
+        await self.db.execute(
+            """INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
+            (
+                await self.get_count(str(ctx.guild.id)),
+                str(ctx.guild.id),
+                str(mod.id),
+                str(member.id),
+                current_time,
+                reason
+            ),
         )
-
-        if future_time <= current_time:
-            await self.db.execute(
-                """INSERT INTO warns VALUES(?, ?, ?, ?, ?, ?);""",
-                (
-                    await self.get_count(str(ctx.guild.id)),
-                    member.id,
-                    ctx.author.id,
-                    reason,
-                    current_time,
-                    future_time,
-                ),
-            )
-            description = f"{reason}\n\nExpires in <t:{future_time}:R>"
-
-        else:
-            await self.db.execute(
-                """INSERT INTO warns VALUES(?, ?, ?, ?, ?);""",
-                (
-                    await self.get_count(str(ctx.guild.id)),
-                    member.id,
-                    ctx.author.id,
-                    reason,
-                    current_time,
-                    None,
-                ),
-            )
-            description = reason
         await self.db.commit()
 
         embed = discord.Embed(
-            title=f"Warned {user.name}#{user.discriminator}",
-            description=description,
+            title=f"Warned {member.name}#{member.discriminator}",
+            description=reason,
             timestamp=discord.utils.utcnow(),
             color=style.Color.YELLOW,
+        )
+        embed.set_footer(
+            text=f"Warned by {mod.name}#{mod.discriminator}",
+            icon_url=mod.avatar.url,
+        )
+        await ctx.send(embed=embed)
+
+    async def mute(
+        self, ctx: commands.Context, mod: discord.Member, member: discord.Member, reason: str
+    ) -> None:
+        """
+        Mute a member
+        """
+        future_time = await self.pull_time(reason)
+        current_time = int(time.time())
+
+        await self.db.execute(
+            """INSERT INTO mutes VALUES(?, ?, ?, ?, ?, ?, ?);""",
+            (
+                await self.get_count(str(ctx.guild.id)),
+                str(ctx.guild.id),
+                str(mod.id),
+                str(member.id),
+                current_time,
+                reason,
+                future_time if future_time >= current_time else None
+            ),
+        )
+        reason = f"{reason}\n\nExpires in <t:{future_time}:R>" if future_time >= current_time else reason
+
+        await self.db.commit()
+
+        embed = discord.Embed(
+            title=f"Muted {member.name}#{member.discriminator}",
+            description=reason,
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        embed.set_footer(
+            text=f"Muted by {mod.name}#{mod.discriminator}",
+            icon_url=mod.avatar.url,
+        )
+        await ctx.send(embed=embed)
+
+    async def ban(
+        self, ctx: commands.Context, mod: discord.Member, member: discord.Member, reason: Optional[str]
+    ) -> None:
+        """
+        bans a member
+        """
+        future_time = await self.pull_time(reason)
+        current_time = int(time.time())
+
+        await self.db.execute(
+            """INSERT INTO bans VALUES(?, ?, ?, ?, ?, ?, ?);""",
+            (
+                await self.get_count(str(ctx.guild.id)),
+                str(ctx.guild.id),
+                str(mod.id),
+                str(member.id),
+                current_time,
+                reason,
+                future_time if future_time >= current_time else None
+            ),
+        )
+        reason = f"{reason}\n\nExpires in <t:{future_time}:R>" if future_time >= current_time else reason
+
+        await self.db.commit()
+
+        reason = f"Banned by {ctx.author}: " + reason if reason else "No Reason"
+        await member.ban(reason=reason)
+
+        embed = discord.Embed(
+            title=f"Banned {member.name}#{member.discriminator}",
+            description=reason,
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        embed.set_footer(
+            text=f"Banned by {mod.name}#{mod.discriminator}",
+            icon_url=mod.avatar.url,
         )
         await ctx.send(embed=embed)
 
@@ -124,10 +211,11 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (
-                case_id INT    PRIMARY KEY
+                case_id TEXT    PRIMARY KEY
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
+                offender TEXT   NOT NULL,
                 time    INT     NOT NULL,
                 reason  TEXT,
                 active  BOOL
@@ -137,26 +225,30 @@ class Mod(commands.Cog):
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS bans (
-                case_id INT    PRIMARY KEY
+                case_id TEXT    PRIMARY KEY
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
+                offender TEXT   NOT NULL,
                 time    INT     NOT NULL,
                 reason  TEXT,
-                expires INT
+                expires INT,
+                active  BOOL
             );
             """
         )
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS mutes (
-                case_id INT    PRIMARY KEY
+                case_id TEXT    PRIMARY KEY
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
                 mod     TEXT    NOT NULL,
+                offender TEXT   NOT NULL,
                 time    INT     NOT NULL,
                 reason  TEXT,
-                expires INT
+                expires INT,
+                active  BOOL
             );
             """
         )
@@ -169,6 +261,38 @@ class Mod(commands.Cog):
         """
         await self.db.close()
 
+    async def queue_infraction(self, _type: str, infraction: Infraction) -> None:
+        """
+        Queue infractions for moderation
+        """
+        await asyncio.sleep(int(time.time()) - infraction.expires)
+
+    @tasks.loop(time=datetime.time(hour=5, minute=0, second=0))
+    async def queue_tasks(self) -> None:
+        """
+        Queue infraction actions for the next hour
+        """
+        async with self.db.execute(
+            """SELECT * FROM mutes;"""
+        ) as cursor:
+            for row in cursor:
+                mute = Infraction(row)
+                self.bot.loop.create_task(self.queue_infraction("mute", mute))
+
+
+    @commands.hybrid_group(
+        name="mod",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def mod_group(self, ctx: commands.Context) -> None:
+        """Command description"""
+
     @commands.hybrid_command(
         name="warn",
         description="""Warn a user""",
@@ -179,6 +303,7 @@ class Mod(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
+    @commands.has_permissions(mute_members=True)
     async def warn_cmd(
         self,
         ctx: commands.Context,
@@ -189,7 +314,30 @@ class Mod(commands.Cog):
         """
         Warn cmd
         """
-        await self.mm.warn(ctx, member[0], reason)
+        await self.mm.warn(ctx, ctx.author, member[0], reason)
+
+    @commands.hybrid_command(
+        name="mute",
+        description="""Mute a user""",
+        help="""Mute a user""",
+        brief="Mute a user",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(2.0, 6.0, commands.BucketType.user)
+    @commands.has_permissions(mute_members=True)
+    async def mute_cmd(
+        self,
+        ctx: commands.Context,
+        member: commands.Greedy[discord.Member],
+        *,
+        reason: str = "None",
+    ) -> None:
+        """
+        Warn cmd
+        """
+        await self.mm.warn(ctx, ctx.author, member[0], reason)
 
     @commands.hybrid_command(
         name="ban",
@@ -203,77 +351,30 @@ class Mod(commands.Cog):
     @commands.cooldown(2.0, 6.0, commands.BucketType.user)
     @commands.has_permissions(ban_members=True)
     async def ban_cmd(
-        self, ctx: commands.Context, user: discord.Member = None, *, reason: str = None
+        self, ctx: commands.Context, offender: discord.Member, *, reason: str = None
     ) -> None:
         """
         Ban a member, requires ban member permission
         """
-        if user == ctx.author:
-            same_user_embed = discord.Embed(
+        if offender == ctx.author:
+            raise commands.BadArgument("You can't ban yourself idiot")
+
+        if offender == self.bot.user:
+            raise commands.BadArgument("After all I've done for you, you try to ban me?" )
+
+        try:
+            await self.mm.ban(ctx, ctx.author, offender, reason)
+
+        except Exception as e:
+            error = discord.Embed(
                 title="Error",
-                description="""You cannot ban yourself!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=same_user_embed)
-
-        elif not user and re.match(r"[0-9]{15,19}", str(user)):
-            try:
-                user = await self.bot.get_user(int(user))
-            except:
-                user = await self.bot.fetch_user(int(user))
-
-        elif not user:
-            none_mentioned = discord.Embed(
-                title="Error",
-                description="""The user {user} was not found.""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=none_mentioned)
-
-        elif user.id == self.bot.user.id:
-            ban_bot = discord.Embed(
-                title="Rude",
-                description="""After all I've done for you, you try to ban me?""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.YELLOW,
-            )
-            await ctx.send(embed=ban_bot)
-
-        else:
-            try:
-                user_reason = f"Banned by {ctx.author}: "
-                if not reason:
-                    reason = user_reason + "No Reason Specified"
-                else:
-                    reason = user_reason + reason
-                await user.ban(reason=reason)
-                await self.db.execute(
-                    """INSERT INTO bans VALUES(?, ?, ?, ?);""",
-                    (user.id, ctx.author.id, reason, int(time.time())),
-                )
-                await self.db.commit()
-                banned_embed = discord.Embed(
-                    title=f"Banned {user}",
-                    description=f"""```diff
-- {reason} -
-```""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN,
-                )
-                await ctx.send(embed=banned_embed)
-
-            except Exception as e:
-                error = discord.Embed(
-                    title="Error",
-                    description=f"""```diff
+                description=f"""```diff
 - {e}
 ```""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED,
-                )
-                await ctx.send(embed=error)
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            await ctx.send(embed=error)
 
     @commands.command(
         name="unban",
@@ -292,30 +393,7 @@ class Mod(commands.Cog):
         """
         Unban a user using an id
         """
-        if not re.match(r"[0-9]{15,19}", str(member)):
-            embed = discord.Embed(
-                title="Error",
-                description=f"""Sorry but `{member}` doesn't seem to be a valid id.""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
-        else:
-            try:
-                member = await ctx.guild.fetch_ban(discord.Object(id=member))
-            except discord.NotFound:
-                embed = discord.Embed(
-                    title="Not Banned",
-                    description="""This user doesn't seem to be banned...""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.YELLOW,
-                )
-                await ctx.send(embed=embed)
-                return
-
-            reason = "Unbanned by: "
-
-            await ctx.guild.unban(discord.Object(id=member), reason)
+        pass
 
     @commands.group(
         name="modlogs",
