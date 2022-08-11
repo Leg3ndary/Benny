@@ -1,8 +1,8 @@
 import asyncio
 import datetime
+import time
 from sqlite3 import Row as sqlRow
 from typing import Optional
-import time
 
 import asqlite
 import discord
@@ -17,7 +17,16 @@ class Infraction:
     Class for your standard infraction
     """
 
-    __slots__ = ("case_id", "guild", "mod", "offender", "time", "reason", "active", "expires")
+    __slots__ = (
+        "case_id",
+        "guild",
+        "mod",
+        "offender",
+        "time",
+        "reason",
+        "active",
+        "expires",
+    )
 
     def __init__(self, row: sqlRow) -> None:
         """
@@ -71,13 +80,19 @@ class ModerationManager:
         """
         Pull the time from a string
         """
-        time_struct, parse_status = self.calendar.parse(string) # pylint: disable=unused-variable
-        '''if parse_status == 0:
-            raise commands.BadArgument("Time not found")'''
+        time_struct, parse_status = self.calendar.parse(
+            string
+        )  # pylint: disable=unused-variable
+        """if parse_status == 0:
+            raise commands.BadArgument("Time not found")"""
         return int(datetime.datetime(*time_struct[:6]).timestamp())
 
     async def warn(
-        self, ctx: commands.Context, mod: discord.Member, member: discord.Member, reason: str
+        self,
+        ctx: commands.Context,
+        mod: discord.Member,
+        member: discord.Member,
+        reason: str,
     ) -> None:
         """
         Warn a member
@@ -92,7 +107,7 @@ class ModerationManager:
                 str(mod.id),
                 str(member.id),
                 current_time,
-                reason
+                reason,
             ),
         )
         await self.db.commit()
@@ -110,7 +125,11 @@ class ModerationManager:
         await ctx.send(embed=embed)
 
     async def mute(
-        self, ctx: commands.Context, mod: discord.Member, member: discord.Member, reason: str
+        self,
+        ctx: commands.Context,
+        mod: discord.Member,
+        member: discord.Member,
+        reason: str,
     ) -> None:
         """
         Mute a member
@@ -127,10 +146,14 @@ class ModerationManager:
                 str(member.id),
                 current_time,
                 reason,
-                future_time if future_time >= current_time else None
+                future_time if future_time >= current_time else None,
             ),
         )
-        reason = f"{reason}\n\nExpires in <t:{future_time}:R>" if future_time >= current_time else reason
+        reason = (
+            f"{reason}\n\nExpires in <t:{future_time}:R>"
+            if future_time >= current_time
+            else reason
+        )
 
         await self.db.commit()
 
@@ -147,7 +170,11 @@ class ModerationManager:
         await ctx.send(embed=embed)
 
     async def ban(
-        self, ctx: commands.Context, mod: discord.Member, member: discord.Member, reason: Optional[str]
+        self,
+        ctx: commands.Context,
+        mod: discord.Member,
+        member: discord.Member,
+        reason: Optional[str],
     ) -> None:
         """
         bans a member
@@ -164,10 +191,14 @@ class ModerationManager:
                 str(member.id),
                 current_time,
                 reason,
-                future_time if future_time >= current_time else None
+                future_time if future_time >= current_time else None,
             ),
         )
-        reason = f"{reason}\n\nExpires in <t:{future_time}:R>" if future_time >= current_time else reason
+        reason = (
+            f"{reason}\n\nExpires in <t:{future_time}:R>"
+            if future_time >= current_time
+            else reason
+        )
 
         await self.db.commit()
 
@@ -272,13 +303,10 @@ class Mod(commands.Cog):
         """
         Queue infraction actions for the next hour
         """
-        async with self.db.execute(
-            """SELECT * FROM mutes;"""
-        ) as cursor:
+        async with self.db.execute("""SELECT * FROM mutes;""") as cursor:
             for row in cursor:
                 mute = Infraction(row)
                 self.bot.loop.create_task(self.queue_infraction("mute", mute))
-
 
     @commands.hybrid_group(
         name="mod",
@@ -287,7 +315,7 @@ class Mod(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def mod_group(self, ctx: commands.Context) -> None:
@@ -360,7 +388,9 @@ class Mod(commands.Cog):
             raise commands.BadArgument("You can't ban yourself idiot")
 
         if offender == self.bot.user:
-            raise commands.BadArgument("After all I've done for you, you try to ban me?" )
+            raise commands.BadArgument(
+                "After all I've done for you, you try to ban me?"
+            )
 
         try:
             await self.mm.ban(ctx, ctx.author, offender, reason)
