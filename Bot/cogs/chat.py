@@ -48,6 +48,7 @@ class Chat(commands.Cog):
         """
         Chat with the bot
         """
+        await ctx.defer()
         payload = {"inputs": {"text": message}}
 
         async with ctx.channel.typing():
