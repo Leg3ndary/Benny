@@ -1,11 +1,114 @@
-import json
+import traceback
 
-import aiohttp
 import discord
+import torch
 from discord.ext import commands
 from gears import style
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
-API_URL = "https://api-inference.huggingface.co/models/Leg3ndary/"
+
+tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
+model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained("Assets/MichaelScott")
+
+
+class ChatModal(discord.ui.Modal, title="Chat"):
+    """
+    A Chat Modal so our user can continuously chat with Michael Scott.
+    """
+
+    name = discord.ui.TextInput(
+        label="Chat",
+        style=discord.TextStyle.long,
+        placeholder="Hello there!",
+        max_length=750,
+        min_length=10,
+        required=True,
+    )
+
+    def __init__(self) -> None:
+        """
+        Init the modal
+        """
+        super().__init__()
+        self.step = 0
+        self.convo = []
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        On_submit, do stuff
+        """
+        new_user_input_ids = tokenizer.encode(
+            self.name.value + tokenizer.eos_token, return_tensors="pt"
+        )
+
+        bot_input_ids = (
+            torch.cat(
+                [chat_history_ids, new_user_input_ids], dim=-1 # pylint: disable=used-before-assignment
+            )
+            if self.step > 0
+            else new_user_input_ids
+        )
+
+        chat_history_ids = model.generate(
+            bot_input_ids,
+            max_length=200,
+            pad_token_id=tokenizer.eos_token_id,
+            no_repeat_ngram_size=3,
+            do_sample=True,
+            top_k=100,
+            top_p=0.7,
+            temperature=0.8,
+        )
+        response = tokenizer.decode(
+            chat_history_ids[:, bot_input_ids.shape[-1] :][0],
+            skip_special_tokens=True,
+        )
+        self.convo.append(f"{interaction.user.name}: {self.name.value}")
+        self.convo.append(f"Michael: {response}")
+        full_convo = "\n".join(self.convo)
+        embed = discord.Embed(
+            title="Chat with Michael Scott",
+            description=f"""```yaml
+{full_convo}
+{interaction.user.name}:
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        self.step += 1
+
+        await interaction.response.edit_message(embed=embed)
+
+    async def on_error(
+        self, interaction: discord.Interaction, error: Exception
+    ) -> None:
+        """
+        When stuff goes wrong lol
+        """
+        await interaction.response.send_message(
+            "Oops! Something went wrong.", ephemeral=True
+        )
+        traceback.print_tb(error.__traceback__)
+
+
+class ChatView(discord.ui.View):
+    """
+    Chat view
+    """
+
+    def __init__(self) -> None:
+        """
+        Init the Chat View
+        """
+        super().__init__()
+        self.modal = ChatModal()
+
+    @discord.ui.button(label="Chat", style=discord.ButtonStyle.primary, emoji="💬")
+    async def chat_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+        """
+        Chat button
+        """
+        await interaction.response.send_modal(self.modal)
 
 
 class Chat(commands.Cog):
@@ -18,21 +121,6 @@ class Chat(commands.Cog):
         Init the cog
         """
         self.bot = bot
-        self.api_endpoint = API_URL + "MichaelScott"
-        huggingface_token = bot.config.get("HuggingFace").get("Token")
-        self.request_headers = {"Authorization": f"Bearer {huggingface_token}"}
-        self.session: aiohttp.ClientSession = bot.sessions.get("chat")
-
-    async def query(self, payload: dict) -> str:
-        """
-        make request to the Hugging Face model API
-        """
-        data = json.dumps(payload)
-        async with self.session.post(
-            self.api_endpoint, headers=self.request_headers, data=data
-        ) as response:
-            ret = await response.json()
-            return ret
 
     @commands.hybrid_command(
         name="chat",
@@ -44,29 +132,22 @@ class Chat(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def chat_cmd(self, ctx: commands.Context, message: str) -> None:
+    async def chat_cmd(self, ctx: commands.Context) -> None:
         """
         Chat with the bot
         """
         await ctx.defer()
-        payload = {"inputs": {"text": message}}
-
-        response = await self.query(payload)
-        reply = response.get("generated_text", None)
-
-        if not reply:
-            if "error" in response:
-                reply = f"```yaml\nError: {response['error']}```"
-            else:
-                reply = "Hmm... something is not right."
-
+        view = ChatView()
+        
         embed = discord.Embed(
-            title="AI Chat",
-            description=reply,
+            title="Chat with Michael Scott",
+            description=f"""```yaml
+{ctx.author.name}: 
+```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        await ctx.reply(embed=embed)
+        await ctx.send(embed=embed, view=view)
 
 
 async def setup(bot: commands.Bot) -> None:
