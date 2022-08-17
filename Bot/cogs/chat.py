@@ -1,10 +1,11 @@
 import json
-import os
 
-import requests
+import aiohttp
+import discord
 from discord.ext import commands
+from gears import style
 
-API_URL = "https://api-inference.huggingface.co/models/r3dhummingbird/"
+API_URL = "https://api-inference.huggingface.co/models/Leg3ndary/"
 
 class Chat(commands.Cog):
     """
@@ -16,26 +17,23 @@ class Chat(commands.Cog):
         Init the cog
         """
         self.bot = bot
-        self.api_endpoint = API_URL + "DialoGPT-medium-joshua"
-        # retrieve the secret API token from the system environment
-        huggingface_token = os.environ["HUGGINGFACE_TOKEN"]
-        # format the header in our request to Hugging Face
+        self.api_endpoint = API_URL + "MichaelScott"
+        huggingface_token = bot.config.get("HuggingFace").get("Token")
         self.request_headers = {"Authorization": f"Bearer {huggingface_token}"}
-    
+        self.session: aiohttp.ClientSession = bot.sessions.get("chat")
+
     async def query(self, payload: dict) -> str:
         """
         make request to the Hugging Face model API
         """
         data = json.dumps(payload)
-        response = requests.request(
-            "POST", self.api_endpoint, headers=self.request_headers, data=data
-        )
-        ret = json.loads(response.content.decode("utf-8"))
-        return ret
+        async with self.session.post(self.api_endpoint, headers=self.request_headers, data=data) as response:
+            ret = await response.json()
+            return ret
 
     @commands.command(
-        name="command",
-        description="""Description of command, complete overview with all neccessary info""",
+        name="chat",
+        description="""Chat with ai""",
         help="""More help""",
         brief="Brief one liner about the command",
         aliases=[],
@@ -43,29 +41,29 @@ class Chat(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def chat(self, ctx: commands.Context, message: str) -> None:
+    async def chat_cmd(self, ctx: commands.Context, message: str) -> None:
         """
         Chat with the bot
         """
-        # form query payload with the content of the message
         payload = {"inputs": {"text": message}}
 
-        # while the bot is waiting on a response from the model
-        # set the its status as typing for user-friendliness
         async with ctx.channel.typing():
-            response = self.query(payload)
-        bot_response = response.get("generated_text", None)
+            response = await self.query(payload)
+        reply = response.get("generated_text", None)
 
-        # we may get ill-formed response if the model hasn't fully loaded
-        # or has timed out
-        if not bot_response:
+        if not reply:
             if "error" in response:
-                bot_response = f"`Error: {response['error']}`"
+                reply = f"```yaml\nError: {response['error']}```"
             else:
-                bot_response = "Hmm... something is not right."
+                reply = "Hmm... something is not right."
 
-        # send the model's response to the Discord channel
-        await ctx.send(bot_response)
+        embed = discord.Embed(
+            title="AI Chat",
+            description=reply,
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY
+        )
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
