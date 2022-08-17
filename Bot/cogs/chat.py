@@ -31,10 +31,10 @@ class Chat(commands.Cog):
             ret = await response.json()
             return ret
 
-    @commands.command(
+    @commands.hybrid_command(
         name="chat",
         description="""Chat with ai""",
-        help="""More help""",
+        help="""This ai is trained on Michael Scott's quotes and responds to them""",
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
