@@ -7,6 +7,7 @@ from gears import style
 
 API_URL = "https://api-inference.huggingface.co/models/Leg3ndary/"
 
+
 class Chat(commands.Cog):
     """
     This cog allows you to chat with our own ai bot
@@ -27,7 +28,9 @@ class Chat(commands.Cog):
         make request to the Hugging Face model API
         """
         data = json.dumps(payload)
-        async with self.session.post(self.api_endpoint, headers=self.request_headers, data=data) as response:
+        async with self.session.post(
+            self.api_endpoint, headers=self.request_headers, data=data
+        ) as response:
             ret = await response.json()
             return ret
 
@@ -61,7 +64,7 @@ class Chat(commands.Cog):
             title="AI Chat",
             description=reply,
             timestamp=discord.utils.utcnow(),
-            color=style.Color.GREY
+            color=style.Color.GREY,
         )
         await ctx.reply(embed=embed)
 
