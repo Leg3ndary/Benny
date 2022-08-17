@@ -11,10 +11,7 @@ import aiohttp
 import discord
 from cogs.tags import Tags
 from discord.ext import commands
-from dotenv import load_dotenv
 from gears import cooldowns, util
-
-load_dotenv()
 
 start = time.monotonic()
 
