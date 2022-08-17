@@ -51,8 +51,7 @@ class Chat(commands.Cog):
         await ctx.defer()
         payload = {"inputs": {"text": message}}
 
-        async with ctx.channel.typing():
-            response = await self.query(payload)
+        response = await self.query(payload)
         reply = response.get("generated_text", None)
 
         if not reply:
