@@ -83,7 +83,6 @@ class BennyBot(commands.Bot):
         "discordstatus": None,
         "blogger": None,
         "translate": None,
-        "chat": None,
     }
     blogger: util.BotLogger = None
     config: dict = config
