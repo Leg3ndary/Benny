@@ -129,9 +129,9 @@ class Chat(commands.Cog):
 
     @commands.hybrid_command(
         name="chat",
-        description="""Chat with ai""",
+        description="""Chat with AI""",
         help="""This ai is trained on Michael Scott's quotes and responds to them""",
-        brief="Brief one liner about the command",
+        brief="Chat with a pretrained AI",
         aliases=[],
         enabled=True,
         hidden=False,
