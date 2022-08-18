@@ -23,7 +23,7 @@ handler.setFormatter(
 )
 logger.addHandler(handler)
 
-with open("config.json", "r", encoding="utf-8") as f:
+with open("bot_config.json", "r", encoding="utf-8") as f:
     config = json.load(f)
 
 intents = discord.Intents(
