@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
-model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained("Assets/MichaelScott")
+model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained("Assets/MichaelScott/")
 
 
 class ChatModal(discord.ui.Modal, title="Chat"):
