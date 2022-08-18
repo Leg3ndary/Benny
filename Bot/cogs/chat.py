@@ -4,11 +4,12 @@ import discord
 import torch
 from discord.ext import commands
 from gears import style
-from transformers import AutoTokenizer, AutoModelForCausalLM
-
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
-model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained("Assets/MichaelScott/")
+model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(
+    "Assets/MichaelScott/"
+)
 
 
 class ChatModal(discord.ui.Modal, title="Chat"):
@@ -44,7 +45,8 @@ class ChatModal(discord.ui.Modal, title="Chat"):
 
         bot_input_ids = (
             torch.cat(
-                [self.chat_history_ids, new_user_input_ids], dim=-1 # pylint: disable=used-before-assignment
+                [self.chat_history_ids, new_user_input_ids],
+                dim=-1,  # pylint: disable=used-before-assignment
             )
             if self.step > 0
             else new_user_input_ids
@@ -105,7 +107,9 @@ class ChatView(discord.ui.View):
         self.modal = ChatModal()
 
     @discord.ui.button(label="Chat", style=discord.ButtonStyle.primary, emoji="💬")
-    async def chat_button(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def chat_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         """
         Chat button
         """
@@ -139,7 +143,7 @@ class Chat(commands.Cog):
         """
         await ctx.defer()
         view = ChatView()
-        
+
         embed = discord.Embed(
             title="Chat with Michael Scott",
             description=f"""```yaml

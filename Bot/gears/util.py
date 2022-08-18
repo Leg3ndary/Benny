@@ -63,7 +63,7 @@ class BotUtil:
                 ".vscode",
                 "Docs",
                 "Website",
-                "Assets"
+                "Assets",
             ):
                 directories = []
             else:
