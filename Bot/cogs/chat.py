@@ -32,6 +32,7 @@ class ChatModal(discord.ui.Modal, title="Chat"):
         super().__init__()
         self.step = 0
         self.convo = []
+        self.chat_history_ids = None
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """
@@ -43,13 +44,13 @@ class ChatModal(discord.ui.Modal, title="Chat"):
 
         bot_input_ids = (
             torch.cat(
-                [chat_history_ids, new_user_input_ids], dim=-1 # pylint: disable=used-before-assignment
+                [self.chat_history_ids, new_user_input_ids], dim=-1 # pylint: disable=used-before-assignment
             )
             if self.step > 0
             else new_user_input_ids
         )
 
-        chat_history_ids = model.generate(
+        self.chat_history_ids = model.generate(
             bot_input_ids,
             max_length=200,
             pad_token_id=tokenizer.eos_token_id,
@@ -60,7 +61,7 @@ class ChatModal(discord.ui.Modal, title="Chat"):
             temperature=0.8,
         )
         response = tokenizer.decode(
-            chat_history_ids[:, bot_input_ids.shape[-1] :][0],
+            self.chat_history_ids[:, bot_input_ids.shape[-1] :][0],
             skip_special_tokens=True,
         )
         self.convo.append(f"{interaction.user.name}: {self.name.value}")
