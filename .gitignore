@@ -142,7 +142,7 @@ Databases
 logs
 
 # Config because I don't wanna use envs
-config.json
+bot_config.json
 lavalink.jar
 
 # Dashboard
