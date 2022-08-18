@@ -84,7 +84,9 @@ class Logging(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def logs_cmd(self, ctx: commands.Context) -> None:
-        """View basic log config"""
+        """
+        View basic log config
+        """
         if not ctx.invoked_subcommand:
             await ctx.send_help(ctx.command)
 
