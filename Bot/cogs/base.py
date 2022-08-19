@@ -134,7 +134,9 @@ class SystemView(discord.ui.View):
     """
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label="Info", emoji="ℹ")
-    async def info_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def info_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Send the info embed
         """
@@ -158,13 +160,13 @@ class SystemView(discord.ui.View):
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        embed.set_footer(
-            text="Select one of the below options for more info"
-        )
+        embed.set_footer(text="Select one of the below options for more info")
         await interaction.message.edit(embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label="CPU", emoji="🖥️")
-    async def cpu_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def cpu_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Send the cpu embed and related
         """
@@ -185,15 +187,15 @@ class SystemView(discord.ui.View):
 = {psutil.cpu_percent()}% =
 ```""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.GREY
+            color=style.Color.GREY,
         )
-        embed.set_footer(
-            text="Select one of the below options for more info"
-        )
+        embed.set_footer(text="Select one of the below options for more info")
         await interaction.message.edit(embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label="RAM", emoji="💾")
-    async def ram_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def ram_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Show ram related info
         """
@@ -213,12 +215,12 @@ class SystemView(discord.ui.View):
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        embed.set_footer(
-            text="Select one of the below options for more info"
-        )
+        embed.set_footer(text="Select one of the below options for more info")
         await interaction.message.edit(embed=embed, view=self)
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, item) -> None:
+    async def on_error(
+        self, interaction: discord.Interaction, error: Exception, item
+    ) -> None:
         print(error.with_traceback(error.__traceback__))
 
 
@@ -549,9 +551,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        embed.set_footer(
-            text="Select one of the below options for more info"
-        )
+        embed.set_footer(text="Select one of the below options for more info")
         await ctx.reply(embed=embed, view=SystemView())
 
     @commands.command(
