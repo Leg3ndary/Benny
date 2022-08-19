@@ -11,22 +11,23 @@ import PIL as pil
 import psutil
 import pytesseract
 from discord.ext import commands
-from gears import cviews, style
+from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
-def to_string(char: str) -> str:
+class AvatarView(discord.ui.View):
     """
-    Convert a string into a nice format for an embed...
+    Delete view to delete the message from the bot
+    """
 
-    Took this from rdanny, ty
-    """
-    digit = f"{ord(char):x}"
-    name = unicodedata.name(char, "Name not found.")
-    return f"""```fix
-\\U{digit:>08}
-```
-{char} - [{name}](http://www.fileformat.info/info/unicode/char/{digit})"""
+    @discord.ui.button(emoji=style.Emoji.ID.cancel, label="Delete", style=discord.ButtonStyle.danger)
+    async def button_callback(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Delete the message
+        """
+        await interaction.delete_original_message()
 
 
 class AFKManager:
@@ -93,7 +94,7 @@ class AFKManager:
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.PINK,
             )
-            await message.channel.send(embed=embed)
+            await message.reply(embed=embed)
 
         for mention in message.mentions[:3]:
             if not message.author.id == mention.id:
@@ -117,6 +118,8 @@ class IMGReader:
     """
     Read images
     """
+
+    __slots__ = ("bot", "loop")
 
     def __init__(self, bot: commands.Bot) -> None:
         """
@@ -186,8 +189,8 @@ class Base(commands.Cog):
 
     @commands.command(
         name="about",
-        description="""About command for the bot, tells you a bit about the bot""",
-        help="""About the bot, why I built it, what it can and is going to do""",
+        description="""About the bot, why I built it, what it can do, what I plan to do with it later on.""",
+        help="""Shows information about the bot""",
         brief="About the bot",
         aliases=[],
         enabled=True,
@@ -200,16 +203,18 @@ class Base(commands.Cog):
         """
         embed = discord.Embed(
             title="About the Bot",
-            description="""A Bot I've made for fun, friends and learning python.""",
+            description="""A Bot I've made for fun, friends and learning python.
+            The bot also does a lot of odd things I feel I may need such as reading text off images, playing music, and stealing sheetmusic, lol.
+            Hope you enjoy""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
-        avatar = "https://cdn.discordapp.com/avatars/360061101477724170/798fd1d22b6c219236ad97be44aa425d.png?size=1024"
+        avatar = "https://cdn.discordapp.com/avatars/360061101477724170/a_6f4c033794b69ac35ce7b352ef7808bb.gif?size=1024"
         embed.set_footer(
             text="_Leg3ndary#0001",
             icon_url=avatar,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="avatar",
@@ -227,7 +232,6 @@ class Base(commands.Cog):
         """
         Show a users avatar
         """
-        view = cviews.DeleteView()
         if not user:
             user = ctx.author
 
@@ -235,51 +239,67 @@ class Base(commands.Cog):
             title=user.display_name, timestamp=discord.utils.utcnow(), color=user.color
         )
         embed.set_image(url=user.avatar.url)
-        view.bctx = await ctx.send(embed=embed, view=view)
+        await ctx.reply(embed=embed, view=AvatarView())
 
-    @commands.command(
+    @commands.hybrid_command(
         name="info",
-        description="""View a users info""",
-        help="""View some info about a user""",
-        brief="""View some info about a user""",
+        description="""View a server members info including roles, create, and join times.""",
+        help="""View a server members info including roles, create, and join times.""",
+        brief="""Info about a member""",
         aliases=["i"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
     async def info_cmd(
-        self, ctx: commands.Context, person: discord.Member = None
+        self, ctx: commands.Context, member: discord.Member = None
     ) -> None:
         """
-        View an users info
+        View an member info
         """
-        if not person:
-            person = ctx.author
+        if not member:
+            member = ctx.author
 
         embed = discord.Embed(
-            title=f"{person.name}#{person.discriminator} Info",
-            description=f"""
-            {person.bot}
-            {person.created_at}
-            {person.display_name}
-            {person.id}
-            {person.mention}
-            {person.mutual_guilds}
-            {person.public_flags}
-            {person.system}
-            Not Completed.""",
+            title=f"{member.name}#{member.discriminator}",
             timestamp=discord.utils.utcnow(),
-            color=person.color,
+            color=member.color,
         )
-        embed.set_thumbnail(url=person.avatar)
-        await ctx.send(embed=embed)
+        embed.add_field(
+            name="Created At",
+            value=discord.utils.format_dt(member.created_at, "F"),
+            inline=False
+        )
+        embed.add_field(
+            name="Joined At",
+            value=discord.utils.format_dt(member.joined_at, "F"),
+            inline=False
+        )
+        embed.add_field(
+            name="Roles",
+            value=" ".join(reversed([role.mention for role in member.roles[1:43]])),
+            inline=False,
+        )
+        embed.set_author(
+            name=member.display_name,
+            icon_url=member.display_icon.url if member.display_icon else None,
+        )
+        embed.set_footer(
+            text=f"{member.id}{' - This user is a bot.' if member.bot else ''}",
+        )
+        embed.set_thumbnail(
+            url=member.display_avatar.url if member.display_avatar else member.avatar.url
+        )
+        await ctx.reply(embed=embed)
+
+    # Make a permissions command along with a more complicated info view for above
 
     @commands.command(
         name="charinfo",
-        aliases=["ci"],
-        description="""Get some charinfo yay""",
-        help="""Evaluate some code, dev only.""",
-        brief="Get one or multiple characters info",
+        aliases=["ci", "char"],
+        description="""Tells you about a characters info an its unicode representations""",
+        help="""Tells you about a characters info an its unicode representations""",
+        brief="Tell you about a characters info",
         enabled=True,
         hidden=False,
     )
@@ -288,15 +308,18 @@ class Base(commands.Cog):
         """
         Gives you the character info of whatever you input
         """
-        msg = "\n".join(map(to_string, characters))
+        def to_string(char: str) -> str:
+            digit = f"{ord(char):x}"
+            name = unicodedata.name(char, "Name not found.")
+            return f"`\\U{digit:>08} - {char}` [{name}](http://www.fileformat.info/info/unicode/char/{digit})"
 
         embed = discord.Embed(
             title="Charinfo",
-            description=msg,
+            description="\n".join(map(to_string, characters)),
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
+            color=style.Color.YELLOW,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="dog",
