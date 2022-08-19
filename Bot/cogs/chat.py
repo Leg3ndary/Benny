@@ -99,9 +99,6 @@ class ChatView(discord.ui.View):
     Chat view
     """
 
-    COLOR = style.Color.YELLOW
-    ICON = "💬"
-
     def __init__(self) -> None:
         """
         Init the Chat View
@@ -123,6 +120,9 @@ class Chat(commands.Cog):
     """
     This cog allows you to chat with our own ai bot
     """
+
+    COLOR = style.Color.YELLOW
+    ICON = "💬"
 
     def __init__(self, bot: commands.Bot) -> None:
         """
