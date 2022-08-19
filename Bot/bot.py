@@ -17,7 +17,7 @@ start = time.monotonic()
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename=f"Logs/discord-{datetime.datetime.now().strftime(r'%m/%d/%Y')}.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename="Logs/discord.log", encoding="utf-8", mode="w")
 handler.setFormatter(
     logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 )
@@ -184,7 +184,7 @@ async def global_check(ctx: commands.context) -> bool:
     """
     if not bot.LOADED_PREFIXES:
         return False
-    elif ctx.author.id == bot.owner_id:
+    if ctx.author.id == bot.owner_id:
         return True
     return True
 
