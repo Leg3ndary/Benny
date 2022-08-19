@@ -173,7 +173,8 @@ class Tags(commands.Cog):
         """
         self.db = await asqlite.connect("Databases/tags.db")
 
-        await self.db.execute("""
+        await self.db.execute(
+            """
             CREATE TABLE IF NOT EXISTS tags (
                 tag_id     TEXT PRIMARY KEY
                                 NOT NULL,
@@ -184,7 +185,8 @@ class Tags(commands.Cog):
                 uses       INT  NOT NULL,
                 tagscript  TEXT NOT NULL
             );
-        """)
+        """
+        )
 
         async with self.db.cursor() as cursor:
             row = await cursor.execute("""SELECT MAX(tag_id) FROM tags;""")
@@ -251,9 +253,7 @@ class Tags(commands.Cog):
         ):
             raise commands.BadArgument(f"There isn't a custom tag called {self.name}")
         del self.custom_tags[tag.name][tag.guild]
-        await self.db.execute(
-            """DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,)
-        )
+        await self.db.execute("""DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,))
         await self.db.commit()
 
     async def use_tag(self, tag: Tag) -> None:
@@ -286,7 +286,13 @@ class Tags(commands.Cog):
                 tags_list.append(tag)
         return tags_list
 
-    async def send_message(self, ctx: commands.Context, dest: Union[str, discord.TextChannel, bool], body: str, embeds: List[discord.Embed]) -> None:
+    async def send_message(
+        self,
+        ctx: commands.Context,
+        dest: Union[str, discord.TextChannel, bool],
+        body: str,
+        embeds: List[discord.Embed],
+    ) -> None:
         """
         Send a message, should only used with invoke_custom_command
         """
@@ -297,7 +303,12 @@ class Tags(commands.Cog):
         else:
             await dest.send(body if body else None, embeds=embeds)
 
-    async def handle_actions(self, actions: Dict[str, Any], ctx: commands.Context, embeds: List[discord.Embed]) -> bool:
+    async def handle_actions(
+        self,
+        actions: Dict[str, Any],
+        ctx: commands.Context,
+        embeds: List[discord.Embed],
+    ) -> bool:
         """
         Handle a custom commands actions, returns if it can send
         """
@@ -392,7 +403,15 @@ class Tags(commands.Cog):
 
         return can_send
 
-    async def handle_debug(self, ctx: commands.Context, tag: Tag, debug: Dict[str, Any], embeds: List[discord.Embed], start: int, end: int) -> None:
+    async def handle_debug(
+        self,
+        ctx: commands.Context,
+        tag: Tag,
+        debug: Dict[str, Any],
+        embeds: List[discord.Embed],
+        start: int,
+        end: int,
+    ) -> None:
         """
         Handle a custom commands debug, should only be used with invoke_custom_command
         """
@@ -464,7 +483,6 @@ class Tags(commands.Cog):
 
         if can_send:
             await self.send_message(ctx, dest, response.body, embeds)
-
 
     @commands.command(
         name="tagtest",
