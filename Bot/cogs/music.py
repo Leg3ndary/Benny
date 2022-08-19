@@ -726,13 +726,13 @@ class Music(commands.Cog):
                 color=style.Color.RED,
             )
             return await ctx.send(embed=embed)
-        elif not ctx.voice_client:
+        if not ctx.voice_client:
             player: Player = await ctx.author.voice.channel.connect(
                 cls=Player(dj=ctx.author, channel=ctx.author.voice.channel)
             )
         else:
             player: Player = ctx.voice_client
-            await self.bot.loop.create_task(self.self_deafen(ctx))
+            self.bot.loop.create_task(self.self_deafen(ctx))
 
         return player
 
@@ -1039,7 +1039,6 @@ class Music(commands.Cog):
 
             embed = discord.Embed(
                 title="Now Playing",
-                url=current.uri,
                 description=f"""```asciidoc
 [ {current.title} ]
 = Duration: {duration(current.length)} =
