@@ -23,22 +23,14 @@ class WelcomeManager:
         """
         Convert a discord embed object into a string to save to our db
         """
-        data = await self.bot.loop.run_in_executor(
-            None,
-            json.dumps(),  # pylint: disable=no-value-for-parameter
-            embed.to_dict(),
-        )
+        data = json.dumps(embed.to_dict())
         return data
 
     async def to_embed(self, data: str) -> discord.Embed:
         """
         Convert a json serializable string into a discord embed
         """
-        embed = discord.Embed.from_dict(
-            await self.bot.loop.run_in_executor(
-                None, json.loads(), data  # pylint: disable=no-value-for-parameter
-            )
-        )
+        embed = discord.Embed.from_dict(json.loads(data))
         return embed
 
     async def welcome(self, member: discord.Member) -> None:
