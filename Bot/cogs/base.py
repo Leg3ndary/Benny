@@ -15,6 +15,18 @@ from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
+def get_size(_bytes: int, suffix: str = "B") -> str:
+    """
+    Return the correct data from bytes
+    """
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if _bytes < factor:
+            return f"{_bytes:.2f}{unit}{suffix}"
+        _bytes /= factor
+    return None
+
+
 class AvatarView(discord.ui.View):
     """
     Delete view to delete the message from the bot
@@ -116,6 +128,100 @@ class AFKManager:
                     await message.channel.send(embed=embed)
 
 
+class SystemView(discord.ui.View):
+    """
+    System view with buttons to view all options
+    """
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="Info", emoji="ℹ")
+    async def info_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        """
+        Send the info embed
+        """
+        uname = platform.uname()
+        embed = discord.Embed(
+            title="System Info - Info",
+            description=f"""```asciidoc
+[ System ]
+= {uname.system} =
+[ Node Name ]
+= {uname.node} =
+[ Release ]
+= {uname.release} =
+[ Version ]
+= {uname.version} =
+[ Machine ]
+= {uname.machine} =
+[ Processor ]
+= {uname.processor} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(
+            text="Select one of the below options for more info"
+        )
+        await interaction.message.edit(embed=embed, view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="CPU", emoji="🖥️")
+    async def cpu_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        """
+        Send the cpu embed and related
+        """
+        cpu_core_data = ""
+        for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+            cpu_core_data += f"""[Core {i + 1}]
+= {percentage}% =\n"""
+
+        embed = discord.Embed(
+            title="System Info - CPU",
+            description=f"""```asciidoc
+[ Total Cores ]
+= {psutil.cpu_count(logical=True)} =
+
+[ CPU Usage Per Core ]
+{cpu_core_data}
+[ Total CPU Usage ]
+= {psutil.cpu_percent()}% =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY
+        )
+        embed.set_footer(
+            text="Select one of the below options for more info"
+        )
+        await interaction.message.edit(embed=embed, view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="RAM", emoji="💾")
+    async def ram_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+        """
+        Show ram related info
+        """
+        svmem = psutil.virtual_memory()
+        embed = discord.Embed(
+            title="System Info - Memory",
+            description=f"""```asciidoc
+[ Total ]
+= {get_size(svmem.total)} =
+[ Available ]
+= {get_size(svmem.available)} =
+[ Used ]
+= {get_size(svmem.used)} =
+[ Percentage Used ]
+= {svmem.percent}% =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(
+            text="Select one of the below options for more info"
+        )
+        await interaction.message.edit(embed=embed, view=self)
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item) -> None:
+        print(error.with_traceback(error.__traceback__))
+
+
 class IMGReader:
     """
     Read images
@@ -177,17 +283,6 @@ class Base(commands.Cog):
         self.afk = AFKManager(bot)
         self.session = bot.sessions.get("base")
         self.imgr = IMGReader(bot)
-
-    def get_size(self, _bytes: int, suffix: str = "B") -> str:
-        """
-        Return the correct data from bytes
-        """
-        factor = 1024
-        for unit in ["", "K", "M", "G", "T", "P"]:
-            if _bytes < factor:
-                return f"{_bytes:.2f}{unit}{suffix}"
-            _bytes /= factor
-        return None
 
     @commands.command(
         name="about",
@@ -326,37 +421,38 @@ class Base(commands.Cog):
         )
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_command(
-        name="dog",
-        description="""Get a random dog image!""",
-        help="""What good bot doesn't have a dog command?""",
-        brief="Get a random dog image",
-        aliases=["doggo"],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(2.0, 5.0, commands.BucketType.channel)
-    async def dog_cmd(self, ctx: commands.Context) -> None:
-        """
-        Dog command
-        """
-        dog = await self.session.get("https://dog.ceo/api/breeds/image/random")
+    # Temporarily removed
+    # @commands.hybrid_command(
+    #     name="dog",
+    #     description="""Get a random dog image!""",
+    #     help="""What good bot doesn't have a dog command?""",
+    #     brief="Get a random dog image",
+    #     aliases=["doggo"],
+    #     enabled=True,
+    #     hidden=False,
+    # )
+    # @commands.cooldown(2.0, 5.0, commands.BucketType.channel)
+    # async def dog_cmd(self, ctx: commands.Context) -> None:
+    #     """
+    #     Dog command
+    #     """
+    #     dog = await self.session.get("https://dog.ceo/api/breeds/image/random")
 
-        dog_image = (await dog.json()).get("message")
-        embed = discord.Embed(color=style.Color.random())
-        embed.set_image(url=dog_image)
-        await ctx.send(embed=embed)
+    #     dog_image = (await dog.json()).get("message")
+    #     embed = discord.Embed(color=style.Color.random())
+    #     embed.set_image(url=dog_image)
+    #     await ctx.send(embed=embed)
 
-    @commands.hybrid_command(
+    @commands.command(
         name="uptime",
-        description="""Shows the bots uptime""",
+        description="""Shows the bots uptime so that users can judge how long it has been online.""",
         help="""Shows you the bots uptime""",
         brief="Shows you the bots uptime",
         aliases=[],
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 15.0, commands.BucketType.channel)
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
     async def uptime_cmd(self, ctx: commands.Context) -> None:
         """
         Uptime command to show the bots uptime
@@ -375,7 +471,7 @@ Total Uptime: {resolved_rel}"""
 
     @commands.hybrid_command(
         name="ping",
-        description="""Check the bots current ping""",
+        description="""Check the bots current ping and latency""",
         help="""Check the bots latency stats""",
         brief="Check the ping",
         aliases=["pong"],
@@ -394,7 +490,10 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        msg = await ctx.send(embed=embed)
+        embed.set_footer(
+            text="Please note that this will be much slower when you use slash commands"
+        )
+        msg = await ctx.reply(embed=embed)
         end = time.monotonic()
         ping = round((end - start) * 1000, 2)
         bot_ping = round(self.bot.latency * 1000, 2)
@@ -411,15 +510,17 @@ Total Uptime: {resolved_rel}"""
 
         ping_embed = discord.Embed(
             title="Pinging...",
-            description=f"""Overall Latency: {ping} ms
-            Discord WebSocket Latency: {bot_ping}
-            """,
+            description=f"""**Overall Latency:** {ping} ms
+            **Discord WebSocket Latency:** {bot_ping}""",
             timestamp=discord.utils.utcnow(),
             color=color,
         )
+        ping_embed.set_footer(
+            text="Please note that this will be much slower when you use slash commands"
+        )
         await msg.edit(embed=ping_embed)
 
-    @commands.group(
+    @commands.command(
         name="system",
         description="""Systeminfo group""",
         help="""Systeminfo group""",
@@ -433,184 +534,27 @@ Total Uptime: {resolved_rel}"""
         """
         Actual system info
         """
-        if not ctx.invoked_subcommand:
-            embed = discord.Embed(
-                title="System Info",
-                description="""**Options:**
-```asciidoc
-[ info ]
-[ boot ]
-[ cpu ]
-[ memory ]
-[ disk ]
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            await ctx.send(embed=embed)
-
-    @system_group.command(
-        name="info",
-        description="""Show overall information about our vps""",
-        help="""Show information about vps""",
-        brief="Show information",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    async def system_info_cmd(self, ctx: commands.Context) -> None:
-        """
-        Showing full system information
-        """
         uname = platform.uname()
+        svmem = psutil.virtual_memory()
         embed = discord.Embed(
-            title="System Information",
+            title="System Info",
             description=f"""```asciidoc
 [ System ]
 = {uname.system} =
-[ Node Name ]
-= {uname.node} =
-[ Release ]
-= {uname.release} =
-[ Version ]
-= {uname.version} =
-[ Machine ]
-= {uname.machine} =
-[ Processor ]
-= {uname.processor} =
+[ Total Cores ]
+= {psutil.cpu_count(logical=True)} =
+[ Total Used vs Total Free]
+= {self.get_size(svmem.used)}/{self.get_size(svmem.total)} = 
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        await ctx.send(embed=embed)
-
-    @system_group.command(
-        name="cpu",
-        description="""Show overall cpu cores and related information""",
-        help="""Show cpu information""",
-        brief="Show cpu information",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    async def system_cpu_cmd(self, ctx: commands.Context) -> None:
-        """
-        Showing our cpu information
-
-        cpufreq = psutil.cpu_freq()
-        [ Max Frequency ]
-        = {cpufreq.max:.2f}Mhz =
-        [ Min Frequency ]
-        = {cpufreq.min:.2f}Mhz =
-        [ Current Frequency ]
-        = {cpufreq.current:.2f}Mhz =
-        """
-        cpu_core_data = ""
-        for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
-            cpu_core_data = f"""{cpu_core_data}[Core {i}]
-= {percentage}% =\n"""
-
-        embed = discord.Embed(
-            title="================= CPU Information =================",
-            description=f"""```asciidoc
-[ Physical Cores]
-= {psutil.cpu_count(logical=False)} =
-[ Total Cores ]
-= {psutil.cpu_count(logical=True)} =
-[ CPU Usage Per Core ]
-{cpu_core_data}
-[ Total CPU Usage ]
-= {psutil.cpu_percent()}% =
-```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
+        embed.set_footer(
+            text="Select one of the below options for more info"
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed, view=SystemView())
 
-    @system_group.command(
-        name="memory",
-        description="""Show total memory and free percentage""",
-        help="""Show total memory and percentages""",
-        brief="Show memory information",
-        aliases=[],
-        enabled=True,
-        hidden=True,
-    )
-    async def system_memory_cmd(self, ctx: commands.Context) -> None:
-        """
-        Showing our memory information
-        """
-        svmem = psutil.virtual_memory()
-        embed = discord.Embed(
-            title="================ Memory Information ================",
-            description=f"""```asciidoc
-[ Total ]
-= {self.get_size(svmem.total)} = 
-[ Available ]
-= {self.get_size(svmem.available)} =
-[ Used ]
-= {self.get_size(svmem.used)} =
-[ Percentage ]
-= {svmem.percent}% =
-```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
-        )
-        await ctx.send(embed=embed)
-
-    @system_group.command(
-        name="disk",
-        description="""Show overall disk space and partitions""",
-        help="""Show disk space, hidden because eh""",
-        brief="Show disk space",
-        aliases=[],
-        enabled=True,
-        hidden=True,
-    )
-    async def system_disk_cmd(self, ctx: commands.Context) -> None:
-        """
-        Showing our disk information
-        """
-        partitions = psutil.disk_partitions()
-        disk_io = psutil.disk_io_counters()
-        embed = discord.Embed(
-            title="================= Disk Information =================",
-            description=f"""```asciidoc
-[ Total Read ]
-= {self.get_size(disk_io.read_bytes)} = 
-[ Total Write ]
-= {self.get_size(disk_io.write_bytes)} =
-```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
-        )
-        for partition in partitions:
-            try:
-                partition_usage = psutil.disk_usage(partition.mountpoint)
-            except PermissionError:
-                # Will allow even if some disks aren't ready to be loaded
-                continue
-            embed.add_field(
-                name=f"{partition.device}",
-                value=f"""```asciidoc
-[ Mountpoint ]
-= {partition.mountpoint} = 
-[ File System Type ]
-= {partition.fstype} =
-[ Total Size ]
-= {self.get_size(partition_usage.total)} =
-[ Used ]
-= {self.get_size(partition_usage.used)} =
-[ Free ]
-= {self.get_size(partition_usage.free)} =
-[ Percentage ]
-= {partition_usage.percent}% =
-```""",
-                inline=False,
-            )
-        await ctx.send(embed=embed)
-
-    @commands.hybrid_command(
+    @commands.command(
         name="files",
         description="""View all our files and lines because I think it's cool""",
         help="""Recursively looks for all files and how many lines they have""",
@@ -633,9 +577,9 @@ Total Uptime: {resolved_rel}"""
             color=style.Color.AQUA,
         )
         embed.set_footer(
-            text=f"{len(self.bot.file_list)} files listed, value is lines to chars",
+            text=f"{len(self.bot.file_list)} files listed.",
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_group(
         name="afk",
