@@ -602,7 +602,7 @@ Total Uptime: {resolved_rel}"""
 
     @afk_group.command(
         name="set",
-        description="""Set an AFK status so that whenever anyone mentions you they're notified that you're AFK with a custom message.""",
+        description="""Set an AFK status for mentions""",
         help="""Set a custom AFK message""",
         brief="Set a custom AFK message",
         aliases=[],
@@ -640,7 +640,9 @@ Total Uptime: {resolved_rel}"""
         """
         if url:
             async with self.session as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
+                async with session.get(
+                    url, timeout=aiohttp.ClientTimeout(total=10)
+                ) as response:
                     image_bytes = await response.read()
 
         elif ctx.message.attachments:
@@ -656,9 +658,12 @@ Total Uptime: {resolved_rel}"""
                 title="Image Read",
                 description=f"""The text was {len(text)} characters, so it was sent as a file.""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.PURPLE
+                color=style.Color.PURPLE,
             )
-            await ctx.reply(embed=embed, file=discord.File(io.StringIO(text), f"imgread-{int(time.time())}.txt"))
+            await ctx.reply(
+                embed=embed,
+                file=discord.File(io.StringIO(text), f"imgread-{int(time.time())}.txt"),
+            )
         else:
             embed = discord.Embed(
                 title="Image Read",
@@ -666,7 +671,7 @@ Total Uptime: {resolved_rel}"""
 {text}
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.PURPLE
+                color=style.Color.PURPLE,
             )
             await ctx.reply(embed=embed)
 
