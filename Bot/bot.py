@@ -17,7 +17,7 @@ start = time.monotonic()
 
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename="Logs/discord.log", encoding="utf-8", mode="w")
+handler = logging.FileHandler(filename=f"Logs/discord-{datetime.datetime.now().strftime(r'%m/%d/%Y')}.log", encoding="utf-8", mode="w")
 handler.setFormatter(
     logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 )
