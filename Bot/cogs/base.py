@@ -99,16 +99,17 @@ class AFKManager:
         query = {"_id": str(message.author.id)}
         afk_data = await self.db[str(message.guild.id)].find_one(query)
         if afk_data:
-            await self.del_afk(message.guild.id, message.author.id)
-            embed = discord.Embed(
-                title="Removed AFK",
-                description=f"""Welcome back {message.author.mention}!
-                
-                You've been afk since <t:{afk_data["unix"]}:R>""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.PINK,
-            )
-            await message.reply(embed=embed)
+            if afk_data.get("unix") + 3 < int(time.time()):
+                await self.del_afk(message.guild.id, message.author.id)
+                embed = discord.Embed(
+                    title="Removed AFK",
+                    description=f"""Welcome back {message.author.mention}!
+                    
+                    You've been afk since <t:{afk_data["unix"]}:R>""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.PINK,
+                )
+                await message.reply(embed=embed)
 
         for mention in message.mentions[:3]:
             if not message.author.id == mention.id:
@@ -546,7 +547,7 @@ Total Uptime: {resolved_rel}"""
 [ Total Cores ]
 = {psutil.cpu_count(logical=True)} =
 [ Total Used vs Total Free]
-= {self.get_size(svmem.used)}/{self.get_size(svmem.total)} = 
+= {get_size(svmem.used)}/{get_size(svmem.total)} = 
 ```""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
@@ -558,7 +559,7 @@ Total Uptime: {resolved_rel}"""
         name="files",
         description="""View all our files and lines because I think it's cool""",
         help="""Recursively looks for all files and how many lines they have""",
-        brief="View file lines",
+        brief="View file info",
         aliases=[],
         enabled=True,
         hidden=False,
@@ -583,9 +584,9 @@ Total Uptime: {resolved_rel}"""
 
     @commands.hybrid_group(
         name="afk",
-        description="""AFK Command Group""",
-        help="""Afk Command Group""",
-        brief="AFK command group",
+        description="""All AFK related commands""",
+        help="""All AFK related commands""",
+        brief="AFK commands",
         aliases=[],
         enabled=True,
         hidden=False,
@@ -601,13 +602,14 @@ Total Uptime: {resolved_rel}"""
 
     @afk_group.command(
         name="set",
-        description="""Set your afk""",
-        help="""Set your afk""",
-        brief="Set your afk",
+        description="""Set an AFK status so that whenever anyone mentions you they're notified that you're AFK with a custom message.""",
+        help="""Set a custom AFK message""",
+        brief="Set a custom AFK message",
         aliases=[],
         enabled=True,
         hidden=False,
     )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
         """
         Set your afk
@@ -624,22 +626,21 @@ Total Uptime: {resolved_rel}"""
 
     @commands.hybrid_command(
         name="imgread",
-        description="""Read text off an image""",
+        description="""Read text off an image using a machine learning model""",
         help="""Read text off an image""",
         brief="Read text off an image",
         aliases=[],
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(2.0, 8.0, commands.BucketType.user)
+    @commands.cooldown(2.0, 10.0, commands.BucketType.user)
     async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
         """
         Use pytesseract to read stuff yay.
         """
         if url:
             async with self.session as session:
-                timeout = aiohttp.ClientTimeout(total=10)
-                async with session.get(url, timeout=timeout) as response:
+                async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as response:
                     image_bytes = await response.read()
 
         elif ctx.message.attachments:
@@ -649,13 +650,25 @@ Total Uptime: {resolved_rel}"""
             raise commands.BadArgument("Please provide an image or url to read.")
 
         text = await self.imgr.read_img(image_bytes)
-        if len(text) > 2000:
-            n = 2000
-            send_list = [text[i : i + n] for i in range(0, len(text), n)]
 
-            for item in send_list:
-                await ctx.send(item)
-        await ctx.send(text)
+        if len(text) > 2010:
+            embed = discord.Embed(
+                title="Image Read",
+                description=f"""The text was {len(text)} characters, so it was sent as a file.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.PURPLE
+            )
+            await ctx.reply(embed=embed, file=discord.File(io.StringIO(text), f"imgread-{int(time.time())}.txt"))
+        else:
+            embed = discord.Embed(
+                title="Image Read",
+                description=f"""```
+{text}
+```""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.PURPLE
+            )
+            await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
