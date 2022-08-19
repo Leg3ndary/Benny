@@ -11,9 +11,6 @@ class Translator:
     Custom class to provide async translate responses and more stuff
     """
 
-    COLOR = style.Color.BLUE
-    ICON = "🗨️"
-
     def __init__(self, bot: commands.Bot) -> None:
         """
         Init with stuff we need mmhm
