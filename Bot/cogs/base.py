@@ -162,7 +162,7 @@ class SystemView(discord.ui.View):
             color=style.Color.GREY,
         )
         embed.set_footer(text="Select one of the below options for more info")
-        await interaction.message.edit(embed=embed, view=self)
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label="CPU", emoji="🖥️")
     async def cpu_button(
@@ -191,7 +191,7 @@ class SystemView(discord.ui.View):
             color=style.Color.GREY,
         )
         embed.set_footer(text="Select one of the below options for more info")
-        await interaction.message.edit(embed=embed, view=self)
+        await interaction.response.edit_message(embed=embed, view=self)
 
     @discord.ui.button(style=discord.ButtonStyle.primary, label="RAM", emoji="💾")
     async def ram_button(
@@ -217,7 +217,7 @@ class SystemView(discord.ui.View):
             color=style.Color.GREY,
         )
         embed.set_footer(text="Select one of the below options for more info")
-        await interaction.message.edit(embed=embed, view=self)
+        await interaction.response.edit_message(embed=embed, view=self)
 
     async def on_error(
         self, interaction: discord.Interaction, error: Exception, item
