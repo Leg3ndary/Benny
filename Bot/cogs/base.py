@@ -20,7 +20,9 @@ class AvatarView(discord.ui.View):
     Delete view to delete the message from the bot
     """
 
-    @discord.ui.button(emoji=style.Emoji.ID.cancel, label="Delete", style=discord.ButtonStyle.danger)
+    @discord.ui.button(
+        emoji=style.Emoji.ID.cancel, label="Delete", style=discord.ButtonStyle.danger
+    )
     async def button_callback(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
@@ -268,12 +270,12 @@ class Base(commands.Cog):
         embed.add_field(
             name="Created At",
             value=discord.utils.format_dt(member.created_at, "F"),
-            inline=False
+            inline=False,
         )
         embed.add_field(
             name="Joined At",
             value=discord.utils.format_dt(member.joined_at, "F"),
-            inline=False
+            inline=False,
         )
         embed.add_field(
             name="Roles",
@@ -288,7 +290,9 @@ class Base(commands.Cog):
             text=f"{member.id}{' - This user is a bot.' if member.bot else ''}",
         )
         embed.set_thumbnail(
-            url=member.display_avatar.url if member.display_avatar else member.avatar.url
+            url=member.display_avatar.url
+            if member.display_avatar
+            else member.avatar.url
         )
         await ctx.reply(embed=embed)
 
@@ -308,6 +312,7 @@ class Base(commands.Cog):
         """
         Gives you the character info of whatever you input
         """
+
         def to_string(char: str) -> str:
             digit = f"{ord(char):x}"
             name = unicodedata.name(char, "Name not found.")
