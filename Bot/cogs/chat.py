@@ -99,6 +99,9 @@ class ChatView(discord.ui.View):
     Chat view
     """
 
+    COLOR = style.Color.YELLOW
+    ICON = "💬"
+
     def __init__(self) -> None:
         """
         Init the Chat View
