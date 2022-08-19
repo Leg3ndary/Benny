@@ -1,6 +1,6 @@
 import asyncio
 import time
-from typing import List
+from typing import Any, Dict, List, Union
 
 import asqlite
 import bTagScript as tse
@@ -16,17 +16,6 @@ FAKE_SEED = {
     "server": None,
     "args": None,
 }
-
-
-def is_a_nerd() -> bool:  # I think its bool
-    """
-    Check if this person is part of the nerd thingy for asty
-    """
-
-    async def predicate(ctx: commands.Context) -> bool:
-        return ctx.guild.id == 907096656732913744 or ctx.author.id == 360061101477724170
-
-    return commands.check(predicate)
 
 
 def clean(text: str) -> str:
@@ -56,7 +45,7 @@ def guild_check(custom_tags: dict) -> bool:
 
 def to_seed(ctx: commands.Context) -> dict:
     """
-    Grab seed from context
+    Grab seed from context return
     """
     user = tse.MemberAdapter(ctx.author)
     target = (
@@ -135,7 +124,7 @@ class Tags(commands.Cog):
     custom_tags: dict = {}
     latest_tag: int = None
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         """
         Init the bot with all the blocks the bot needs
         """
@@ -184,8 +173,7 @@ class Tags(commands.Cog):
         """
         self.db = await asqlite.connect("Databases/tags.db")
 
-        await self.db.execute(
-            """
+        await self.db.execute("""
             CREATE TABLE IF NOT EXISTS tags (
                 tag_id     TEXT PRIMARY KEY
                                 NOT NULL,
@@ -196,8 +184,7 @@ class Tags(commands.Cog):
                 uses       INT  NOT NULL,
                 tagscript  TEXT NOT NULL
             );
-        """
-        )
+        """)
 
         async with self.db.cursor() as cursor:
             row = await cursor.execute("""SELECT MAX(tag_id) FROM tags;""")
@@ -251,24 +238,6 @@ class Tags(commands.Cog):
             self.custom_tags[tag.name][tag.guild] = tag
 
         else:
-
-            '''
-            @commands.command(
-                name=tag.name,
-                help="Custom command: Outputs your custom provided output",
-            )
-            @guild_check(self.custom_tags)
-            async def custom_tag_cmd(
-                ctx: commands.Context, *, args: str = None
-            ) -> None:
-                """
-                Custom command
-                """
-                _tag = self.custom_tags[ctx.invoked_with][tag.guild]
-                await self.invoke_custom_command(ctx, args, _tag, True)
-
-            self.bot.add_command(custom_tag_cmd)
-            '''
             self.custom_tags[tag.name] = {tag.guild: tag}
             self.latest_tag += 1
 
@@ -281,13 +250,11 @@ class Tags(commands.Cog):
             or tag.guild not in self.custom_tags[tag.name]
         ):
             raise commands.BadArgument(f"There isn't a custom tag called {self.name}")
-
-        else:
-            del self.custom_tags[tag.name][tag.guild]
-            await self.db.execute(
-                """DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,)
-            )
-            await self.db.commit()
+        del self.custom_tags[tag.name][tag.guild]
+        await self.db.execute(
+            """DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,)
+        )
+        await self.db.commit()
 
     async def use_tag(self, tag: Tag) -> None:
         """
@@ -319,6 +286,155 @@ class Tags(commands.Cog):
                 tags_list.append(tag)
         return tags_list
 
+    async def send_message(self, ctx: commands.Context, dest: Union[str, discord.TextChannel, bool], body: str, embeds: List[discord.Embed]) -> None:
+        """
+        Send a message, should only used with invoke_custom_command
+        """
+        if not dest:
+            await ctx.send(body if body else None, embeds=embeds)
+        elif dest == "reply":
+            await ctx.reply(body if body else None, embeds=embeds)
+        else:
+            await dest.send(body if body else None, embeds=embeds)
+
+    async def handle_actions(self, actions: Dict[str, Any], ctx: commands.Context, embeds: List[discord.Embed]) -> bool:
+        """
+        Handle a custom commands actions, returns if it can send
+        """
+        can_send = True
+        for action, value in actions.items():
+            if action == "delete" and value:
+                await ctx.message.delete()
+            elif action == "embed":
+                embeds.append(value)
+            elif action == "target":
+                if value == "dm":
+                    dest = ctx.author
+                elif value == "reply":
+                    dest = "reply"
+                else:
+                    dest = await self.channel_converter.convert(ctx, value)
+                    if dest:
+                        can_send = dest.permissions_for(ctx.author).send_messages
+            elif action == "override":
+                can_send = value.get("permissions")
+            elif action == "requires":
+                for i in action["items"]:
+                    roles = []
+                    channels = []
+                    members = []
+                    try:
+                        roles.append(await self.role_converter.convert(ctx, i))
+                    except commands.RoleNotFound:
+                        try:
+                            channels.append(
+                                await self.channel_converter.convert(ctx, i)
+                            )
+                        except commands.ChannelNotFound:
+                            try:
+                                members.append(
+                                    await self.member_converter.convert(ctx, i)
+                                )
+                            except commands.MemberNotFound:
+                                pass
+
+                send_require = True
+                if roles:
+                    if not any(role.id in ctx.author.roles for role in roles):
+                        send_require = False
+                        can_send = False
+                if channels:
+                    if ctx.channel not in channels:
+                        send_require = False
+                        can_send = False
+                if members:
+                    if not any(member.id in ctx.author.id for member in members):
+                        send_require = False
+                        can_send = False
+                if send_require:
+                    await ctx.send(action["response"])
+
+            elif action == "blacklist":
+                for i in action["items"]:
+                    roles = []
+                    channels = []
+                    members = []
+                    try:
+                        roles.append(await self.role_converter.convert(ctx, i))
+                    except commands.RoleNotFound:
+                        try:
+                            channels.append(
+                                await self.channel_converter.convert(ctx, i)
+                            )
+                        except commands.ChannelNotFound:
+                            try:
+                                members.append(
+                                    await self.member_converter.convert(ctx, i)
+                                )
+                            except commands.MemberNotFound:
+                                pass
+
+                send_blacklist = False
+                if roles:
+                    if any(role.id in ctx.author.roles for role in roles):
+                        send_blacklist = True
+                        can_send = False
+                if channels:
+                    if ctx.channel in channels:
+                        send_blacklist = True
+                        can_send = False
+                if members:
+                    if any(member.id in ctx.author.id for member in members):
+                        send_blacklist = True
+                        can_send = False
+                if send_blacklist:
+                    await ctx.send(action["response"])
+
+        return can_send
+
+    async def handle_debug(self, ctx: commands.Context, tag: Tag, debug: Dict[str, Any], embeds: List[discord.Embed], start: int, end: int) -> None:
+        """
+        Handle a custom commands debug, should only be used with invoke_custom_command
+        """
+        debug = ""
+        defaults = ""
+
+        debug.update(
+            {
+                "user": f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})"
+                if ctx.message.mentions
+                else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                "channel": f"{ctx.channel.name} ({ctx.channel.id})",
+                "server": f"{ctx.guild.name} ({ctx.guild.id})",
+            }
+        )
+
+        for k, v in debug.items():
+            if k in FAKE_SEED:
+                defaults += f"{clean(k)}: {clean(v)}\n"
+            else:
+                debug += f"{clean(k)}: {clean(v)}\n"
+
+        debug_c = f"""```yaml
+{debug.strip()}         
+```"""
+        defaults_c = f"""```yaml
+{defaults.strip()}
+```"""
+        dembed = discord.Embed(
+            title=f"{tag.name} Debug",
+            description=f"""Tag Content Length: `{len(tag.tagscript)}`
+            Time to Process: `{(round((end - start) * 1000, 5)) / 1000} seconds`""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+        if debug:
+            dembed.add_field(name="Debug Values", value=debug_c, inline=False)
+        if defaults:
+            dembed.add_field(name="Default Values", value=defaults_c, inline=False)
+        embeds.append(dembed)
+
     async def invoke_custom_command(
         self, ctx: commands.Context, args: str, tag: Tag, use: bool
     ) -> None:
@@ -329,166 +445,37 @@ class Tags(commands.Cog):
             self.bot.loop.create_task(self.use_tag(tag))
 
         seeds = {}
-        if args:
-            seeds.update({"args": tse.StringAdapter(args)})
+        seeds.update({"args": tse.StringAdapter(args)})
         seeds.update(to_seed(ctx))
 
-        start_process = time.monotonic()
+        start = time.monotonic()
         response = await self.tsei.process(message=tag.tagscript, seed_variables=seeds)
-        end_process = time.monotonic()
+        end = time.monotonic()
 
         dest = None
-        can_send = True
+        can_send = None
         embeds = []
 
         if response.actions:
-            for action, value in response.actions.items():
-                if action == "delete" and value:
-                    await ctx.message.delete()
-                elif action == "embed":
-                    embeds.append(value)
-                elif action == "target":
-                    if value == "dm":
-                        dest = ctx.author
-                    elif value == "reply":
-                        dest = "reply"
-                    else:
-                        dest = await self.channel_converter.convert(ctx, value)
-                        if dest:
-                            can_send = dest.permissions_for(ctx.author).send_messages
-                elif action == "override":
-                    can_send = value.get("permissions")
-                elif action == "requires":
-                    for i in action["items"]:
-                        roles = []
-                        channels = []
-                        members = []
-                        try:
-                            roles.append(await self.role_converter.convert(ctx, i))
-                        except commands.RoleNotFound:
-                            try:
-                                channels.append(
-                                    await self.channel_converter.convert(ctx, i)
-                                )
-                            except commands.ChannelNotFound:
-                                try:
-                                    members.append(
-                                        await self.member_converter.convert(ctx, i)
-                                    )
-                                except commands.MemberNotFound:
-                                    pass
-
-                    send_require = True
-                    if roles:
-                        if not any(role.id in ctx.author.roles for role in roles):
-                            send_require = False
-                            can_send = False
-                    if channels:
-                        if ctx.channel not in channels:
-                            send_require = False
-                            can_send = False
-                    if members:
-                        if not any(member.id in ctx.author.id for member in members):
-                            send_require = False
-                            can_send = False
-                    if send_require:
-                        await ctx.send(action["response"])
-
-                elif action == "blacklist":
-                    for i in action["items"]:
-                        roles = []
-                        channels = []
-                        members = []
-                        try:
-                            roles.append(await self.role_converter.convert(ctx, i))
-                        except commands.RoleNotFound:
-                            try:
-                                channels.append(
-                                    await self.channel_converter.convert(ctx, i)
-                                )
-                            except commands.ChannelNotFound:
-                                try:
-                                    members.append(
-                                        await self.member_converter.convert(ctx, i)
-                                    )
-                                except commands.MemberNotFound:
-                                    pass
-
-                    send_blacklist = False
-                    if roles:
-                        if any(role.id in ctx.author.roles for role in roles):
-                            send_blacklist = True
-                            can_send = False
-                    if channels:
-                        if ctx.channel in channels:
-                            send_blacklist = True
-                            can_send = False
-                    if members:
-                        if any(member.id in ctx.author.id for member in members):
-                            send_blacklist = True
-                            can_send = False
-                    if send_blacklist:
-                        await ctx.send(action["response"])
+            can_send = await self.handle_actions(response.actions, ctx, embeds)
 
         if response.debug:
-            debug = ""
-            defaults = ""
-
-            response.debug.update(
-                {
-                    "user": f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
-                    "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})"
-                    if ctx.message.mentions
-                    else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
-                    "channel": f"{ctx.channel.name} ({ctx.channel.id})",
-                    "server": f"{ctx.guild.name} ({ctx.guild.id})",
-                }
-            )
-
-            for k, v in response.debug.items():
-                if k in FAKE_SEED:
-                    defaults += f"{clean(k)}: {clean(v)}\n"
-                else:
-                    debug += f"{clean(k)}: {clean(v)}\n"
-
-            debug_c = f"""```yaml
-{debug.strip()}         
-```"""
-            defaults_c = f"""```yaml
-{defaults.strip()}
-```"""
-            dembed = discord.Embed(
-                title=f"{tag.name} Debug",
-                description=f"""Tag Content Length: `{len(tag.tagscript)}`
-                Time to Process: `{(round((end_process - start_process) * 1000, 5)) / 1000} seconds`""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            if debug:
-                dembed.add_field(name="Debug Values", value=debug_c, inline=False)
-            if defaults:
-                dembed.add_field(name="Default Values", value=defaults_c, inline=False)
-            embeds.append(dembed)
+            await self.handle_debug(ctx, tag, response.debug, embeds, start, end)
 
         if can_send:
-            if not dest:
-                await ctx.send(response.body if response.body else None, embeds=embeds)
-            elif dest == "reply":
-                await ctx.reply(response.body if response.body else None, embeds=embeds)
-            else:
-                await dest.send(response.body if response.body else None, embeds=embeds)
+            await self.send_message(ctx, dest, response.body, embeds)
+
 
     @commands.command(
-        name="tt",
-        description="""Description of command""",
-        help="""What the help command displays""",
-        brief="Brief one liner about the command",
-        aliases=["playground", "tagtest", "testtag"],
+        name="tagtest",
+        description="""Test out tags in server without actually creating them.""",
+        help="""Test out tags without actually creating one, and without using them in a server.""",
+        brief="Test out tags",
+        aliases=["playground", "tt", "testtag"],
         enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @is_a_nerd()
     async def tt_cmd(self, ctx: commands.Context, *, args: str) -> None:
         """
         Testing out tags because yea...
@@ -498,9 +485,9 @@ class Tags(commands.Cog):
 
     @commands.hybrid_group(
         name="tag",
-        description="""Tag group""",
-        help="""Anything to do with tags""",
-        brief="Anything to do with tags",
+        description="""Anything to do with tags.""",
+        help="""Using this will display a help page for tags.""",
+        brief="Help command group",
         aliases=[],
         enabled=True,
         hidden=False,
@@ -515,13 +502,14 @@ class Tags(commands.Cog):
 
     @tag_group.command(
         name="create",
-        description="""Create a new tag""",
+        description="""Create a new tag in your server""",
         help="""Create a new tag""",
         brief="Create a new tag",
         aliases=["add", "+"],
         enabled=True,
         hidden=False,
     )
+    @commands.has_permissions(manage_messages=True)
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_create_cmd(
         self, ctx: commands.Context, name: str, *, content: str
@@ -603,13 +591,14 @@ class Tags(commands.Cog):
 
     @tag_group.command(
         name="remove",
-        description="""Delete a tag""",
+        description="""Delete a tag from your server""",
         help="""Delete a tag""",
         brief="Delete a tag",
-        aliases=["delete", "-"],
+        aliases=["delete", "-", "del"],
         enabled=True,
         hidden=False,
     )
+    @commands.has_permissions(manage_messages=True)
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def tag_remove_cmd(self, ctx: commands.Context, name: str) -> None:
         """
@@ -638,7 +627,7 @@ class Tags(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 10.0, commands.BucketType.channel)
+    @commands.cooldown(1.0, 8.0, commands.BucketType.channel)
     async def tag_list_cmd(self, ctx: commands.Context) -> None:
         """
         Display all of a servers tags
