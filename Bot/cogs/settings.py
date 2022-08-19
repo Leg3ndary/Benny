@@ -2,6 +2,7 @@ import asqlite
 import discord
 import discord.utils
 from colorama import Fore
+import time
 from discord.ext import commands
 from gears import style
 
@@ -256,7 +257,7 @@ class Settings(commands.Cog):
                                     NOT NULL,
                 patron_level INTEGER NOT NULL
                                     DEFAULT (0),
-                blacklisted  BOOLEAN DEFAULT (False) 
+                blacklisted  BOOLEAN DEFAULT (False)
                                     NOT NULL
             );
             """
@@ -276,6 +277,7 @@ class Settings(commands.Cog):
         """
         Loading every prefix into a cache so we can quickly access it
         """
+        start = time.monotonic()
         self.bot.prefixes = {}
         self.bot.prefix_manager = PrefixManager(self.bot, self.server_db)
 
@@ -292,7 +294,10 @@ class Settings(commands.Cog):
             self.bot.prefixes[str(guild.id)] = prefixes
 
         self.bot.LOADED_PREFIXES = True
-        await self.bot.blogger.load("Prefixes")
+        end = time.monotonic()
+
+        total_load = (round((end - start) * 1000, 2)) / 1000
+        await self.bot.blogger.load(f"Prefixes loaded in {total_load} seconds")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
