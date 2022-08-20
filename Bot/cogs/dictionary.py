@@ -1,13 +1,6 @@
-import datetime
-
 import discord
 from discord.ext import commands
-from gears import style
-from motor.motor_asyncio import (
-    AsyncIOMotorClient,
-    AsyncIOMotorCollection,
-    AsyncIOMotorDatabase,
-)
+from gears import dictapi, style
 
 
 class DictDropdown(discord.ui.Select):
@@ -15,35 +8,58 @@ class DictDropdown(discord.ui.Select):
     Dict Dropdown
     """
 
-    def __init__(self, entries: list) -> None:
+    def __init__(self, word: dictapi.Word) -> None:
         """
         Init the dict dropdown
         """
-        self.entries = entries[:25]
+        self.word = word
+        self.meanings = list(word.meanings)[:25]
 
         options = []
 
-        for entry in entries:
+        for meaning in self.meanings:
             options.append(
                 discord.SelectOption(
-                    label=entry, description="Your favourite colour is red"
+                    label=meaning.part_of_speech,
+                    description=f"{meaning.definition[:47]}..."
+                    if len(meaning.definition) > 50
+                    else meaning.definition,
                 )
             )
 
         super().__init__(
-            placeholder="Choose a word to define",
+            placeholder="Choose a Meaning to View",
             min_values=1,
             max_values=1,
             options=options,
         )
 
-    async def callback(self, interaction: discord.Interaction):
+    async def callback(self, interaction: discord.Interaction) -> None:
         """
         Select a word to define
         """
-        await interaction.response.send_message(
-            f"Your favourite colour is {self.values[0]}"
+        meaning = self.meanings[int(self.values[0])]
+
+        embed = discord.Embed(
+            title=f"{self.word.word} Definition",
+            url=self.word.phonetics[0].audio if self.word.phonetics[0].audio else None,
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.MAROON,
         )
+        embed.add_field(
+            name="Part of Speech", value=meaning.part_of_speech, inline=False
+        )
+        embed.add_field(
+            name="Definition",
+            value=f"{meaning.definitions[0].definition}\n>>> {meaning.definitions[0].example}",
+            inline=False,
+        )
+        embed.set_author(
+            name=f"License: {self.word.license.name}",
+            url=self.word.license.url,
+        )
+        embed.set_footer(text=f"Meaning {self.values[0] + 1}/{len(self.word.meanings)}")
+        await interaction.response.edit_message(embed=embed, view=self.view)
 
 
 class DictionaryMenu(discord.ui.View):
@@ -51,19 +67,12 @@ class DictionaryMenu(discord.ui.View):
     Dictionary Menu
     """
 
-    def __init__(self, entries) -> None:
+    def __init__(self, word: dictapi.Word) -> None:
         """
         Initiative it
         """
         super().__init__()
-        self.entries = entries
-        self.add_item(DictDropdown(entries))
-
-
-class WordNotFound(Exception):
-    """
-    Raised when a word isn't found
-    """
+        self.add_item(DictDropdown(word))
 
 
 class Dictionary(commands.Cog):
@@ -79,73 +88,8 @@ class Dictionary(commands.Cog):
         """
         Init the dictionary cog
         """
-        self.api_url = "https://api.dictionaryapi.dev/api/v2/entries/en/"
         self.bot = bot
-        self.session = bot.sessions.get("main")
-        self.con: AsyncIOMotorClient = None
-        self.db: AsyncIOMotorDatabase = None
-        self.dict: AsyncIOMotorCollection = None
-
-    async def cog_load(self) -> None:
-        """
-        On Cog load do some stuff
-        """
-        mongo_uri = (
-            self.bot.config.get("Dictionary")
-            .get("URL")
-            .replace("<Username>", self.bot.config.get("Dictionary").get("User"))
-            .replace("<Password>", self.bot.config.get("Dictionary").get("Pass"))
-        )
-        self.con = AsyncIOMotorClient(mongo_uri)
-        self.db = self.con["Dictionary"]
-        self.dict = self.db["Dict"]
-        await self.bot.blogger.connect("DICTIONARY MONGO")
-
-    async def fetch_word(self, word: str) -> dict:
-        """
-        Fetch a word from the api, will call it.
-
-        Parameters
-        ----------
-        word: str
-            The word to search up
-
-        Returns
-        -------
-        dict
-        """
-        async with self.session.get(f"{self.api_url}{word}") as request:
-            new_data = await request.json()
-            if request.status == 404:
-                raise WordNotFound(f"Sorry but the word: {word}, has not been found")
-            if request.status == 200:
-                self.bot.loop.create_task(self.update_dict(word, new_data))
-            else:
-                print(
-                    f"[ ERROR ] [{datetime.datetime.utcnow()}]\nError Code: {request.status}\n{await request.json()}"
-                )
-            return new_data
-
-    async def get_word(self, word: str) -> dict:
-        """
-        Will check if the db has the word.
-
-        If not will go fetch it because yes.
-        """
-        search = {"_id": word}
-        result = await self.dict.find_one(search)
-
-        if not result:
-            result = await self.fetch_word(word)
-
-        return result
-
-    async def update_dict(self, word: str, data: dict) -> None:
-        """
-        Update the cache with the correct data
-        """
-        entry = {"_id": word, "data": data}
-        await self.dict.replace_one(entry, upsert=True)
+        self.dc: dictapi.DictClient = dictapi.DictClient(bot.sessions.get("main"))
 
     @commands.hybrid_command(
         name="define",
@@ -161,9 +105,27 @@ class Dictionary(commands.Cog):
         """
         Define a word
         """
-        data = await self.get_word(word)
-        print(data)
-        await ctx.send("Sorry, this command doesn't actually do anything as of now")
+        if not word.isalpha():
+            raise commands.BadArgument("The requested definition must be alphabetic")
+
+        status, json = await self.dc.fetch_word(word)
+
+        if status == 200:
+            word = dictapi.Word(json)
+
+            embed = discord.Embed(
+                title=f"{word.word} Definition",
+                description="""Select one of the below to view different meanings of the word.""",
+                url=word.phonetics[0].audio if word.phonetics[0].audio else None,
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.MAROON,
+            )
+            embed.set_author(
+                name=f"License: {word.license.name}",
+                url=word.license.url,
+            )
+            embed.set_footer(text=f"Meaning -/{len(word.meanings)}")
+            await ctx.send(embed=embed, view=DictionaryMenu(word))
 
 
 async def setup(bot: commands.Bot) -> None:
