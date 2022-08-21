@@ -7,6 +7,7 @@ import discord.utils
 from colorama import Fore, Style
 from discord.ext import commands
 from gears import style
+from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
 
 
 def log_error(error: str) -> None:
@@ -310,6 +311,7 @@ class Errors(commands.Cog):
                 pass
 
         elif isinstance(error, commands.ChannelNotFound):
+            _traceback = False
             embed = discord.Embed(
                 title="Error",
                 description=f"""Channel `{error.argument}` was not found""",
@@ -319,6 +321,7 @@ class Errors(commands.Cog):
             embed.set_thumbnail(url=style.Emoji.IMAGE.cancel)
 
         elif isinstance(error, commands.CommandOnCooldown):
+            _traceback = False
             embed = discord.Embed(
                 title=f"{ctx.command} is on Cooldown",
                 description=f"Please retry this command in {math.ceil(error.retry_after)} seconds",
@@ -329,7 +332,7 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.BadArgument):
             embed = discord.Embed(
                 title="Error - Bad Argument",
-                description=f"""{error.args}""",
+                description=f"""{error.args[0]}""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
@@ -340,6 +343,51 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.CheckFailure):
             pass
 
+        elif isinstance(error, commands.CommandInvokeError):
+            _traceback = False
+            embed = discord.Embed(
+                title="Error - Command Invoke",
+                description=f"""{error.original}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+
+        elif isinstance(error, QueueFull):
+            _traceback = False
+            embed = discord.Embed(
+                title="Error - Queue Full",
+                description="""The queue is currently full.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+
+        elif isinstance(error, QueueEmpty):
+            _traceback = False
+            embed = discord.Embed(
+                title="Error - Queue Empty",
+                description="""The queue is currently empty.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+
+        elif isinstance(error, NothingPlaying):
+            _traceback = False
+            embed = discord.Embed(
+                title="Error - Nothing Playing",
+                description="""Nothing is currently playing.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+
+        elif isinstance(error, NotConnected):
+            _traceback = False
+            embed = discord.Embed(
+                title="Error - Nothing Connected",
+                description="""You need to be connected to a voice channel.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+
         # Printing all errors out we need to know what happened, add an else when prod finally hits
         # All other Errors not returned come here. And we can just print the default TraceBack.
         if _traceback or _traceback is None:
@@ -349,7 +397,7 @@ class Errors(commands.Cog):
             )
 
         if embed:
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:

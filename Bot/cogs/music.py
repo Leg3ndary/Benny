@@ -11,6 +11,7 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
+from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
 from musescore_scraper import MuseScraper
 from wavelink.ext import spotify
 
@@ -25,8 +26,8 @@ class Player(wavelink.Player):
         Init with stuff
         """
         super().__init__()
-        self.dj = dj
-        self.channel = channel
+        self.dj: discord.Member = dj
+        self.channel: discord.VoiceChannel = channel
         self.queue: wavelink.Queue = wavelink.Queue(max_size=250)
         self.looping: bool = False
 
@@ -35,7 +36,7 @@ class Player(wavelink.Player):
         Requests a song without having any of the other troublesome stuff
         """
         if self.queue.is_full:
-            raise commands.CommandInvokeError("The queue is currently full")
+            raise QueueFull()
         if self.queue.is_empty and not self.track:
             await self.play(track)
         else:
@@ -46,7 +47,7 @@ class Player(wavelink.Player):
         Skip the currently playing track, just an alias
         """
         if self.queue.is_empty and not self.track:
-            raise commands.CommandInvokeError("Nothing is currently playing")
+            raise NothingPlaying()
         await self.stop()
 
     async def shuffle(self) -> None:
@@ -54,7 +55,7 @@ class Player(wavelink.Player):
         Shuffle the queue
         """
         if self.queue.is_empty:
-            raise commands.CommandInvokeError("The queue is currently empty")
+            raise QueueEmpty()
         lq = len(self.queue._queue)
 
         temp = []
@@ -74,8 +75,8 @@ class Player(wavelink.Player):
         """
         Loop the queue
         """
-        if self.queue.is_empty and not self.is_playing:
-            raise commands.CommandInvokeError("The queue is currently empty")
+        if self.queue.is_empty() and not self.is_playing():
+            raise QueueEmpty()
         self.looping = not self.looping
 
 
@@ -150,8 +151,8 @@ class PlayerSelector(discord.ui.View):
         Constructing the player selector
         """
         self.ctx = ctx
-        self.add_item(PlayerDropdown(ctx, player, songs))
         super().__init__(timeout=60)
+        self.add_item(PlayerDropdown(ctx, player, songs))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """
@@ -659,9 +660,7 @@ class Music(commands.Cog):
         Create a player and connect cls
         """
         if not ctx.author.voice:
-            raise commands.CommandInvokeError(
-                "You need to be connected to a voice channel for this command to work."
-            )
+            raise NotConnected()
         if not ctx.voice_client:
             player: Player = await ctx.author.voice.channel.connect(
                 cls=Player(dj=ctx.author, channel=ctx.author.voice.channel),
@@ -670,9 +669,6 @@ class Music(commands.Cog):
             )
         else:
             player: Player = ctx.voice_client
-            if self.disconnect_tasks.get(player.channel):
-                self.disconnect_tasks.get(player.channel).cancel()
-                del self.disconnect_tasks[player.channel]
 
         return player
 
@@ -734,9 +730,10 @@ class Music(commands.Cog):
         On end, check if the queue has another song to play if not disconnect after 5 min
         """
         if player.queue.is_empty:
-            self.disconnect_tasks[player.channel.id] = self.bot.loop.create_task(
-                self.await_disconnect(player)
-            )
+            if not player.is_playing() or not player.is_paused():
+                self.disconnect_tasks[player.channel.id] = self.bot.loop.create_task(
+                    self.await_disconnect(player)
+                )
         else:
             if player.looping:
                 await player.request(track)
@@ -749,9 +746,8 @@ class Music(commands.Cog):
         await asyncio.sleep(300)
         if (
             player.is_connected
-            and not player.is_playing
-            or not player.is_paused
-            or player.queue.is_empty
+            and (not player.is_playing() or not player.is_paused())
+            and player.queue.is_empty
         ):
             try:
                 await player.disconnect()
@@ -884,7 +880,6 @@ class Music(commands.Cog):
             tracks = await node.get_tracks(
                 cls=wavelink.YouTubeTrack, query=f"ytsearch:{search}"
             )
-
             embed = discord.Embed(
                 title=f"{style.Emoji.REGULAR.youtube} Select a Song to Play",
                 description=f"""```asciidoc
@@ -913,10 +908,10 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         if not player.track:
-            raise commands.CommandInvokeError("Nothing's currently playing!")
+            raise NothingPlaying
 
         if player.queue.is_empty:
-            raise commands.CommandInvokeError("Nothing's in the queue!")
+            raise QueueEmpty
 
         visual = ""
         total_dur = player.track.length
@@ -957,8 +952,8 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        if not player.is_playing:
-            raise commands.CommandInvokeError("Nothing's currently playing!")
+        if not player.is_playing():
+            raise NothingPlaying
 
         current = player.track
 
@@ -1003,20 +998,7 @@ class Music(commands.Cog):
             color=style.Color.ORANGE,
         )
         embed.set_author(name=current.author)
-
-        current = player.track
-        embed2 = discord.Embed(
-            title="Now Playing",
-            url=current.uri,
-            description=f"""```asciidoc
-[ {current.title} ]
-= Duration: {duration(current.length)} =
-```""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.ORANGE,
-        )
-        embed2.set_author(name=current.author)
-        await ctx.reply(embeds=[embed, embed2])
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="disconnect",
@@ -1149,7 +1131,7 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         if player.is_paused:
-            raise commands.CommandInvokeError("The player is already paused.")
+            raise commands.BadArgument("The player is already paused.")
 
         await player.set_pause(True)
         embed = discord.Embed(
@@ -1186,7 +1168,7 @@ class Music(commands.Cog):
             )
             await ctx.reply(embed=embed)
         else:
-            raise commands.CommandInvokeError("The player isn't paused!")
+            raise commands.BadArgument("The player isn't paused!")
 
     @commands.hybrid_group(
         name="filter",
