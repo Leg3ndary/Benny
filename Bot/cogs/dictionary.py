@@ -24,7 +24,7 @@ class DictDropdown(discord.ui.Select):
                     description=f"{meaning.definitions[0].definition[:47]}..."
                     if len(meaning.definitions[0].definition) > 50
                     else meaning.definitions[0].definition,
-                    value=counter
+                    value=counter,
                 )
             )
 
@@ -59,10 +59,10 @@ class DictDropdown(discord.ui.Select):
             name=f"License: {self.word.license.name}",
             url=self.word.license.url,
         )
-        embed.set_footer(text=f"Meaning {int(self.values[0]) + 1}/{len(self.word.meanings)}")
+        embed.set_footer(
+            text=f"Meaning {int(self.values[0]) + 1}/{len(self.word.meanings)}"
+        )
         await interaction.response.edit_message(embed=embed, view=self.view)
-
-
 
 
 class DictionaryMenu(discord.ui.View):
@@ -109,7 +109,9 @@ class Dictionary(commands.Cog):
         Define a word
         """
         if not word.isalpha():
-            raise commands.BadArgument("The requested definition must be alphabetic, this means no spaces or special characters")
+            raise commands.BadArgument(
+                "The requested definition must be alphabetic, this means no spaces or special characters"
+            )
 
         data = await self.dc.fetch_word(word)
         status = data.get("status")
