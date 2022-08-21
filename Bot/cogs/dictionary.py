@@ -17,13 +17,14 @@ class DictDropdown(discord.ui.Select):
 
         options = []
 
-        for meaning in self.meanings:
+        for counter, meaning in enumerate(self.meanings):
             options.append(
                 discord.SelectOption(
                     label=meaning.part_of_speech,
-                    description=f"{meaning.definition[:47]}..."
-                    if len(meaning.definition) > 50
-                    else meaning.definition,
+                    description=f"{meaning.definitions[0].definition[:47]}..."
+                    if len(meaning.definitions[0].definition) > 50
+                    else meaning.definitions[0].definition,
+                    value=counter
                 )
             )
 
@@ -51,15 +52,17 @@ class DictDropdown(discord.ui.Select):
         )
         embed.add_field(
             name="Definition",
-            value=f"{meaning.definitions[0].definition}\n>>> {meaning.definitions[0].example}",
+            value=f"{meaning.definitions[0].definition}\n>>> {meaning.definitions[0].example if meaning.definitions[0].example else 'No Example'}",
             inline=False,
         )
         embed.set_author(
             name=f"License: {self.word.license.name}",
             url=self.word.license.url,
         )
-        embed.set_footer(text=f"Meaning {self.values[0] + 1}/{len(self.word.meanings)}")
+        embed.set_footer(text=f"Meaning {int(self.values[0]) + 1}/{len(self.word.meanings)}")
         await interaction.response.edit_message(embed=embed, view=self.view)
+
+
 
 
 class DictionaryMenu(discord.ui.View):
@@ -106,12 +109,14 @@ class Dictionary(commands.Cog):
         Define a word
         """
         if not word.isalpha():
-            raise commands.BadArgument("The requested definition must be alphabetic")
+            raise commands.BadArgument("The requested definition must be alphabetic, this means no spaces or special characters")
 
-        status, json = await self.dc.fetch_word(word)
+        data = await self.dc.fetch_word(word)
+        status = data.get("status")
+        json = data.get("data")
 
         if status == 200:
-            word = dictapi.Word(json)
+            word = dictapi.Word(json[0])
 
             embed = discord.Embed(
                 title=f"{word.word} Definition",

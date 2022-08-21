@@ -65,7 +65,7 @@ class Meaning:
         42.
         """
         self.part_of_speech: str = data.get("partOfSpeech", "N/A")
-        self.definitions: Tuple[Definition] = (
+        self.definitions: Tuple[Definition] = tuple(
             Definition(definition) for definition in data.get("definitions", ())
         )
         self.synonyms: Tuple[str] = tuple(data.get("synonyms", ()))
@@ -92,10 +92,10 @@ class Word:
         Construct the word
         """
         self.word: str = data.get("word", None)
-        self.phonetics: Tuple[Phonetic] = (
+        self.phonetics: Tuple[Phonetic] = tuple(
             Phonetic(phonetic) for phonetic in data.get("phonetics", ())
         )
-        self.meanings: Tuple[Meaning] = (
+        self.meanings: Tuple[Meaning] = tuple(
             Meaning(meaning) for meaning in data.get("meanings", ())
         )
         self.synonyms: Tuple[str] = data.get("synonyms", ())
@@ -117,9 +117,9 @@ class DictClient:
         """
         self.session = session
 
-    async def fetch_word(self, word: str) -> None:
+    async def fetch_word(self, word: str) -> Dict[str, Any]:
         """
         Fetch a word
         """
         async with self.session.get(f"{self.API_URL}{word}") as response:
-            return response.status, await response.json()
+            return {"status": response.status, "data": await response.json()}
