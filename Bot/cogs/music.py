@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import random
+from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 import asqlite
@@ -10,7 +11,6 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
-from gears.music_exceptions import NothingPlaying, QueueEmpty, QueueFull
 from musescore_scraper import MuseScraper
 from wavelink.ext import spotify
 
@@ -27,26 +27,26 @@ class Player(wavelink.Player):
         super().__init__()
         self.dj = dj
         self.channel = channel
-        self.queue = wavelink.Queue(max_size=250)
-        self.looping = False
+        self.queue: wavelink.Queue = wavelink.Queue(max_size=250)
+        self.looping: bool = False
 
     async def request(self, track: wavelink.Track) -> None:
         """
-        Request a song
+        Requests a song without having any of the other troublesome stuff
         """
+        if self.queue.is_full:
+            raise commands.CommandInvokeError("The queue is currently full")
         if self.queue.is_empty and not self.track:
             await self.play(track)
-        elif self.queue.is_full:
-            raise QueueFull("The queue is currently full")
         else:
             self.queue.put(track)
 
     async def skip(self) -> None:
         """
-        Skip the currently playing track just an alias
+        Skip the currently playing track, just an alias
         """
         if self.queue.is_empty and not self.track:
-            raise NothingPlaying("Nothing is currently playing")
+            raise commands.CommandInvokeError("Nothing is currently playing")
         await self.stop()
 
     async def shuffle(self) -> None:
@@ -54,7 +54,7 @@ class Player(wavelink.Player):
         Shuffle the queue
         """
         if self.queue.is_empty:
-            raise QueueEmpty("The queue is currently empty")
+            raise commands.CommandInvokeError("The queue is currently empty")
         lq = len(self.queue._queue)
 
         temp = []
@@ -72,10 +72,10 @@ class Player(wavelink.Player):
 
     async def loop(self) -> None:
         """
-        Loop the queue?
+        Loop the queue
         """
         if self.queue.is_empty and not self.is_playing:
-            raise QueueEmpty("The queue is currently empty")
+            raise commands.CommandInvokeError("The queue is currently empty")
         self.looping = not self.looping
 
 
@@ -84,7 +84,9 @@ class PlayerDropdown(discord.ui.Select):
     Shows up to 25 songs in a Select so we can see it
     """
 
-    def __init__(self, ctx: commands.Context, player: Player, songs: list) -> None:
+    def __init__(
+        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+    ) -> None:
         """
         Constructing the dropdown view
         """
@@ -92,24 +94,21 @@ class PlayerDropdown(discord.ui.Select):
         self.player = player
         self.songs = songs
         options = []
-        counter = 0
-        for song in songs:
+        for counter, song in enumerate(songs):
             options.append(
                 discord.SelectOption(
                     emoji=style.Emoji.REGULAR.youtube,
                     label=song.title,
                     description=f"""{song.author} - Duration: {duration(song.length)}""",
-                    value=str(counter),
+                    value=counter,
                 )
             )
-            counter += 1
 
         super().__init__(
             placeholder="Select a Song",
             min_values=1,
             max_values=1,
             options=options,
-            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=music",
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -144,14 +143,15 @@ class PlayerSelector(discord.ui.View):
     Select a song based on what we show from track results.
     """
 
-    def __init__(self, ctx: commands.Context, player: Player, songs: list) -> None:
+    def __init__(
+        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+    ) -> None:
         """
         Constructing the player selector
         """
         self.ctx = ctx
-        self.play_embed = None
-        super().__init__(timeout=60)
         self.add_item(PlayerDropdown(ctx, player, songs))
+        super().__init__(timeout=60)
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """
@@ -168,14 +168,6 @@ class PlayerSelector(discord.ui.View):
         for item in self.children:
             item.disabled = True
 
-        embed = discord.Embed(
-            title="Select a Song to Play",
-            description="""Timed out""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.RED,
-        )
-        await self.play_embed.edit(embed=embed, view=self)
-
     @discord.ui.button(
         emoji=style.Emoji.REGULAR.cancel,
         label="Cancel",
@@ -188,8 +180,7 @@ class PlayerSelector(discord.ui.View):
         """
         Delete the message if clicked
         """
-        await self.play_embed.delete()
-        await interaction.response.send_message("Cancelled", ephemeral=True)
+        await interaction.delete_original_message()
 
 
 class QueueDropdown(discord.ui.Select):
@@ -198,7 +189,11 @@ class QueueDropdown(discord.ui.Select):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: Player, songs: list, page_num: int
+        self,
+        ctx: commands.Context,
+        player: Player,
+        songs: List[wavelink.Track],
+        page_num: int,
     ) -> None:
         """
         Construct the queue dropdown view
@@ -207,25 +202,23 @@ class QueueDropdown(discord.ui.Select):
         self.player = player
         self.songs = songs
         options = []
-        counter = 0
         self.page_num = page_num
-        for song in songs:
+
+        for counter, song in enumerate(songs):
             options.append(
                 discord.SelectOption(
                     emoji=style.Emoji.REGULAR.youtube,
                     label=song.title,
                     description=f"""{song.author} - Duration: {duration(song.length)}""",
-                    value=str(counter),
+                    value=counter,
                 )
             )
-            counter += 1
 
         super().__init__(
             placeholder=f"View Queue - Page {self.page_num}",
             min_values=1,
             max_values=1,
             options=options,
-            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=music",
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -258,12 +251,13 @@ class QueueView(discord.ui.View):
     Display all items in our queue, let you skip to any song
     """
 
-    def __init__(self, ctx: commands.Context, player: Player, songs: list) -> None:
+    def __init__(
+        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+    ) -> None:
         """
         Construct the queue view with dropdown attached
         """
         self.ctx = ctx
-        self.play_embed = None
         super().__init__(timeout=60)
 
         self.add_item(QueueDropdown(ctx, player, songs, 1))  # not finished
@@ -282,29 +276,6 @@ class QueueView(discord.ui.View):
         """
         for item in self.children:
             item.disabled = True
-
-        embed = discord.Embed(
-            title="Viewing Queue",
-            description="""Timed out""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.RED,
-        )
-        await self.play_embed.edit(embed=embed, view=self)
-
-    @discord.ui.button(
-        emoji=style.Emoji.REGULAR.cancel,
-        label="Cancel",
-        style=discord.ButtonStyle.danger,
-        row=2,
-    )
-    async def button_callback(
-        self, interaction: discord.Interaction, button: discord.Button
-    ) -> None:
-        """
-        Delete the message if clicked
-        """
-        await self.play_embed.delete()
-        await interaction.response.send_message("Cancelled", ephemeral=True)
 
 
 class FilterSpinView(discord.ui.View):
@@ -336,20 +307,11 @@ class FilterSpinView(discord.ui.View):
         for item in self.children:
             item.disabled = True
 
-        embed = discord.Embed(
-            title="Spin Mode",
-            description="""Timed out""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.RED,
-        )
-        await self.play_embed.edit(embed=embed, view=self)
-
     async def set_spin(self) -> None:
         """
         Set the spin to the self value
         """
         rotation = wavelink.Rotation(speed=self.spin)
-
         await self.player.set_filter(wavelink.Filter(rotation=rotation), seek=True)
 
     async def edit_spin_embed(self, interaction: discord.Interaction) -> None:
@@ -452,24 +414,22 @@ class MusescoreDropdown(discord.ui.Select):
         self.ctx = ctx
         self.ams = ams
         options = []
-        counter = 1
+
         self.sheets = sheets
-        for sheet in sheets[:25]:
+        for counter, sheet in enumerate(sheets[:25]):
             options.append(
                 discord.SelectOption(
                     label=sheet.title,
                     description=f"""{sheet.author} - Pages: {sheet.pages} - Playtime: {sheet.ttp}""",
-                    value=str(counter),
+                    value=counter,
                 )
             )
-            counter += 1
 
         super().__init__(
             placeholder="Select a Sheet to Download",
             min_values=1,
             max_values=1,
             options=options,
-            custom_id=f"{str(ctx.guild.id)}-{str(ctx.message.id)}=musescore",
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -556,7 +516,6 @@ class MusescoreView(discord.ui.View):
         Delete the message if clicked
         """
         await self.ctx.message.delete()
-        await interaction.response.send_message("Cancelled", ephemeral=True)
 
 
 class MusescoreDownload(discord.ui.View):
@@ -594,14 +553,6 @@ class MusescoreDownload(discord.ui.View):
         """
         for item in self.children:
             item.disabled = True
-
-        embed = discord.Embed(
-            title="Viewing Sheets",
-            description="""Timed out""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.RED,
-        )
-        await self.play_embed.edit(embed=embed, view=self)
 
     @discord.ui.button(
         emoji=style.Emoji.REGULAR.check,
@@ -669,6 +620,7 @@ class Music(commands.Cog):
         self.bot = bot
         self.wavelink: wavelink.Node = None
         self.musicDB: asqlite.Connection = None
+        self.disconnect_tasks: Dict[str, asyncio.Task] = {}
 
         app_token = tekore.request_client_token(
             bot.config.get("Spotify").get("ID"), bot.config.get("Spotify").get("Secret")
@@ -702,43 +654,27 @@ class Music(commands.Cog):
             )
             self.wavelink: wavelink.Node = self.bot.wavelink
 
-    async def self_deafen(self, ctx: commands.Context) -> None:
-        """
-        Deafen ourself
-        """
-        await asyncio.sleep(0.5)
-        await ctx.guild.change_voice_state(
-            channel=ctx.author.voice.channel,
-            self_mute=False,
-            self_deaf=True,
-        )
-
-    async def get_player(self, ctx: commands.Context) -> Player:
+    async def get_player(self, ctx: commands.Context) -> Optional[Player]:
         """
         Create a player and connect cls
         """
         if not ctx.author.voice:
-            embed = discord.Embed(
-                title="Error",
-                description="""You need to be connected to a voice channel for this command to work""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
+            raise commands.CommandInvokeError(
+                "You need to be connected to a voice channel for this command to work."
             )
-            return await ctx.send(embed=embed)
         if not ctx.voice_client:
             player: Player = await ctx.author.voice.channel.connect(
-                cls=Player(dj=ctx.author, channel=ctx.author.voice.channel)
+                cls=Player(dj=ctx.author, channel=ctx.author.voice.channel),
+                self_deaf=True,
+                self_mute=False,
             )
         else:
             player: Player = ctx.voice_client
-            self.bot.loop.create_task(self.self_deafen(ctx))
+            if self.disconnect_tasks.get(player.channel):
+                self.disconnect_tasks.get(player.channel).cancel()
+                del self.disconnect_tasks[player.channel]
 
         return player
-
-    async def parse_track(self, query: str) -> str:
-        """
-        Parse a song to play? Idk
-        """
 
     @commands.Cog.listener()
     async def on_connect_wavelink(self) -> None:
@@ -798,15 +734,126 @@ class Music(commands.Cog):
         On end, check if the queue has another song to play if not disconnect after 5 min
         """
         if player.queue.is_empty:
-            self.bot.loop.create_task()
+            self.disconnect_tasks[player.channel.id] = self.bot.loop.create_task(
+                self.await_disconnect(player)
+            )
         else:
             if player.looping:
                 await player.request(track)
             await player.play(player.queue.get())
 
+    async def await_disconnect(self, player: Player) -> None:
+        """
+        Wait for the player to disconnect
+        """
+        await asyncio.sleep(300)
+        if (
+            player.is_connected
+            and not player.is_playing
+            or not player.is_paused
+            or player.queue.is_empty
+        ):
+            try:
+                await player.disconnect()
+            except Exception as e:
+                await self.bot.blogger.error(e)
+
+    async def handle_spotify_track(
+        self, ctx: commands.Context, player: Player, decoded: Dict[str, Any]
+    ) -> None:
+        """
+        Handle a spotify track
+        """
+        track = await spotify.SpotifyTrack.search(
+            query=decoded["id"], return_first=True
+        )
+
+        await player.request(track)
+
+        embed = discord.Embed(
+            title=f"{style.Emoji.REGULAR.spotify} Playing Track From Spotify",
+            url=track.uri,
+            description=f"""```asciidoc
+[ {track.title} ]
+= Duration: {duration(track.length)} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        embed.set_author(name=track.author)
+        embed.set_footer(
+            text=ctx.author.display_name,
+            icon_url=ctx.author.display_avatar.url,
+        )
+        await ctx.reply(embed=embed)
+
+    async def handle_spotify_playlist(
+        self, ctx: commands.Context, player: Player, decoded: Dict[str, Any]
+    ) -> None:
+        """
+        Handle a spotify playlist
+        """
+        length = int(
+            (await self.spotify.playlist(decoded["id"], fields="tracks(total)"))
+            .get("tracks")
+            .get("total")
+        )
+
+        if length >= 100:
+            raise commands.BadArgument(
+                "You may only add up to 100 songs through spotify playlists at this time."
+            )
+
+        playlist: tekore.model.FullPlaylist = await self.spotify.playlist(decoded["id"])
+
+        embed = discord.Embed(
+            title=f"{style.Emoji.REGULAR.spotify} Queueing {playlist.name}",
+            description=f"""```asciidoc
+[ Adding {length} Songs ]
+= Duration: Calculating =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_author(
+            name=playlist.owner.display_name if playlist.owner else "Featured Playlist"
+        )
+        embed.set_footer(
+            text=ctx.author.display_name,
+            icon_url=ctx.author.display_avatar.url,
+        )
+        if playlist.images[0].url:
+            embed.set_thumbnail(url=playlist.images[0].url)
+
+        sent = await ctx.reply(embed=embed)
+
+        total_dur = 0
+        async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
+            await player.request(song)
+            total_dur += song.length
+
+        finished = discord.Embed(
+            title=f"{style.Emoji.REGULAR.spotify} Playing {playlist.name}",
+            url=playlist.href,
+            description=f"""```asciidoc
+[ Added {length} Songs ]
+= Duration: {duration(total_dur)} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.AQUA,
+        )
+        embed.set_author(
+            name=playlist.owner.display_name if playlist.owner else "Featured Playlist"
+        )
+        embed.set_footer(
+            text=ctx.author.display_name,
+            icon_url=ctx.author.display_avatar.url,
+        )
+        await sent.edit(embed=finished)
+
     @commands.hybrid_command(
         name="play",
-        description="""Play a song/Queue another song""",
+        description="""Play a song or place it in queue""",
         help="""Play a song or request in the queue""",
         brief="Play a song",
         aliases=["p"],
@@ -824,14 +871,19 @@ class Music(commands.Cog):
 
         decoded = spotify.decode_url(search)
 
-        if not decoded:
+        if decoded:
+            if decoded["type"] == spotify.SpotifySearchType.track:
+                await self.handle_spotify_track(ctx, player, decoded)
 
+            elif decoded["type"] == spotify.SpotifySearchType.playlist:
+                await self.handle_spotify_playlist(ctx, player, decoded)
+
+        else:
             node = wavelink.NodePool.get_node()
 
-            query = f"ytsearch:{search}"
-            tracks = await node.get_tracks(cls=wavelink.YouTubeTrack, query=query)
-
-            view = PlayerSelector(ctx, player, tracks[:25])
+            tracks = await node.get_tracks(
+                cls=wavelink.YouTubeTrack, query=f"ytsearch:{search}"
+            )
 
             embed = discord.Embed(
                 title=f"{style.Emoji.REGULAR.youtube} Select a Song to Play",
@@ -840,121 +892,13 @@ class Music(commands.Cog):
 [ {search} ]
 ```""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.GREEN,
+                color=style.Color.GREY,
             )
-            view.play_embed = await ctx.send(embed=embed, view=view)
-
-        else:
-            if decoded["type"] == spotify.SpotifySearchType.track:
-                track = await spotify.SpotifyTrack.search(
-                    query=decoded["id"], return_first=True
-                )
-
-                if player.queue.is_empty and not player.track:
-                    await player.request(track)
-
-                elif player.queue.is_full:
-                    embed = discord.Embed(
-                        title="Max Queue Size Reached",
-                        url=track.uri,
-                        description="""Sorry but you only may have 250 songs queued at a time""",
-                        timestamp=discord.utils.utcnow(),
-                        color=style.Color.RED,
-                    )
-                    embed.set_author(name=track.author)
-                    embed.set_footer(
-                        text=self.ctx.author.display_name,
-                        icon_url=self.ctx.author.display_avatar.url,
-                    )
-                    return await ctx.send(embed)
-                else:
-                    player.queue.put(track)
-
-                embed = discord.Embed(
-                    title=f"{style.Emoji.REGULAR.spotify} Playing Track",
-                    url=track.uri,
-                    description=f"""```asciidoc
-[ {track.title} ]
-= Duration: {duration(track.length)} =
-```""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN,
-                )
-                embed.set_author(name=track.author)
-                embed.set_footer(
-                    text=ctx.author.display_name,
-                    icon_url=ctx.author.display_avatar.url,
-                )
-                await ctx.send(embed=embed)
-
-            elif decoded["type"] == spotify.SpotifySearchType.playlist:
-                length = int(
-                    (await self.spotify.playlist(decoded["id"], fields="tracks(total)"))
-                    .get("tracks")
-                    .get("total")
-                )
-
-                if length >= 100:
-                    embed = discord.Embed(
-                        title="Playlist Song Limit Reached",
-                        description="""You may only add up to 100 songs through spotify playlists at this time""",
-                        timestamp=discord.utils.utcnow(),
-                        color=style.Color.RED,
-                    )
-                    return await ctx.send(embed=embed)
-
-                playlist: tekore.model.FullPlaylist = await self.spotify.playlist(
-                    decoded["id"]
-                )
-
-                if playlist.owner:
-                    author = playlist.owner.display_name
-                else:
-                    author = "Featured Playlist"
-
-                embed = discord.Embed(
-                    title=f"{style.Emoji.REGULAR.spotify} Queueing {playlist.name}",
-                    description=f"""```asciidoc
-[ Adding {length} Songs ]
-= Duration: Calculating =
-```""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREY,
-                )
-                embed.set_author(name=author)
-                embed.set_footer(
-                    text=ctx.author.display_name,
-                    icon_url=ctx.author.display_avatar.url,
-                )
-                if playlist.images[0].url:
-                    embed.set_thumbnail(url=playlist.images[0].url)
-                msg = await ctx.send(embed=embed)
-
-                total_dur = 0
-                async for song in spotify.SpotifyTrack.iterator(query=decoded["id"]):
-                    await player.request(song)
-                    total_dur += song.length
-
-                finished = discord.Embed(
-                    title=f"{style.Emoji.REGULAR.spotify} Playing {playlist.name}",
-                    url=playlist.href,
-                    description=f"""```asciidoc
-[ Added {length} Songs ]
-= Duration: {duration(total_dur)} =
-```""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN,
-                )
-                embed.set_author(name=author)
-                embed.set_footer(
-                    text=ctx.author.display_name,
-                    icon_url=ctx.author.display_avatar.url,
-                )
-                await msg.edit(embed=finished)
+            await ctx.reply(embed=embed, view=PlayerSelector(ctx, player, tracks[:25]))
 
     @commands.hybrid_command(
         name="queue",
-        description="""View the current queue""",
+        description="""View the current queue for the server""",
         help="""Show what's currently in the players queue!""",
         brief="View Player Queue",
         aliases=["q"],
@@ -969,25 +913,14 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         if not player.track:
-            nothing_playing = discord.Embed(
-                title="Nothing Playing",
-                description="""Nothing's currently playing!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            return await ctx.send(embed=nothing_playing)
+            raise commands.CommandInvokeError("Nothing's currently playing!")
 
-        elif player.queue.is_empty:
-            emptyqueue = discord.Embed(
-                title="Empty Queue",
-                description="""Nothing's currently queued!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            return await ctx.send(embed=emptyqueue)
+        if player.queue.is_empty:
+            raise commands.CommandInvokeError("Nothing's in the queue!")
 
         visual = ""
         total_dur = player.track.length
+
         for count, track in enumerate(player.queue._queue, 1):
             if isinstance(track, wavelink.PartialTrack):
                 visual += f"\n{count}. {track.title} [ N/A ] ( Added from Playlist. )"
@@ -1006,7 +939,7 @@ class Music(commands.Cog):
             color=style.Color.AQUA,
         )
         embed.set_footer(text=f"""Total Duration: {total_dur}""")
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="now",
@@ -1025,34 +958,27 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         if not player.is_playing:
-            nothing_playing = discord.Embed(
-                title="Nothing is playing!",
-                description="""Use the play command to queue a song!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.AQUA,
-            )
-            return await ctx.send(embed=nothing_playing)
+            raise commands.CommandInvokeError("Nothing's currently playing!")
 
-        else:
-            current = player.track
+        current = player.track
 
-            embed = discord.Embed(
-                title="Now Playing",
-                description=f"""```asciidoc
+        embed = discord.Embed(
+            title="Now Playing",
+            description=f"""```asciidoc
 [ {current.title} ]
 = Duration: {duration(current.length)} =
 ```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            embed.set_author(name=current.author)
-            await ctx.send(embed=embed)
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.ORANGE,
+        )
+        embed.set_author(name=f"Queued by {current.author}")
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="skip",
-        description="""Skip command""",
-        help="""Skip command""",
-        brief="Skip command",
+        description="""Skip the currently playing song""",
+        help="""Skip the currently playing song""",
+        brief="Skip the currently playing song",
         aliases=["s"],
         enabled=True,
         hidden=False,
@@ -1064,44 +990,33 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        try:
-            current = player.track
-            await player.skip()
-            embed = discord.Embed(
-                title="Skipped",
-                url=current.uri,
-                description=f"""```asciidoc
+        current = player.track
+        await player.skip()
+        embed = discord.Embed(
+            title="Skipped",
+            url=current.uri,
+            description=f"""```asciidoc
 [ {current.title} ]
 = Duration: {duration(current.length)} =
 ```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.ORANGE,
-            )
-            embed.set_author(name=current.author)
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.ORANGE,
+        )
+        embed.set_author(name=current.author)
 
-            current = player.track
-
-            embed2 = discord.Embed(
-                title="Now Playing",
-                url=current.uri,
-                description=f"""```asciidoc
+        current = player.track
+        embed2 = discord.Embed(
+            title="Now Playing",
+            url=current.uri,
+            description=f"""```asciidoc
 [ {current.title} ]
 = Duration: {duration(current.length)} =
 ```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            embed2.set_author(name=current.author)
-            await ctx.send(embeds=[embed, embed2])
-
-        except NothingPlaying as e:
-            embed = discord.Embed(
-                title="Error",
-                description=f"""{e}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.ORANGE,
+        )
+        embed2.set_author(name=current.author)
+        await ctx.reply(embeds=[embed, embed2])
 
     @commands.hybrid_command(
         name="disconnect",
@@ -1127,7 +1042,7 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=style.Color.RED,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="remove",
@@ -1139,40 +1054,33 @@ class Music(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def remove_cmd(self, ctx: commands.Context, *, number: str) -> None:
+    async def remove_cmd(self, ctx: commands.Context, *, number: int) -> None:
         """
         Will support removing by song name / author soon.
         """
         player = await self.get_player(ctx)
 
-        if number.isnumeric():
-            try:
-                number = int(number)
-                index = number - 1
+        index = number - 1
 
-                song = player.queue._queue[index]
+        song = player.queue._queue[index]
 
-                embed = discord.Embed(
-                    title="Removed",
-                    url=song.uri,
-                    description=f"""```asciidoc
+        embed = discord.Embed(
+            title="Removed",
+            url=song.uri,
+            description=f"""```asciidoc
 [ {song.title} ]
 = Duration: {duration(song.length)} =
 ```""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED,
-                )
-                embed.set_author(name=song.author)
-                await ctx.send(embed=embed)
-                del player.queue._queue[index]
-
-            except Exception as e:
-                print(e)
-                await ctx.send("An error has an occured... uh o")
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        embed.set_author(name=song.author)
+        await ctx.reply(embed=embed)
+        del player.queue._queue[index]
 
     @commands.hybrid_command(
         name="shuffle",
-        description="""Shuffle the queue""",
+        description="""Shuffle the entire queue""",
         help="""Shuffle the entire queue""",
         brief="Shuffle the queue",
         aliases=[],
@@ -1186,26 +1094,16 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        try:
-            current = player.track
-            await player.shuffle()
-            embed = discord.Embed(
-                title=f"{style.Emoji.REGULAR.shuffle} Shuffling",
-                url=current.uri,
-                description=f"""Shuffled {len(player.queue._queue)} songs""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.YELLOW,
-            )
-            await ctx.send(embed=embed)
-
-        except QueueEmpty as e:
-            embed = discord.Embed(
-                title="Error",
-                description=f"""{e}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
+        current = player.track
+        await player.shuffle()
+        embed = discord.Embed(
+            title=f"{style.Emoji.REGULAR.shuffle} Shuffling",
+            url=current.uri,
+            description=f"""Shuffled {len(player.queue._queue)} songs""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.YELLOW,
+        )
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="loop",
@@ -1219,30 +1117,20 @@ class Music(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def loop_cmd(self, ctx: commands.Context) -> None:
         """
-        Looping command noice
+        Looping command
         """
         player = await self.get_player(ctx)
 
-        try:
-            current = player.track
-            await player.loop()
-            embed = discord.Embed(
-                title=f"{style.Emoji.REGULAR.loop} {'Looping' if player.loop else 'Unlooping'}",
-                url=current.uri,
-                description=f"""{'Looped' if player.loop else 'Unlooped'} the queue""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.AQUA,
-            )
-            await ctx.send(embed=embed)
-
-        except QueueEmpty as e:
-            embed = discord.Embed(
-                title="Error",
-                description=f"""{e}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
+        current = player.track
+        await player.loop()
+        embed = discord.Embed(
+            title=f"{style.Emoji.REGULAR.loop} {'Looping' if player.loop else 'Unlooping'}",
+            url=current.uri,
+            description=f"""{'Looped' if player.loop else 'Unlooped'} the queue""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.AQUA,
+        )
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="pause",
@@ -1259,33 +1147,18 @@ class Music(commands.Cog):
         Pause the queue
         """
         player = await self.get_player(ctx)
-        try:
-            if player.is_paused:
-                embed = discord.Embed(
-                    title="Error",
-                    description="""The player is already paused!""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.YELLOW,
-                )
-                await ctx.send(embed=embed)
-            else:
-                await player.set_pause(True)
-                embed = discord.Embed(
-                    title="Paused",
-                    description="""Paused the queue""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN,
-                )
-                await ctx.send(embed=embed)
 
-        except QueueEmpty as e:
-            embed = discord.Embed(
-                title="Error",
-                description=f"""{e}""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed)
+        if player.is_paused:
+            raise commands.CommandInvokeError("The player is already paused.")
+
+        await player.set_pause(True)
+        embed = discord.Embed(
+            title="Paused",
+            description="""Paused the queue""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="unpause",
@@ -1303,33 +1176,17 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        try:
-            if not player.is_paused:
-                embed = discord.Embed(
-                    title="Error",
-                    description="""The player isn't paused!""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.YELLOW,
-                )
-                await ctx.send(embed=embed)
-            else:
-                await player.set_pause(False)
-                embed = discord.Embed(
-                    title="Unpaused",
-                    description="""Unpaused the queue""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN,
-                )
-                await ctx.send(embed=embed)
-
-        except QueueEmpty as e:
+        if player.is_paused:
+            await player.set_pause(False)
             embed = discord.Embed(
-                title="Error",
-                description=f"""{e}""",
+                title="Unpaused",
+                description="""Unpaused the queue""",
                 timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
+                color=style.Color.GREEN,
             )
-            await ctx.send(embed=embed)
+            await ctx.reply(embed=embed)
+        else:
+            raise commands.CommandInvokeError("The player isn't paused!")
 
     @commands.hybrid_group(
         name="filter",
@@ -1416,7 +1273,7 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @filter_group.command(
         name="karaoke",
@@ -1443,7 +1300,7 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=style.Color.PINK,
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @filter_group.command(
         name="spin",
@@ -1460,8 +1317,6 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        view = FilterSpinView(ctx, player)
-
         embed = discord.Embed(
             title="Spin Mode",
             description="""Set a spin mode below!
@@ -1470,7 +1325,7 @@ class Music(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=style.Color.PURPLE,
         )
-        await ctx.send(embed=embed, view=view)
+        await ctx.reply(embed=embed, view=FilterSpinView(ctx, player))
 
     @commands.hybrid_command(
         name="musescore",
@@ -1485,6 +1340,8 @@ class Music(commands.Cog):
     async def musescore_cmd(self, ctx: commands.Context, *, search: str) -> None:
         """
         Get sheet music from musescore
+
+        Disabled for now since there's a lot I want to add but haven't yet added
         """
         async with MuseScraper() as ms:
             url = urlparse(search)
@@ -1493,7 +1350,7 @@ class Music(commands.Cog):
                 if url.hostname == "musescore.com":
                     path = await ms.to_pdf(search, "Musescore/")
                     file = discord.File(path)
-                    await ctx.send(file=file)
+                    await ctx.reply(file=file)
 
             else:
                 # sheets: List[QueriedSheetMusic] = (await ms.search(search))[:25]
@@ -1508,7 +1365,7 @@ class Music(commands.Cog):
                     text=ctx.author.display_name,
                     icon_url=ctx.author.display_avatar.url,
                 )
-                await ctx.send(embed=embed, view=MusescoreView(ctx, ms, sheets))
+                await ctx.reply(embed=embed, view=MusescoreView(ctx, ms, sheets))
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -9,24 +9,6 @@ class MusicException(Exception):
     """
 
 
-class QueueFull(MusicException):
-    """
-    When the queue is full
-    """
-
-
-class QueueEmpty(MusicException):
-    """
-    When the queue is empty
-    """
-
-
-class NothingPlaying(MusicException):
-    """
-    When nothings playing
-    """
-
-
 class PlaylistException(Exception):
     """
     Raised when a playlist related method has failed
