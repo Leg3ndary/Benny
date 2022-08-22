@@ -75,7 +75,7 @@ class Player(wavelink.Player):
         """
         Loop the queue
         """
-        if self.queue.is_empty() and not self.is_playing():
+        if self.queue.is_empty and not self.is_playing():
             raise QueueEmpty()
         self.looping = not self.looping
 
