@@ -1,15 +1,11 @@
-import io
 import json
 import platform
 import time
 import unicodedata
 
-import aiohttp
 import discord
 import discord.utils
-import PIL as pil
 import psutil
-import pytesseract
 from discord.ext import commands
 from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -225,50 +221,6 @@ class SystemView(discord.ui.View):
         print(error.with_traceback(error.__traceback__))
 
 
-class IMGReader:
-    """
-    Read images
-    """
-
-    __slots__ = ("bot", "loop")
-
-    def __init__(self, bot: commands.Bot) -> None:
-        """
-        construct the image reader
-        """
-        self.bot = bot
-        self.loop = bot.loop
-
-        if not bot.PLATFORM == "linux":
-            pytesseract.pytesseract.tesseract_cmd = (
-                "C:/Program Files/Tesseract-OCR/tesseract.exe"
-            )
-
-    async def read_img(self, image_bytes: bytes) -> str:
-        """
-        Read an image and return the text in it
-
-        Parameters
-        ----------
-        image_bytes: bytes
-            Image bytes
-
-        Returns
-        -------
-        str
-            The actual text found
-        """
-
-        img = await self.loop.run_in_executor(
-            None, pil.Image.open, io.BytesIO(image_bytes)
-        )
-        text = await self.loop.run_in_executor(
-            None, pytesseract.pytesseract.image_to_string, img
-        )
-
-        return text
-
-
 class Base(commands.Cog):
     """
     Basic commands that you would use with no specific category
@@ -285,7 +237,6 @@ class Base(commands.Cog):
         self.MemberConverter = commands.MemberConverter()
         self.afk = AFKManager(bot)
         self.session = bot.sessions.get("base")
-        self.imgr = IMGReader(bot)
 
     @commands.command(
         name="about",
@@ -623,57 +574,6 @@ Total Uptime: {resolved_rel}"""
         active afk
         """
         await self.afk.manage_afk(msg)
-
-    @commands.hybrid_command(
-        name="imgread",
-        description="""Read text off an image using a machine learning model""",
-        help="""Read text off an image""",
-        brief="Read text off an image",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(2.0, 10.0, commands.BucketType.user)
-    async def imgread_cmd(self, ctx: commands.Context, url: str = None) -> None:
-        """
-        Use pytesseract to read stuff yay.
-        """
-        if url:
-            async with self.session as session:
-                async with session.get(
-                    url, timeout=aiohttp.ClientTimeout(total=10)
-                ) as response:
-                    image_bytes = await response.read()
-
-        elif ctx.message.attachments:
-            image_bytes = await ctx.message.attachments[0].read()
-
-        else:
-            raise commands.BadArgument("Please provide an image or url to read.")
-
-        text = await self.imgr.read_img(image_bytes)
-
-        if len(text) > 2010:
-            embed = discord.Embed(
-                title="Image Read",
-                description=f"""The text was {len(text)} characters, so it was sent as a file.""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.PURPLE,
-            )
-            await ctx.reply(
-                embed=embed,
-                file=discord.File(io.StringIO(text), f"imgread-{int(time.time())}.txt"),
-            )
-        else:
-            embed = discord.Embed(
-                title="Image Read",
-                description=f"""```
-{text}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.PURPLE,
-            )
-            await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
