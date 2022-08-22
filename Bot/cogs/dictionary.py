@@ -77,6 +77,14 @@ class DictionaryMenu(discord.ui.View):
         super().__init__()
         self.add_item(DictDropdown(word))
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        If the interaction isn't by the user, return a fail.
+        """
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
 
 class Dictionary(commands.Cog):
     """
