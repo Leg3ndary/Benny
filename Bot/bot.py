@@ -220,7 +220,11 @@ async def start_bot() -> None:
 
         bot.loop.create_task(when_bot_ready())
 
-        await bot.start(bot.config.get("Bot").get("Token"))
+        await bot.start(
+            bot.config.get("Bot").get("Token")
+            if bot.config.get("Bot").get("Dev_Token") is None
+            else bot.config.get("Bot").get("Dev_Token")
+        )
 
 
 if bot.PLATFORM == "linux":
