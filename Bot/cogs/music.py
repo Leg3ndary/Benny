@@ -683,33 +683,9 @@ class Music(commands.Cog):
             await db.execute(
                 """
                 CREATE TABLE IF NOT EXISTS recently_played (
-                    id TEXT NOT NULL
+                    id  TEXT NOT NULL
                             PRIMARY KEY,
-                    s1 TEXT,
-                    s2 TEXT,
-                    s3 TEXT,
-                    s4 TEXT,
-                    s5 TEXT,
-                    s6 TEXT,
-                    s7 TEXT,
-                    s8 TEXT,
-                    s9 TEXT,
-                    s10 TEXT,
-                    s11 TEXT,
-                    s12 TEXT,
-                    s13 TEXT,
-                    s14 TEXT,
-                    s15 TEXT,
-                    s16 TEXT,
-                    s17 TEXT,
-                    s18 TEXT,
-                    s19 TEXT,
-                    s20 TEXT,
-                    s21 TEXT,
-                    s22 TEXT,
-                    s23 TEXT,
-                    s24 TEXT,
-                    s25 TEXT
+                    recent TEXT NOT NULL
                 );
                 """
             )
@@ -846,6 +822,19 @@ class Music(commands.Cog):
             icon_url=ctx.author.display_avatar.url,
         )
         await sent.edit(embed=finished)
+
+    async def add_to_recent(self, _id: int, track: wavelink.Track) -> None:
+        """
+        Add a track to the recently played table
+        """
+        async with self.musicDB as db:
+            await db.execute(
+                """
+                INSERT INTO recently_played (id, recent)
+                VALUES (?, ?)
+                """,
+                (_id, track.id),
+            )
 
     @commands.hybrid_command(
         name="play",
