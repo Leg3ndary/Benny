@@ -259,7 +259,8 @@ class Settings(commands.Cog):
                 patron_level INTEGER NOT NULL
                                     DEFAULT (0),
                 blacklisted  BOOLEAN DEFAULT (False)
-                                    NOT NULL
+                                    NOT NULL,
+                timezone     TEXT    DEFAULT (NULL)
             );
             """
         )
