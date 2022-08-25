@@ -14,9 +14,13 @@ with open("Assets/timezoneinfo.json", encoding="utf-8") as f:
 CHOICES = []
 
 for TIMEZONE in TIMEZONE_INFO:
-    CHOICES.append(discord.app_commands.Choice(name=f'{TIMEZONE.get("value")} {TIMEZONE.get("text").split(" ", 1)[0]}', value=float(TIMEZONE.get("offset"))))
+    CHOICES.append(
+        discord.app_commands.Choice(
+            name=f'{TIMEZONE.get("value")} {TIMEZONE.get("text").split(" ", 1)[0]}',
+            value=float(TIMEZONE.get("offset")),
+        )
+    )
     print(CHOICES)
-
 
 
 class ReminderTimeDropdown(discord.ui.Select):
@@ -26,7 +30,6 @@ class ReminderTimeDropdown(discord.ui.Select):
 
     def __init__(self) -> None:
         super().__init__()
-
 
 
 class ReminderView(discord.ui.View):
@@ -40,12 +43,17 @@ class ReminderView(discord.ui.View):
         """
         super().__init__()
 
-    @discord.ui.button(style=discord.ButtonStyle.primary, label="Confirm", emoji=style.Emoji.REGULAR.check)
-    async def confirm_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    @discord.ui.button(
+        style=discord.ButtonStyle.primary,
+        label="Confirm",
+        emoji=style.Emoji.REGULAR.check,
+    )
+    async def confirm_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Confirm the reminder should be saved and dispatched when neccessary
         """
-
 
 
 class ReminderManager:
@@ -142,7 +150,9 @@ class ReminderManager:
             (rid, uid, time, reminder, False),
         )
         await self.db.commit()
-        self.active_reminders.update(rid, asyncio.create_task(self.queue_reminder(rid, uid, time, reminder)))
+        self.active_reminders.update(
+            rid, asyncio.create_task(self.queue_reminder(rid, uid, time, reminder))
+        )
 
 
 class Reminders(commands.Cog):
@@ -175,10 +185,8 @@ class Reminders(commands.Cog):
         """
         (
             time_struct,
-            parse_status, # pylint: disable=unused-variable
-        ) = self.calendar.parse(
-            string
-        )
+            parse_status,  # pylint: disable=unused-variable
+        ) = self.calendar.parse(string)
         """if parse_status == 0:
             raise commands.BadArgument("Time not found")"""
         return int(datetime.datetime(*time_struct[:6]).timestamp())
@@ -216,9 +224,9 @@ class Reminders(commands.Cog):
             {datetime.datetime.now().timestamp()}
             {unix}""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.GREY
+            color=style.Color.GREY,
         )
-        await ctx.send(embed=embed)#, view=ReminderView(time))
+        await ctx.send(embed=embed)  # , view=ReminderView(time))
 
     @commands.command(
         name="timezone",
@@ -227,7 +235,7 @@ class Reminders(commands.Cog):
         brief="A command to set your timezone",
         aliases=[],
         enabled=False,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def timezone_cmd(self, ctx: commands.Context, timezone: str = None) -> None:
@@ -238,10 +246,9 @@ class Reminders(commands.Cog):
             title="",
             description="""""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random()
+            color=style.Color.random(),
         )
         await ctx.send(embed=embed)
-
 
     # @discord.app_commands.command(
     #     name="timezone",

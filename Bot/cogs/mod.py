@@ -80,9 +80,12 @@ class ModerationManager:
         """
         Pull the time from a string
         """
-        time_struct, parse_status = self.calendar.parse(
+        (
+            time_struct,
+            parse_status,
+        ) = self.calendar.parse(  # pylint: disable=unused-variable
             string
-        )  # pylint: disable=unused-variable
+        )
         """if parse_status == 0:
             raise commands.BadArgument("Time not found")"""
         return int(datetime.datetime(*time_struct[:6]).timestamp())
@@ -423,7 +426,6 @@ class Mod(commands.Cog):
         """
         Unban a user using an id
         """
-        pass
 
     @commands.group(
         name="modlogs",
