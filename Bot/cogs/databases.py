@@ -34,7 +34,7 @@ class Databases(commands.Cog):
         Connect to our Redis DB
         """
         self.bot.redis = await aioredis.from_url(
-            "redis://redis-18272.c273.us-east-1-2.ec2.cloud.redislabs.com:18272",
+            self.bot.config.get("Redis").get("URL"),
             username="",
             password=self.bot.config.get("Redis").get("Pass"),
             decode_responses=True,
