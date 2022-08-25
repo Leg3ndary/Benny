@@ -202,9 +202,10 @@ async def start_bot() -> None:
             """
             await bot.wait_until_ready()
             bot.dispatch("load_prefixes")
+            bot.dispatch("initiate_all_tags")
             bot.dispatch("connect_wavelink")
             bot.dispatch("load_sentinel_managers")
-            bot.dispatch("initiate_all_tags")
+            bot.dispatch("load_reminders")
             await bot.blogger.bot_update("LOGGED IN")
 
         await bot.util.load_cogs(os.listdir("Bot/cogs"))
