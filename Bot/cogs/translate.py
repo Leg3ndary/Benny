@@ -61,7 +61,9 @@ class TranslateView(discord.ui.View):
     async def original_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
-        """Show the original translation and related info"""
+        """
+        Show the original translation and related info
+        """
         embed = discord.Embed(
             title=f"Original: {aiogtrans.LANGUAGES.get(self.translated.src).capitalize()}",
             description=self.translated.origin[:4000],
@@ -74,7 +76,9 @@ class TranslateView(discord.ui.View):
     async def translated_button(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
-        """Show the translated translation and related info"""
+        """
+        Show the translated translation and related info
+        """
         embed = discord.Embed(
             title=f"Translated: {aiogtrans.LANGUAGES.get(self.translated.dest).capitalize()}",
             description=self.translated.text[:4000],
@@ -122,7 +126,9 @@ class Translate(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def translate_cmd(self, ctx: commands.Context, *, text: str) -> None:
-        """Translate text"""
+        """
+        Translate text
+        """
         await self.translator.process(ctx.channel, text)
 
     async def translate_context_menu(
