@@ -1,3 +1,5 @@
+import datetime
+import itertools
 import json
 import platform
 import time
@@ -6,6 +8,7 @@ import unicodedata
 import discord
 import discord.utils
 import psutil
+import pygit2
 from discord.ext import commands
 from gears import style
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -238,6 +241,30 @@ class Base(commands.Cog):
         self.afk = AFKManager(bot)
         self.session = bot.sessions.get("base")
 
+    def format_commit(self, commit: pygit2.Commit) -> str:
+        """
+        From rdanny
+        """
+        short, _, _ = commit.message.partition('\n')
+        short_sha2 = commit.hex[0:8]
+        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
+        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
+
+        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
+        return f'[`{short_sha2}`](https://github.com/Leg3ndary/Benny/commit/{commit.hex}) {short} ({offset})'
+
+    def get_latest_commits(self, count) -> str:
+        """
+        Stole this from rdanny because I'm lazy
+        """
+        repo = pygit2.Repository(".git")
+        commits = list(
+            itertools.islice(
+                repo.walk(repo.head.target, pygit2.GIT_SORT_TOPOLOGICAL), count
+            )
+        )
+        return "\n".join(self.format_commit(c) for c in commits)
+
     @commands.command(
         name="about",
         description="""About the bot, why I built it, what it can do, what I plan to do with it later on.""",
@@ -259,6 +286,10 @@ class Base(commands.Cog):
             Hope you enjoy""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
+        )
+        embed.add_field(
+            name="Version",
+            value=self.get_latest_commits(5)
         )
         avatar = "https://cdn.discordapp.com/avatars/360061101477724170/a_6f4c033794b69ac35ce7b352ef7808bb.gif?size=1024"
         embed.set_footer(
@@ -421,7 +452,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.random(),
         )
-        await ctx.send(embed=embed)
+        await ctx.reply(embed=embed)
 
     @commands.hybrid_command(
         name="ping",
@@ -574,6 +605,32 @@ Total Uptime: {resolved_rel}"""
         active afk
         """
         await self.afk.manage_afk(msg)
+
+    @commands.hybrid_command(
+        name="version",
+        description="""Check the current version of the bot""",
+        help="""Check the current version of the bot""",
+        brief="Check the current version of the bot",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
+    async def version_cmd(self, ctx: commands.Context) -> None:
+        """
+        Version command
+        """
+        repo = pygit2.Repository(".git")
+
+        commits = self.get_latest_commits(10)
+
+        embed = discord.Embed(
+            title=f"Current Version: {repo.head.target.hex[0:8]}",
+            description=f"""{commits}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.AQUA
+        )
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
