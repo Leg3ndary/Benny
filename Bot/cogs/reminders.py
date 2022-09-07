@@ -20,7 +20,7 @@ for TIMEZONE in TIMEZONE_INFO:
             value=float(TIMEZONE.get("offset")),
         )
     )
-    print(CHOICES)
+    # print(CHOICES)
 
 
 class ReminderTimeDropdown(discord.ui.Select):
@@ -274,4 +274,4 @@ async def setup(bot: commands.Bot) -> None:
     """
     Setup the Cog.
     """
-    await bot.add_cog(Reminders(bot))
+    # await bot.add_cog(Reminders(bot))

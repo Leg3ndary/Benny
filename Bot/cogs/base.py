@@ -245,13 +245,19 @@ class Base(commands.Cog):
         """
         From rdanny
         """
-        short, _, _ = commit.message.partition('\n')
+        short, _, _ = commit.message.partition("\n")
         short_sha2 = commit.hex[0:8]
-        commit_tz = datetime.timezone(datetime.timedelta(minutes=commit.commit_time_offset))
-        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(commit_tz)
+        commit_tz = datetime.timezone(
+            datetime.timedelta(minutes=commit.commit_time_offset)
+        )
+        commit_time = datetime.datetime.fromtimestamp(commit.commit_time).astimezone(
+            commit_tz
+        )
 
-        offset = discord.utils.format_dt(commit_time.astimezone(datetime.timezone.utc), "R")
-        return f'[`{short_sha2}`](https://github.com/Leg3ndary/Benny/commit/{commit.hex}) {short} ({offset})'
+        offset = discord.utils.format_dt(
+            commit_time.astimezone(datetime.timezone.utc), "R"
+        )
+        return f"[`{short_sha2}`](https://github.com/Leg3ndary/Benny/commit/{commit.hex}) {short} ({offset})"
 
     def get_latest_commits(self, count) -> str:
         """
@@ -287,10 +293,7 @@ class Base(commands.Cog):
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
-        embed.add_field(
-            name="Version",
-            value=self.get_latest_commits(5)
-        )
+        embed.add_field(name="Version", value=self.get_latest_commits(5))
         avatar = "https://cdn.discordapp.com/avatars/360061101477724170/a_6f4c033794b69ac35ce7b352ef7808bb.gif?size=1024"
         embed.set_footer(
             text="_Leg3ndary#0001",
@@ -628,7 +631,7 @@ Total Uptime: {resolved_rel}"""
             title=f"Current Version: {repo.head.target.hex[0:8]}",
             description=f"""{commits}""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.AQUA
+            color=style.Color.AQUA,
         )
         await ctx.reply(embed=embed)
 
