@@ -12,6 +12,7 @@ gd.py==0.11.0
 motor==2.4.0
 parsedatetime==2.6
 Pillow==9.2.0
+pygit2==1.10.1
 psutil==5.8.0
 pytesseract==0.3.9
 python-dotenv==0.20.0
