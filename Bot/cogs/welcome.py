@@ -83,7 +83,7 @@ class WelcomeManager:
 
 class Welcome(commands.Cog):
     """
-    Anything to deal with welcoming or leaving
+    Anything to deal with members joining or leaving, this includes related roles
     """
 
     COLOR = style.Color.GREEN
@@ -99,22 +99,29 @@ class Welcome(commands.Cog):
 
     async def cog_load(self) -> None:
         """
-        On cog load create a connection because
+        On cog load create a connection because yes
         """
         self.db: asqlite.Connection = await asqlite.connect("Databases/server.db")
 
         await self.db.execute(
             """
-        CREATE TABLE IF NOT EXISTS welcome (
-            guild           TEXT    PRIMARY KEY
-                                        NOT NULL,
-            welcome         TEXT,
-            welcome_channel TEXT,
-            goodbye         TEXT,
-            goodbye_channel TEXT
-        );
-        """
+            CREATE TABLE IF NOT EXISTS welcome (
+                guild           TEXT    PRIMARY KEY
+                                            NOT NULL,
+                welcome         TEXT,
+                welcome_channel TEXT,
+                goodbye         TEXT,
+                goodbye_channel TEXT
+            );
+            """
         )
+        await self.db.execute("""
+            CREATE TABLE IF NOT EXISTS autoroles (
+                guild TEXT  PRIMARY KEY
+                                NOT NULL,
+                role TEXT
+            );
+        """)
 
         self.wm = WelcomeManager(self.bot, self.db)
 
@@ -124,12 +131,33 @@ class Welcome(commands.Cog):
         """
         await self.db.close()
 
+    async def autorole(self, member: discord.Member) -> None:
+        """
+        Give a user an autorole
+        """
+        guild = member.guild.id
+
+        async with self.db.cursor() as cur:
+            result = await (
+                await cur.execute(
+                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    (str(guild)),
+                )
+            ).fetchone()
+
+        if not result:
+            return
+
+        role = discord.utils.get(member.guild.roles, id=result)
+        await member.add_roles(role)
+
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
         """
-        On a member joining, welcome them!
+        On a member joining, welcome them! and give them roles if need be
         """
-        await self.wm.welcome(member)
+        self.bot.loop.create_task(self.wm.welcome(member))
+        self.bot.loop.create_task(self.autorole(member))
 
     @commands.Cog.listener()
     async def on_raw_member_remove(self, payload: discord.RawMemberRemoveEvent) -> None:
@@ -177,6 +205,114 @@ class Welcome(commands.Cog):
         """
         Set the welcome command
         """
+
+    @commands.hybrid_group(
+        name="autorole",
+        description="""Description of command""",
+        help="""What the help command displays""",
+        brief="Brief one liner about the command",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_server=True)
+    async def autorole_cmd(self, ctx: commands.Context) -> None:
+        """
+        Autorole command
+        """
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
+
+    @autorole_cmd.command(
+        name="current",
+        description="""Show the current autorole role""",
+        help="""Show the current autorole role""",
+        brief="Show the current autorole role",
+        aliases=["show"],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def autorole_current_cmd(self, ctx: commands.Context) -> None:
+        """
+        Show the current autorole role
+        """
+        async with self.db.cursor() as cur:
+            result = await (
+                await cur.execute(
+                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    (str(ctx.guild.id)),
+                )
+            ).fetchone()
+
+            if result:
+                embed = discord.Embed(
+                    title="Success",
+                    description=f"""Currently your members will receive the role <@&{result}> ({result}) when they join""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.AQUA
+                )
+                await ctx.send(embed=embed)
+
+            else:
+                embed = discord.Embed(
+                    title="Error",
+                    description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:> command.""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.RED
+                )
+                await ctx.send(embed=embed)
+
+    @commands.command(
+        name="set",
+        description="""Set a role for the autorole""",
+        help="""Set a role for the autorole""",
+        brief="Set a role for the autorole",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def autorole_set_cmd(self, ctx: commands.Context, role: discord.Role) -> None:
+        """
+        Set a role for the autorole
+        """
+        if ctx.me.roles[-1] <= role:
+            raise commands.BadArgument(f"""I cannot assign a role higher than mine!
+            
+            The role {role.mention} is above my highest role ({ctx.me.roles[-1].mention}).""")
+
+        if not ctx.bot_permissions.manage_roles:
+            raise commands.BotMissingPermissions(["manage_roles"])
+
+        async with self.db.cursor() as cur:
+            result = await (
+                await cur.execute(
+                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    (str(ctx.guild.id)),
+                )
+            ).fetchone()
+
+            if result:
+                await cur.execute("""UPDATE autoroles SET role = ? WHERE guild = ?;""", (str(role.id), str(ctx.guild.id)))
+                embed = discord.Embed(
+                    title="Success",
+                    description=f"""Updated autorole to {role.mention} (Previously <@&{result}>)""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.GREEN
+                )
+                await ctx.send(embed=embed)
+
+            else:
+                await cur.execute("""INSERT INTO autoroles (guild, role) VALUES (?, ?);""", (str(ctx.guild.id), str(role.id)))
+                embed = discord.Embed(
+                    title="Success",
+                    description=f"""Added autorole {role.mention} successfully!""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.GREEN
+                )
+                await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
