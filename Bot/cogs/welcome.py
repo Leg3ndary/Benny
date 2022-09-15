@@ -145,7 +145,7 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(guild)),
                 )
-            ).fetchone()
+            ).fetchone()["role"]
 
         if not result:
             return
@@ -246,7 +246,7 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
-            ).fetchone()
+            ).fetchone()["role"]
 
             if result:
                 embed = discord.Embed(
@@ -296,7 +296,7 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
-            ).fetchone()
+            ).fetchone()["role"]
 
             if result:
                 await cur.execute(
@@ -316,6 +316,7 @@ class Welcome(commands.Cog):
                     """INSERT INTO autoroles (guild, role) VALUES (?, ?);""",
                     (str(ctx.guild.id), str(role.id)),
                 )
+                await self.db.commit()
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Added autorole {role.mention} successfully!""",
@@ -344,12 +345,13 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
-            ).fetchone()
+            ).fetchone()["role"]
 
             if result:
                 await cur.execute(
                     """DELETE FROM autoroles WHERE guild = ?;""", (str(ctx.guild.id))
                 )
+                await self.db.commit()
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Removed autorole <@&{result}> ({result}) successfully!""",
