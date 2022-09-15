@@ -146,9 +146,10 @@ class BennyBot(commands.Bot):
         if message.author.bot:
             return
         await self.process_commands(message)
-        ctx = await self.get_context(message)
 
         # Tags
+        ctx = await self.get_context(message)
+
         if (
             ctx.invoked_with
             and ctx.invoked_with.lower() not in self.commands

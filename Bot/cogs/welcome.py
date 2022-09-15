@@ -374,6 +374,54 @@ class Welcome(commands.Cog):
                 )
                 await ctx.reply(embed=embed)
 
+    @commands.hybrid_group(
+        name="stickyrole",
+        description="""Set roles to be sticky, allowing users to rejoin with it""",
+        help="""Set a role to be sticky, allowing users to rejoin with it""",
+        brief="Set a role to be sticky, allowing users to rejoin with it",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def stickyrole_cmd(self, ctx: commands.Context) -> None:
+        """
+        Set a role to be sticky, allowing users to rejoin with it
+        """
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
+
+    @stickyrole_cmd.command(
+        name="enable",
+        description="""Enable sticky roles""",
+        help="""Enable sticky roles""",
+        brief="Enable sticky roles",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def stickyrole_enable_cmd(self, ctx: commands.Context) -> None:
+        """
+        Enable sticky roles
+        """
+
+    @stickyrole_cmd.command(
+        name="disable",
+        description="""Disable sticky roles""",
+        help="""Disable sticky roles""",
+        brief="Disable sticky roles",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def stickyrole_disable_cmd(self, ctx: commands.Context) -> None:
+        """
+        Disable stickyroles
+        """
+
+
 
 async def setup(bot: commands.Bot) -> None:
     """
