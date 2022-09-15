@@ -258,7 +258,7 @@ class Welcome(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.AQUA,
                 )
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
             else:
                 embed = discord.Embed(
@@ -267,7 +267,7 @@ class Welcome(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED,
                 )
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
     @autorole_cmd.command(
         name="set",
@@ -313,7 +313,7 @@ class Welcome(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.GREEN,
                 )
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
             else:
                 await cur.execute(
@@ -327,7 +327,7 @@ class Welcome(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.GREEN,
                 )
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
     @autorole_cmd.command(
         name="delete",
@@ -363,7 +363,7 @@ class Welcome(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.GREEN,
                 )
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
             else:
                 embed = discord.Embed(
@@ -372,7 +372,7 @@ class Welcome(commands.Cog):
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED,
                 )
-                await ctx.send(embed=embed)
+                await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
