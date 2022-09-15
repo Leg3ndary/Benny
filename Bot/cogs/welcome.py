@@ -115,13 +115,15 @@ class Welcome(commands.Cog):
             );
             """
         )
-        await self.db.execute("""
+        await self.db.execute(
+            """
             CREATE TABLE IF NOT EXISTS autoroles (
                 guild TEXT  PRIMARY KEY
                                 NOT NULL,
                 role TEXT
             );
-        """)
+        """
+        )
 
         self.wm = WelcomeManager(self.bot, self.db)
 
@@ -213,10 +215,10 @@ class Welcome(commands.Cog):
         brief="Brief one liner about the command",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @commands.has_permissions(manage_server=True)
+    @commands.has_permissions(manage_guild=True)
     async def autorole_cmd(self, ctx: commands.Context) -> None:
         """
         Autorole command
@@ -231,7 +233,7 @@ class Welcome(commands.Cog):
         brief="Show the current autorole role",
         aliases=["show"],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def autorole_current_cmd(self, ctx: commands.Context) -> None:
@@ -251,7 +253,7 @@ class Welcome(commands.Cog):
                     title="Success",
                     description=f"""Currently your members will receive the role <@&{result}> ({result}) when they join""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.AQUA
+                    color=style.Color.AQUA,
                 )
                 await ctx.send(embed=embed)
 
@@ -260,18 +262,18 @@ class Welcome(commands.Cog):
                     title="Error",
                     description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:> command.""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.RED
+                    color=style.Color.RED,
                 )
                 await ctx.send(embed=embed)
 
-    @commands.command(
+    @autorole_cmd.command(
         name="set",
         description="""Set a role for the autorole""",
         help="""Set a role for the autorole""",
         brief="Set a role for the autorole",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def autorole_set_cmd(self, ctx: commands.Context, role: discord.Role) -> None:
@@ -279,9 +281,11 @@ class Welcome(commands.Cog):
         Set a role for the autorole
         """
         if ctx.me.roles[-1] <= role:
-            raise commands.BadArgument(f"""I cannot assign a role higher than mine!
+            raise commands.BadArgument(
+                f"""I cannot assign a role higher than mine!
             
-            The role {role.mention} is above my highest role ({ctx.me.roles[-1].mention}).""")
+            The role {role.mention} is above my highest role ({ctx.me.roles[-1].mention})."""
+            )
 
         if not ctx.bot_permissions.manage_roles:
             raise commands.BotMissingPermissions(["manage_roles"])
@@ -295,22 +299,71 @@ class Welcome(commands.Cog):
             ).fetchone()
 
             if result:
-                await cur.execute("""UPDATE autoroles SET role = ? WHERE guild = ?;""", (str(role.id), str(ctx.guild.id)))
+                await cur.execute(
+                    """UPDATE autoroles SET role = ? WHERE guild = ?;""",
+                    (str(role.id), str(ctx.guild.id)),
+                )
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Updated autorole to {role.mention} (Previously <@&{result}>)""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN
+                    color=style.Color.GREEN,
                 )
                 await ctx.send(embed=embed)
 
             else:
-                await cur.execute("""INSERT INTO autoroles (guild, role) VALUES (?, ?);""", (str(ctx.guild.id), str(role.id)))
+                await cur.execute(
+                    """INSERT INTO autoroles (guild, role) VALUES (?, ?);""",
+                    (str(ctx.guild.id), str(role.id)),
+                )
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Added autorole {role.mention} successfully!""",
                     timestamp=discord.utils.utcnow(),
-                    color=style.Color.GREEN
+                    color=style.Color.GREEN,
+                )
+                await ctx.send(embed=embed)
+
+    @autorole_cmd.command(
+        name="delete",
+        description="""Remove autorole from the server""",
+        help="""Remove autorole from the server""",
+        brief="Remove autorole from the server",
+        aliases=["remove", "del"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def autorole_delete_cmd(self, ctx: commands.Context) -> None:
+        """
+        Remove autorole from the server
+        """
+        async with self.db.cursor() as cur:
+            result = await (
+                await cur.execute(
+                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    (str(ctx.guild.id)),
+                )
+            ).fetchone()
+
+            if result:
+                await cur.execute(
+                    """DELETE FROM autoroles WHERE guild = ?;""", (str(ctx.guild.id))
+                )
+                embed = discord.Embed(
+                    title="Success",
+                    description=f"""Removed autorole <@&{result}> ({result}) successfully!""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.GREEN,
+                )
+                await ctx.send(embed=embed)
+
+            else:
+                embed = discord.Embed(
+                    title="Error",
+                    description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:> command.""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.RED,
                 )
                 await ctx.send(embed=embed)
 
