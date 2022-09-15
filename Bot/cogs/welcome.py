@@ -145,10 +145,12 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(guild)),
                 )
-            ).fetchone()["role"]
+            ).fetchone()
 
         if not result:
             return
+
+        result = result["role"]
 
         role = discord.utils.get(member.guild.roles, id=int(result))
         await member.add_roles(role)
@@ -246,9 +248,10 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
-            ).fetchone()["role"]
+            ).fetchone()
 
             if result:
+                result = result["role"]
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Currently your members will receive the role <@&{result}> ({result}) when they join""",
@@ -296,9 +299,10 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
-            ).fetchone()["role"]
+            ).fetchone()
 
             if result:
+                result = result["role"]
                 await cur.execute(
                     """UPDATE autoroles SET role = ? WHERE guild = ?;""",
                     (str(role.id), str(ctx.guild.id)),
@@ -345,9 +349,10 @@ class Welcome(commands.Cog):
                     """SELECT role FROM autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
-            ).fetchone()["role"]
+            ).fetchone()
 
             if result:
+                result = result["role"]
                 await cur.execute(
                     """DELETE FROM autoroles WHERE guild = ?;""", (str(ctx.guild.id))
                 )
