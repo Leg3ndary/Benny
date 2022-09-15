@@ -140,8 +140,9 @@ class EmbedView(discord.ui.View):
         return True
 
     @discord.ui.button(label="button", style=discord.ButtonStyle.blurple)
-    async def add_field_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    async def add_field_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
         """
         Add a field
         """
-        

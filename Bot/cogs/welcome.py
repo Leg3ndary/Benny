@@ -150,7 +150,7 @@ class Welcome(commands.Cog):
         if not result:
             return
 
-        role = discord.utils.get(member.guild.roles, id=result)
+        role = discord.utils.get(member.guild.roles, id=int(result))
         await member.add_roles(role)
 
     @commands.Cog.listener()
@@ -260,7 +260,7 @@ class Welcome(commands.Cog):
             else:
                 embed = discord.Embed(
                     title="Error",
-                    description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:> command.""",
+                    description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:1019795609391222915> command.""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED,
                 )
@@ -361,7 +361,7 @@ class Welcome(commands.Cog):
             else:
                 embed = discord.Embed(
                     title="Error",
-                    description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:> command.""",
+                    description="""Sorry, but it doesn't seem like you have an autorole set up, you can set one up with the </autorole set:1019795609391222915> command.""",
                     timestamp=discord.utils.utcnow(),
                     color=style.Color.RED,
                 )
