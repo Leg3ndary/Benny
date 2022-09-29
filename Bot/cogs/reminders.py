@@ -111,7 +111,7 @@ class ReminderManager:
             reminder = ActiveReminder(result[0], result[1], result[2], result[3])
             task = asyncio.create_task(self.queue_reminder(reminder))
             reminder._task = task
-            self.active_reminders[result[0]] = task
+            self.active_reminders[result[0]] = reminder
 
     async def queue_reminder(self, reminder: ActiveReminder) -> None:
         """
@@ -164,7 +164,7 @@ class ReminderManager:
         reminder = ActiveReminder(rid, uid, time, reminder)
         task = asyncio.create_task(self.queue_reminder(reminder))
         reminder._task = task
-        self.active_reminders[rid] = task
+        self.active_reminders[rid] = reminder
         return rid
 
     async def fetch_reminders(self, uid: int) -> Tuple[ActiveReminder]:
@@ -176,6 +176,19 @@ class ReminderManager:
         ) as cursor:
             results = await cursor.fetchall()
         return tuple(ActiveReminder(*result) for result in results)
+
+    async def fetch_reminder(self, rid: int) -> Optional[ActiveReminder]:
+        """
+        Fetch a reminder from a remind id
+        """
+        async with self.db.execute(
+            """SELECT * FROM reminders WHERE rid = ?;""", (rid,)
+        ) as cursor:
+            result = await cursor.fetchone()
+            if result:
+                return ActiveReminder(*result)
+            else:
+                return None
 
     async def delete_reminder(self, rid: int) -> None:
         """
@@ -459,6 +472,37 @@ class Reminders(commands.Cog):
                 inline=False,
             )
         await ctx.reply(embed=embed)
+
+    @reminder_group.command(
+        name="delete",
+        description="""Delete a reminder.""",
+        help="""Delete a reminder.""",
+        brief="Delete a reminder.",
+        aliases=["remove"],
+        enabled=True,
+        hidden=False,
+    )
+    async def reminder_delete_cmd(self, ctx: commands.Context, reminder_id: int) -> None:
+        """
+        Delete a reminder.
+        """
+        reminder = await self.rm.fetch_reminder(reminder_id)
+        if reminder is None:
+            raise commands.BadArgument("Reminder not found")
+        if reminder.uid != ctx.author.id:
+            raise commands.BadArgument("You do not own this reminder")
+        await self.rm.delete_reminder(reminder_id)
+        embed = discord.Embed(
+            title="Deleted Reminder",
+            description=f">>> {reminder.reminder}",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN
+        )
+        embed.set_footer(
+            text=f"Reminder ID: {reminder.rid}",
+        )
+        await ctx.reply(embed=embed)
+
 
 
 async def setup(bot: commands.Bot) -> None:
