@@ -381,7 +381,7 @@ class Welcome(commands.Cog):
         brief="Set a role to be sticky, allowing users to rejoin with it",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def stickyrole_cmd(self, ctx: commands.Context) -> None:
@@ -398,7 +398,7 @@ class Welcome(commands.Cog):
         brief="Enable sticky roles",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def stickyrole_enable_cmd(self, ctx: commands.Context) -> None:
@@ -413,14 +413,13 @@ class Welcome(commands.Cog):
         brief="Disable sticky roles",
         aliases=[],
         enabled=True,
-        hidden=False
+        hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def stickyrole_disable_cmd(self, ctx: commands.Context) -> None:
         """
         Disable stickyroles
         """
-
 
 
 async def setup(bot: commands.Bot) -> None:
