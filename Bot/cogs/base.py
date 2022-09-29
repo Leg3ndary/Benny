@@ -607,7 +607,8 @@ Total Uptime: {resolved_rel}"""
         On a message, check if that user is either pinging an afk user or is an afk user with an
         active afk
         """
-        await self.afk.manage_afk(msg)
+        if not msg.author.bot:
+            await self.afk.manage_afk(msg)
 
     @commands.hybrid_command(
         name="version",
