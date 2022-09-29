@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import json
+from typing import Dict, Optional, Tuple
 
 import asqlite
 import discord
@@ -8,52 +8,30 @@ import parsedatetime
 from discord.ext import commands
 from gears import style
 
-with open("Assets/timezoneinfo.json", encoding="utf-8") as f:
-    TIMEZONE_INFO = json.load(f)
 
-CHOICES = []
-
-for TIMEZONE in TIMEZONE_INFO:
-    CHOICES.append(
-        discord.app_commands.Choice(
-            name=f'{TIMEZONE.get("value")} {TIMEZONE.get("text").split(" ", 1)[0]}',
-            value=float(TIMEZONE.get("offset")),
-        )
-    )
-    # print(CHOICES)
-
-
-class ReminderTimeDropdown(discord.ui.Select):
+class ActiveReminder:
     """
-    ReminderTimeDropdown
+    Represents an reminder state on the bot
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-
-
-class ReminderView(discord.ui.View):
-    """
-    Reminder View to help select and keep everything smooth
-    """
-
-    def __init__(self, time: int) -> None:
+    def __init__(self, rid: int, uid: int, time: int, reminder: str) -> None:
         """
-        Construct the Reminder View
+        Construct the reminder
         """
-        super().__init__()
+        self.rid = rid
+        self.uid = uid
+        self.time = time
+        self.reminder = reminder
+        self._task: Optional[asyncio.Task] = None
 
-    @discord.ui.button(
-        style=discord.ButtonStyle.primary,
-        label="Confirm",
-        emoji=style.Emoji.REGULAR.check,
-    )
-    async def confirm_button(
-        self, interaction: discord.Interaction, button: discord.Button
-    ) -> None:
+    async def delete(self, db: asqlite.Connection) -> None:
         """
-        Confirm the reminder should be saved and dispatched when neccessary
+        Delete the reminder
         """
+        await db.execute("DELETE FROM reminders WHERE rid = ?;", (self.rid,))
+        await db.commit()
+        if not self._task.cancelled:
+            self._task.cancel()
 
 
 class ReminderManager:
@@ -65,11 +43,11 @@ class ReminderManager:
         """
         Constructs all the necessary attributes for our Reminder Manager
         """
-        self.REMINDER_LIMIT: int = 25
+        self.REMINDER_LIMIT: int = 10
         self.bot = bot
         self.db = db
         self.remind_id: int = None
-        self.active_reminders: dict[str, asyncio.Task] = {}
+        self.active_reminders: Dict[int, ActiveReminder] = {}
 
     async def create_table(self) -> None:
         """
@@ -77,7 +55,7 @@ class ReminderManager:
         """
         await self.db.execute(
             """
-            CREATE TABLE users (
+            CREATE TABLE IF NOT EXISTS users (
                 id           TEXT    PRIMARY KEY
                                     NOT NULL,
                 patron_level INTEGER NOT NULL
@@ -85,6 +63,17 @@ class ReminderManager:
                 blacklisted  BOOLEAN DEFAULT (False)
                                     NOT NULL,
                 timezone     TEXT    DEFAULT NULL
+            );
+            """
+        )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS reminders (
+                rid          INTEGER PRIMARY KEY
+                                    NOT NULL,
+                uid          INTEGER  NOT NULL,
+                time         INTEGER NOT NULL,
+                reminder     TEXT    NOT NULL
             );
             """
         )
@@ -100,12 +89,13 @@ class ReminderManager:
         else:
             self.remind_id = int(self.remind_id)
 
-    async def increment_reminder_id(self) -> None:
+    async def increment_reminder_id(self) -> int:
         """
         Increment the reminder id
         """
         self.remind_id += 1
         await self.bot.redis.set("Reminder_Count", self.remind_id)
+        return self.remind_id
 
     async def load_reminders(self) -> None:
         """
@@ -117,42 +107,237 @@ class ReminderManager:
         async with self.db.execute("""SELECT * FROM reminders;""") as cursor:
             results = await cursor.fetchall()
 
-        for reminder in results:
-            await self.create_timer(reminder[0], reminder[1], 0, "reminder")  # not done
+        for result in results:
+            reminder = ActiveReminder(result[0], result[1], result[2], result[3])
+            task = asyncio.create_task(self.queue_reminder(reminder))
+            reminder._task = task
+            self.active_reminders[result[0]] = task
 
-    async def queue_reminder(
-        self, rid: int, uid: str, time: int, reminder: str
-    ) -> None:
+    async def queue_reminder(self, reminder: ActiveReminder) -> None:
         """
         Queue a reminder to be sent
         """
-        await asyncio.sleep(time)
-        user = self.bot.get_user(uid) or (await self.bot.fetch_user(uid))
-
-        embed = discord.Embed(
-            title="",
-            description="""""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.AQUA,
+        user = self.bot.get_user(reminder.uid) or (
+            await self.bot.fetch_user(reminder.uid)
         )
-        await user.send(embed=embed)
+        if int(reminder.time) - round(datetime.datetime.now().timestamp()) <= 0:
+            embed = discord.Embed(
+                title="Reminder - This reminder is late, apologies.",
+                description=f""">>> {reminder.reminder}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.AQUA,
+            )
+            embed.set_footer(text=f"Reminder ID: {reminder.rid}")
+            await user.send(embed=embed)
+            await reminder.delete(self.db)
+        else:
+            await asyncio.sleep(
+                int(reminder.time) - round(datetime.datetime.now().timestamp())
+            )
+            await reminder.delete(self.db)
+            embed = discord.Embed(
+                title="Reminder",
+                description=f""">>> {reminder.reminder}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.AQUA,
+            )
+            embed.set_footer(text=f"Reminder ID: {reminder.rid}")
+            await user.send(embed=embed)
 
-    async def create_reminder(
-        self, rid: int, uid: str, time: int, reminder: str
-    ) -> None:
+    async def create_reminder(self, uid: int, time: int, reminder: str) -> int:
         """
         Create a timer and dispatch.
+
+        Returns the created reminder id
         """
+        if len(await self.fetch_reminders(uid)) >= self.REMINDER_LIMIT:
+            raise commands.BadArgument("You have reached the reminder limit.")
+
+        rid = await self.increment_reminder_id()
         await self.db.execute(
             """
-            INSERT INTO reminders VALUES(?, ?, ?, ?, ?);
+            INSERT INTO reminders VALUES(?, ?, ?, ?);
             """,
-            (rid, uid, time, reminder, False),
+            (rid, uid, time, reminder),
         )
         await self.db.commit()
-        self.active_reminders.update(
-            rid, asyncio.create_task(self.queue_reminder(rid, uid, time, reminder))
+        reminder = ActiveReminder(rid, uid, time, reminder)
+        task = asyncio.create_task(self.queue_reminder(reminder))
+        reminder._task = task
+        self.active_reminders[rid] = task
+        return rid
+
+    async def fetch_reminders(self, uid: int) -> Tuple[ActiveReminder]:
+        """
+        Fetch all reminders for a user
+        """
+        async with self.db.execute(
+            """SELECT * FROM reminders WHERE uid = ?;""", (uid,)
+        ) as cursor:
+            results = await cursor.fetchall()
+        return tuple(ActiveReminder(*result) for result in results)
+
+    async def delete_reminder(self, rid: int) -> None:
+        """
+        Delete and cancel a reminder
+        """
+        await self.active_reminders[rid].delete(self.db)
+        self.active_reminders.pop(rid)
+
+
+class ReminderTimeDropdown(discord.ui.Select):
+    """
+    ReminderTimeDropdown
+    """
+
+    def __init__(self, parsed: Optional[int]) -> None:
+        """
+        Init the ReminderTimeDropdown
+
+        First value will be the parsed time, if it exists.
+        """
+        super().__init__()
+        times = (
+            60,
+            300,
+            600,
+            900,
+            1800,
+            3600,
+            7200,
+            10800,
+            21600,
+            43200,
+            86400,
+            172800,
+            259200,
+            604800,
+            1209600,
+            1814400,
+            2419200,
         )
+        times_named = (
+            "1 minute",
+            "5 minutes",
+            "10 minutes",
+            "15 minutes",
+            "30 minutes",
+            "1 hour",
+            "2 hours",
+            "3 hours",
+            "6 hours",
+            "12 hours",
+            "1 day",
+            "2 days",
+            "3 days",
+            "1 week",
+            "2 weeks",
+            "3 weeks",
+            "4 weeks",
+        )
+        if parsed:
+            self.add_option(
+                label=datetime.datetime.fromtimestamp(parsed).strftime(
+                    "On %A %d %b %Y at %I:%M %p"
+                ),
+                value=parsed,
+            )
+        for i in enumerate(times):
+            if parsed != i[1] + round(datetime.datetime.now().timestamp()):
+                self.add_option(
+                    label=f"In {times_named[i[0]]}",
+                    value=i[1] + round(datetime.datetime.now().timestamp()),
+                )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """
+        Callback for ReminderTimeDropdown
+        """
+        self.view.chosen_time = self.values[0]
+        await interaction.response.defer()
+
+
+class ReminderView(discord.ui.View):
+    """
+    Reminder View to help select and keep everything smooth
+    """
+
+    def __init__(
+        self, rm: ReminderManager, parsed: Optional[int], reminder: str
+    ) -> None:
+        """
+        Construct the Reminder View
+        """
+        super().__init__()
+        self.rm = rm
+        self.chosen_time: int = None
+        self.add_item(ReminderTimeDropdown(parsed))
+        self.reminder = reminder
+
+    @discord.ui.button(
+        style=discord.ButtonStyle.green,
+        label="Confirm",
+        emoji=style.Emoji.REGULAR.check,
+        row=2,
+    )
+    async def confirm_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Confirm the reminder should be saved and dispatched when neccessary
+        """
+        if self.chosen_time:
+            rid = await self.rm.create_reminder(
+                interaction.user.id, self.chosen_time, self.reminder
+            )
+            embed = discord.Embed(
+                title="Created Reminder Successfully",
+                description=f""">>> {self.reminder}""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.GREEN,
+            )
+            embed.set_footer(
+                text=f"Reminder ID: {rid}, will send at {datetime.datetime.fromtimestamp(int(self.chosen_time)).strftime('%A %d %b %Y at %I:%M %p')}"
+            )
+            await interaction.response.edit_message(embed=embed, view=None)
+        else:
+            embed = discord.Embed(
+                title="Error",
+                description="""You need to select a time for the reminder.""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            await interaction.response.send_message(embed=embed)
+
+    # @discord.ui.button(
+    #     style=discord.ButtonStyle.blurple,
+    #     label="Change Reminder",
+    #     emoji=style.Emoji.REGULAR.shuffle
+    # )
+    # async def change_reminder_button(self, interaction: discord.Interaction, button: discord.Button) -> None:
+    #     """
+    #     Change the reminder
+    #     """
+
+    @discord.ui.button(
+        style=discord.ButtonStyle.red,
+        label="Cancel",
+        emoji=style.Emoji.REGULAR.cancel,
+        row=2,
+    )
+    async def cancel_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Cancel the reminder
+        """
+        embed = discord.Embed(
+            title="Cancelled Reminder Creation Successfully",
+            description=f""">>> {self.reminder}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await interaction.response.edit_message(embed=embed, view=None)
 
 
 class Reminders(commands.Cog):
@@ -187,8 +372,10 @@ class Reminders(commands.Cog):
             time_struct,
             parse_status,  # pylint: disable=unused-variable
         ) = self.calendar.parse(string)
-        """if parse_status == 0:
-            raise commands.BadArgument("Time not found")"""
+        """
+        if parse_status == 0:
+            raise commands.BadArgument("Time not found")
+        """
         return int(datetime.datetime(*time_struct[:6]).timestamp())
 
     @commands.Cog.listener()
@@ -198,80 +385,84 @@ class Reminders(commands.Cog):
         """
         await self.rm.load_reminders()
 
-    @commands.command(
-        name="remind",
-        description="""Uses a task manager to create, send, limit, reminders.""",
+    @commands.hybrid_group(
+        name="reminder",
+        description="""Description of command""",
         help="""What the help command displays""",
         brief="Brief one liner about the command",
-        aliases=["rm"],
-        enabled=False,
+        aliases=[],
+        enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def reminder_cmd(self, ctx: commands.Context, *, reminder: str) -> None:
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
+    async def reminder_group(self, ctx: commands.Context) -> None:
+        """
+        Reminder group
+        """
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @reminder_group.command(
+        name="create",
+        description="""Remind yourself of something in the future.""",
+        help="""Remind yourself of something in the future.""",
+        brief="Remind yourself of something in the future.",
+        aliases=["remind", "add"],
+        enabled=True,
+        hidden=False,
+    )
+    async def reminder_create_cmd(
+        self, ctx: commands.Context, *, reminder: str
+    ) -> None:
         """
         Remind yourself of something
         """
         unix = await self.pull_time(reminder)
 
         if unix < datetime.datetime.now().timestamp():
-            unix = 0
+            unix = None
 
         embed = discord.Embed(
             title="Creating Reminder",
-            description=f""">>> {reminder}
-
-            {datetime.datetime.now().timestamp()}
-            {unix}""",
+            description=f""">>> {reminder}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREY,
         )
-        await ctx.send(embed=embed)  # , view=ReminderView(time))
+        embed.set_footer(text="This is what your reminder will look like")
+        await ctx.reply(embed=embed, view=ReminderView(self.rm, unix, reminder))
 
-    @commands.command(
-        name="timezone",
-        description="""A command to set your timezone""",
-        help="""A command to set your timezone""",
-        brief="A command to set your timezone",
+    @reminder_group.command(
+        name="list",
+        description="""List your current reminders.""",
+        help="""List your current reminders.""",
+        brief="List your current reminders.",
         aliases=[],
-        enabled=False,
+        enabled=True,
         hidden=False,
     )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def timezone_cmd(self, ctx: commands.Context, timezone: str = None) -> None:
+    async def reminder_list_cmd(self, ctx: commands.Context) -> None:
         """
-        A command to set your timezone
+        List your current reminders.
         """
+        reminders = await self.rm.fetch_reminders(ctx.author.id)
         embed = discord.Embed(
-            title="",
-            description="""""",
+            title="Your Reminders",
+            description=f">>> You currently have {len(reminders)} reminder{'s' if len(reminders) > 1 else ''}.",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
+            color=style.Color.AQUA,
         )
-        await ctx.send(embed=embed)
-
-    # @discord.app_commands.command(
-    #     name="timezone",
-    #     description="""A command to set your timezone""",
-    # )
-    # @discord.app_commands.choices(
-    #     timezone=CHOICES
-    # )
-    # async def timezone_slash_cmd(self, interaction: commands.Context, timezone: discord.app_commands.Choice[float]) -> None:
-    #     """
-    #     A command to set your timezone
-    #     """
-    #     embed = discord.Embed(
-    #         title="You chose",
-    #         description=f"""{timezone}""",
-    #         timestamp=discord.utils.utcnow(),
-    #         color=style.Color.random()
-    #     )
-    #     await interaction.response.send(embed=embed)
+        for reminder in reminders:
+            embed.add_field(
+                name=f"Reminder ID: {reminder.rid}",
+                value=f"""**Date:** {discord.utils.format_dt(datetime.datetime.fromtimestamp(int(reminder.time)), style='F')}
+                **Reminder:** {reminder.reminder[:100]}""",
+                inline=False,
+            )
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
     """
     Setup the Cog.
     """
-    # await bot.add_cog(Reminders(bot))
+    await bot.add_cog(Reminders(bot))
