@@ -9,6 +9,7 @@ from copy import copy
 
 import aiohttp
 import discord
+import mystbin
 from cogs.tags import Tags
 from discord.ext import commands
 from gears import cooldowns, util
@@ -100,6 +101,7 @@ class BennyBot(commands.Bot):
         self.util: util.BotUtil = None
         self.pcc: cooldowns.PremiumChecker = None
         self.tag_cog: Tags = None
+        self.mystbin: mystbin.Client = mystbin.Client()
 
     async def async_init(self) -> None:
         """
