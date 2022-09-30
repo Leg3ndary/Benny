@@ -1,3 +1,7 @@
+"""
+Custom Module to house the bot style related information
+"""
+
 import random
 
 __all__ = ("Color", "Emoji")
