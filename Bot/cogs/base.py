@@ -10,7 +10,7 @@ import discord.utils
 import psutil
 import pygit2
 from discord.ext import commands
-from gears import style
+from gears import embed_creator, style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
@@ -635,6 +635,51 @@ Total Uptime: {resolved_rel}"""
             color=style.Color.AQUA,
         )
         await ctx.reply(embed=embed)
+
+    @commands.command(
+        name="invite",
+        description="""Invite the bot to your server""",
+        help="""Invite the bot to your server""",
+        brief="Invite the bot to your server",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.channel)
+    async def invite_cmd(self, ctx: commands.Context) -> None:
+        """
+        Invite command
+        """
+        embed = discord.Embed(
+            title="Invite Me",
+            description=f"""[Invite](https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=1636352650487&scope=applications.commands%20bot) me to your server!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PURPLE,
+        )
+        await ctx.reply(embed=embed)
+
+    @commands.hybrid_command(
+        name="custom_embed",
+        description="""Create a custom embed""",
+        help="""Create a custom embed""",
+        brief="Create a custom embed",
+        aliases=["ce"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.is_owner()
+    async def custom_embed_cmd(self, ctx: commands.Context) -> None:
+        """
+        Create a custom embed
+        """
+        embed = discord.Embed(
+            title="Embed Creator",
+            description="Create an embed with this view!",
+            timestamp=discord.utils.utcnow(),
+        )
+        view = embed_creator.CustomEmbedView(ctx)
+        await ctx.reply(embed=embed, view=view)
 
 
 async def setup(bot: commands.Bot) -> None:
