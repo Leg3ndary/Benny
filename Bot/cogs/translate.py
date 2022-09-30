@@ -107,7 +107,7 @@ class Translate(commands.Cog):
         )
         self.bot.tree.add_command(self.translate_menu)
 
-    async def cog_load(self) -> None:
+    async def cog_unload(self) -> None:
         """
         On cog unload remove the menu
         """
