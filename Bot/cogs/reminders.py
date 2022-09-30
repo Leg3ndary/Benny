@@ -482,7 +482,9 @@ class Reminders(commands.Cog):
         enabled=True,
         hidden=False,
     )
-    async def reminder_delete_cmd(self, ctx: commands.Context, reminder_id: int) -> None:
+    async def reminder_delete_cmd(
+        self, ctx: commands.Context, reminder_id: int
+    ) -> None:
         """
         Delete a reminder.
         """
@@ -496,13 +498,12 @@ class Reminders(commands.Cog):
             title="Deleted Reminder",
             description=f">>> {reminder.reminder}",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.GREEN
+            color=style.Color.GREEN,
         )
         embed.set_footer(
             text=f"Reminder ID: {reminder.rid}",
         )
         await ctx.reply(embed=embed)
-
 
 
 async def setup(bot: commands.Bot) -> None:
