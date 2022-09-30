@@ -626,7 +626,7 @@ Total Uptime: {resolved_rel}"""
         """
         repo = pygit2.Repository(".git")
 
-        commits = self.get_latest_commits(10)
+        commits = self.get_latest_commits(8)
 
         embed = discord.Embed(
             title=f"Current Version: {repo.head.target.hex[0:8]}",
