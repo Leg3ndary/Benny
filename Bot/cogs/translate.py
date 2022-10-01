@@ -129,6 +129,7 @@ class Translate(commands.Cog):
         """
         Translate text
         """
+        await ctx.defer()
         await self.translator.process(ctx.channel, text)
 
     async def translate_context_menu(
@@ -137,6 +138,7 @@ class Translate(commands.Cog):
         """
         Translate context menu
         """
+        await interaction.response.defer()
         await self.translator.process(msg.channel, msg.content)
 
 
