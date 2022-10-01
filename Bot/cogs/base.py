@@ -668,7 +668,6 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @commands.is_owner()
     async def custom_embed_cmd(self, ctx: commands.Context) -> None:
         """
         Create a custom embed

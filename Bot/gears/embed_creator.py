@@ -2,6 +2,7 @@
 An Embed Creator
 """
 
+import datetime
 import io
 import json
 
@@ -11,85 +12,95 @@ from discord.ext import commands
 
 from . import style
 
+conversion_table = {
+    0: "0",
+    1: "1",
+    2: "2",
+    3: "3",
+    4: "4",
+    5: "5",
+    6: "6",
+    7: "7",
+    8: "8",
+    9: "9",
+    10: "A",
+    11: "B",
+    12: "C",
+    13: "D",
+    14: "E",
+    15: "F",
+}
 
-class CustomEmbedPropertyModal(discord.ui.Modal):
+
+def dec_to_hexa(decimal: int) -> str:
+    """
+    Convert a decimal number to hexadecimal
+    """
+    hexadecimal = ""
+    while decimal > 0:
+        remainder = decimal % 16
+        hexadecimal = conversion_table[remainder] + hexadecimal
+        decimal = decimal // 16
+
+    if len(hexadecimal) < 6:
+        hexadecimal = "0" * (6 - len(hexadecimal)) + hexadecimal
+
+    return "#" + hexadecimal
+
+
+class CustomEmbedFieldModal(discord.ui.Modal):
     """
     Embed Modal to edit a field
     """
 
-    def __init__(self, select: discord.ui.Select) -> None:
+    def __init__(self, select: discord.ui.Select, field: int) -> None:
         """
         Init the modal
         """
-        super().__init__(title=select.values[0])
+        super().__init__(title=f"Edit Field {field}")
         self.select = select
-        params = {
-            "Author Name": "The text in the upper part of the embed",
-            "Author URL": "The URL for the upper part of the embed",
-            "Author Icon": "The URL for the icon in the upper part of the embed",
-            "Color": "The color of the embed",
-            "Title": "The title of the embed",
-            "Description": "The description of the embed",
-            "Fields": "Add something here",
-            "Image": "The URL for the image in the embed",
-            "Thumbnail": "The URL for the thumbnail in the embed",
-            "Footer Text": "The footer text of the embed",
-            "Footer Icon": "The URL for the icon in the footer of the embed",
-            "Timestamp": "The timestamp of the embed",
-        }
-        self.added_property = discord.ui.TextInput(
-            label=select.values[0],
+        self.field = field
+        self.field_title = discord.ui.TextInput(
+            label="Title",
             style=discord.TextStyle.long,
-            placeholder=params[select.values[0]],
-            max_length=4000,
+            placeholder="The Field's Title",
+            default=select.view.embed.fields[field].name,
+            max_length=256,
             min_length=1,
             required=True,
         )
-        self.add_item(self.added_property)
+        self.description = discord.ui.TextInput(
+            label="Description",
+            style=discord.TextStyle.long,
+            placeholder="The Field's Description",
+            default=select.view.embed.fields[field].value,
+            max_length=1024,
+            min_length=1,
+            required=False,
+        )
+        self.inline = discord.ui.TextInput(
+            label="Inline",
+            style=discord.TextStyle.long,
+            placeholder="True or False",  # No point in a default since it's shorter than 6 chars
+            max_length=5,
+            min_length=1,
+            required=True,
+        )
+        self.add_item(self.field_title)
+        self.add_item(self.description)
+        self.add_item(self.inline)
 
     async def on_submit(self, interaction: discord.Interaction) -> None:
         """
         On_submit, do stuff
         """
         embed: discord.Embed = self.select.view.embed
-        if self.added_property.value == "Author Name":
-            embed.set_author(
-                name=self.added_property.value,
-                url=embed.author.url,
-                icon_url=embed.author.icon_url,
-            )
-        elif self.added_property.value == "Author URL":
-            embed.set_author(
-                name=embed.author.name,
-                url=self.added_property.value,
-                icon_url=embed.author.icon_url,
-            )
-        elif self.added_property.value == "Author Icon":
-            embed.set_author(
-                name=embed.author.name,
-                url=embed.author.url,
-                icon_url=self.added_property.value,
-            )
-        elif self.added_property.value == "Color":
-            embed.color = self.added_property.value
-        elif self.added_property.value == "Title":
-            embed.title = self.added_property.value
-        elif self.added_property.value == "Description":
-            embed.description = self.added_property.value
-        elif self.added_property.value == "Fields":
-            pass
-        elif self.added_property.value == "Image":
-            embed.set_image(url=self.added_property.value)
-        elif self.added_property.value == "Thumbnail":
-            embed.set_thumbnail(url=self.added_property.value)
-        elif self.added_property.value == "Footer Text":
-            embed.set_footer(
-                text=self.added_property.value, icon_url=embed.footer.icon_url
-            )
-        elif self.added_property.value == "Footer Icon":
-            embed.set_footer(text=embed.footer.text, icon_url=self.added_property.value)
-        elif self.added_property.value == "Timestamp":
-            embed.timestamp = self.added_property.value
+        embed.set_field_at(
+            index=self.field,
+            name=self.field_title.value,
+            value=self.description.value,
+            inline=self.inline.value.lower() == "true",
+        )
         await interaction.response.edit_message(embed=embed, view=self.select.view)
 
 
@@ -101,7 +112,8 @@ class CustomEmbedImportModal(discord.ui.Modal, title="Import Embed"):
     import_link = discord.ui.TextInput(
         label="Import Link",
         style=discord.TextStyle.long,
-        placeholder="https://mystb.in/SomeRandomID",
+        placeholder="https://mystb.in/SomeRandomID or JSON",
+        default="https://mystb.in/",
         max_length=4000,
         min_length=1,
         required=True,
@@ -137,13 +149,20 @@ class CustomEmbedImportModal(discord.ui.Modal, title="Import Embed"):
                 )
                 await interaction.response.send_message(embed=embed, ephemeral=True)
         else:
-            embed = discord.Embed(
-                title="Error",
-                description="""This link doesn't seem to be a valid https://mystb.in/ link!""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await interaction.response.send_message(embed=embed, ephemeral=True)
+            try:
+                json_data = json.loads(self.import_link.value)
+                self.view.embed = discord.Embed.from_dict(json_data)
+                await interaction.response.edit_message(
+                    embed=self.view.embed, view=self.view
+                )
+            except ValueError:
+                embed = discord.Embed(
+                    title="Error",
+                    description="""This doesn't seem to be a valid https://mystb.in/ link or valid JSON""",
+                    timestamp=discord.utils.utcnow(),
+                    color=style.Color.RED,
+                )
+                await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 class CustomEmbedSendModal(discord.ui.Modal, title="Send Embed"):
@@ -203,9 +222,9 @@ class CustomEmbedSendModal(discord.ui.Modal, title="Send Embed"):
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-class CustomEmbedDropdown(discord.ui.Select):
+class CustomEmbedFieldDropdown(discord.ui.Select):
     """
-    A Select for editing embeds
+    A Select for editing embed fields
     """
 
     def __init__(self, embed: discord.Embed) -> None:
@@ -215,55 +234,264 @@ class CustomEmbedDropdown(discord.ui.Select):
 
         options = []
 
-        params = {
-            "Author Name": embed.author.name
-            if embed.author and embed.author.name
-            else "None",
-            "Author URL": embed.author.url
-            if embed.author and embed.author.url
-            else "None",
-            "Author Icon": embed.author.icon_url
-            if embed.author and embed.author.icon_url
-            else "None",
-            "Color": embed.color if embed.color else "0",
-            "Title": embed.title if embed.title else "None",
-            "URL": embed.url if embed.url else "None",
-            "Description": embed.description if embed.description else "None",
-            "Fields": f"{len(embed.fields)} field(s)" if embed.fields else "None",
-            "Image": embed.image if embed.image else "None",
-            "Thumbnail": embed.thumbnail if embed.thumbnail else "None",
-            "Footer Text": embed.footer.text
-            if embed.footer and embed.footer.text
-            else "None",
-            "Footer Icon": embed.footer.icon_url
-            if embed.footer and embed.footer.icon_url
-            else "None",
-            "Timestamp": str(embed.timestamp.timestamp())
-            if embed.timestamp
-            else "None",
-        }
+        if len(embed.fields) == 0:
+            options.append(
+                discord.SelectOption(label="No Fields", value="no_fields", emoji="❌")
+            )
 
-        for key, value in params.items():
+        for count, field in enumerate(embed.fields):
             options.append(
                 discord.SelectOption(
-                    label=key,
-                    description=f"{value[:47]}..." if len(value) > 50 else value,
-                    value=key,
+                    label=f"Edit Field {count + 1}",
+                    description=field.title,
+                    emoji="📝",
+                    value=str(count),
                 )
             )
 
         super().__init__(
-            placeholder="Choose a Property to Edit",
+            placeholder="Choose a Field to Edit",
             min_values=1,
             max_values=1,
             options=options,
+            row=1,
         )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         """
         Select a Property to edit
         """
-        await interaction.response.send_modal(CustomEmbedPropertyModal(self))
+        if self.values[0] == "no_fields":
+            embed = discord.Embed(
+                title="Error",
+                description="""There are no fields to edit""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            await interaction.response.send_modal(
+                CustomEmbedFieldModal(self, int(self.values[0]))
+            )
+
+
+class CustomEmbedAuthorModal(discord.ui.Modal):
+    """
+    Custom Embed author modal
+    """
+
+    def __init__(self, view: discord.ui.View) -> None:
+        """
+        Init the modal
+        """
+        super().__init__(title="Edit Author")
+        self.view = view
+        self.name = discord.ui.TextInput(
+            label="Name",
+            style=discord.TextStyle.long,
+            placeholder="Author Name",
+            default=self.view.embed.author.name,
+            max_length=256,
+            min_length=1,
+            required=True,
+        )
+        self.url = discord.ui.TextInput(
+            label="URL",
+            style=discord.TextStyle.long,
+            placeholder="Author URL (Optional)",
+            default=self.view.embed.author.url,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.icon_url = discord.ui.TextInput(
+            label="Icon URL (Optional)",
+            style=discord.TextStyle.long,
+            placeholder="The URL for the Icon",
+            default=self.view.embed.author.icon_url,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.add_item(self.name)
+        self.add_item(self.url)
+        self.add_item(self.icon_url)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        On_submit, do stuff
+        """
+        self.view.embed.set_author(
+            name=self.name.value, url=self.url.value, icon_url=self.icon_url.value
+        )
+        for child in self.view.children:
+            if isinstance(child, discord.ui.Button) and child.label == "Author":
+                child.disabled = False
+        await interaction.response.edit_message(embed=self.view.embed, view=self.view)
+
+
+class CustomEmbedBaseModal(discord.ui.Modal):
+    """
+    Custom embed base modal
+    """
+
+    def __init__(self, view: discord.ui.View) -> None:
+        """
+        Init the modal
+        """
+        super().__init__(title="Edit Base")
+        self.view = view
+        self.embed_title = discord.ui.TextInput(
+            label="Title",
+            style=discord.TextStyle.long,
+            placeholder="Title",
+            default=self.view.embed.title,
+            max_length=256,
+            min_length=1,
+            required=True,
+        )
+        self.url = discord.ui.TextInput(
+            label="Title URL",
+            style=discord.TextStyle.long,
+            placeholder="Title URL (Optional)",
+            default=self.view.embed.url,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.description = discord.ui.TextInput(
+            label="Description",
+            style=discord.TextStyle.long,
+            placeholder="Description (Optional)",
+            default=self.view.embed.description,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.color = discord.ui.TextInput(
+            label="Color",
+            style=discord.TextStyle.long,
+            placeholder="Hex Color (Optional)",
+            default=dec_to_hexa(
+                self.view.embed.color.value if self.view.embed.color else 0
+            ),
+            max_length=7,
+            min_length=6,
+            required=False,
+        )
+        self.timestamp = discord.ui.TextInput(
+            label="Timestamp",
+            style=discord.TextStyle.long,
+            placeholder="Timestamp (Optional)",
+            default=str(int(self.view.embed.timestamp.timestamp())),
+            max_length=10,
+            min_length=1,
+            required=False,
+        )
+        self.add_item(self.embed_title)
+        self.add_item(self.url)
+        self.add_item(self.description)
+        self.add_item(self.color)
+        self.add_item(self.timestamp)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        On_submit, do stuff
+        """
+        embed: discord.Embed = self.view.embed
+        embed.title = self.embed_title.value
+        embed.url = self.url.value
+        embed.description = self.description.value
+        embed.color = int(self.color.value.replace("#", ""), base=16)
+        embed.timestamp = datetime.datetime.fromtimestamp(int(self.timestamp.value))
+        await interaction.response.edit_message(embed=self.view.embed, view=self.view)
+
+
+class CustomEmbedImageModal(discord.ui.Modal):
+    """
+    Custom Embed Image Modal
+    """
+
+    def __init__(self, view: discord.ui.View) -> None:
+        """
+        Init the modal
+        """
+        super().__init__(title="Edit Image")
+        self.view = view
+        self.image_url = discord.ui.TextInput(
+            label="Image URL",
+            style=discord.TextStyle.long,
+            placeholder="Image URL",
+            default=self.view.embed.image.url if self.view.embed.image else None,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.thumbnail_url = discord.ui.TextInput(
+            label="Thumbnail URL",
+            style=discord.TextStyle.long,
+            placeholder="Thumbnail URL",
+            default=self.view.embed.thumbnail.url
+            if self.view.embed.thumbnail
+            else None,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.add_item(self.image_url)
+        self.add_item(self.thumbnail_url)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        On_submit, do stuff
+        """
+        embed: discord.Embed = self.view.embed
+        embed.set_image(url=self.image_url.value)
+        embed.set_thumbnail(url=self.thumbnail_url.value)
+        await interaction.response.edit_message(embed=self.view.embed, view=self.view)
+
+
+class CustomEmbedFooterModal(discord.ui.Modal):
+    """
+    Custom Embed Footer Modal
+    """
+
+    def __init__(self, view: discord.ui.View) -> None:
+        """
+        Init the modal
+        """
+        super().__init__(title="Edit Footer")
+        self.view = view
+        self.text = discord.ui.TextInput(
+            label="Text",
+            style=discord.TextStyle.long,
+            placeholder="Text",
+            default=self.view.embed.footer.text,
+            max_length=2048,
+            min_length=1,
+            required=True,
+        )
+        self.icon_url = discord.ui.TextInput(
+            label="Icon URL",
+            style=discord.TextStyle.long,
+            placeholder="Icon URL",
+            default=self.view.embed.footer.icon_url,
+            max_length=4000,
+            min_length=1,
+            required=False,
+        )
+        self.add_item(self.text)
+        self.add_item(self.icon_url)
+
+    async def on_submit(self, interaction: discord.Interaction) -> None:
+        """
+        On_submit, do stuff
+        """
+        self.view.embed.set_footer(text=self.text.value, icon_url=self.icon_url.value)
+        for child in self.view.children:
+            if isinstance(child, discord.ui.Button) and child.label == "Remove Footer":
+                child.disabled = False
+        await interaction.response.edit_message(embed=self.view.embed, view=self.view)
 
 
 class CustomEmbedView(discord.ui.View):
@@ -282,7 +510,7 @@ class CustomEmbedView(discord.ui.View):
             description="Create an embed with this view!",
             timestamp=discord.utils.utcnow(),
         )
-        self.add_item(CustomEmbedDropdown(self.embed))
+        self.add_item(CustomEmbedFieldDropdown(self.embed))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """
@@ -292,7 +520,9 @@ class CustomEmbedView(discord.ui.View):
             return False
         return True
 
-    @discord.ui.button(label="Import", style=discord.ButtonStyle.blurple, emoji="📥")
+    @discord.ui.button(
+        label="Import", style=discord.ButtonStyle.blurple, emoji="📥", row=0
+    )
     async def import_button(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
@@ -301,7 +531,9 @@ class CustomEmbedView(discord.ui.View):
         """
         await interaction.response.send_modal(CustomEmbedImportModal(self))
 
-    @discord.ui.button(label="Export", style=discord.ButtonStyle.blurple, emoji="📤")
+    @discord.ui.button(
+        label="Export", style=discord.ButtonStyle.blurple, emoji="📤", row=0
+    )
     async def export_button(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
@@ -319,7 +551,7 @@ class CustomEmbedView(discord.ui.View):
         )
         await interaction.response.send_message(embed=embed, file=file)
 
-    @discord.ui.button(label="Send", style=discord.ButtonStyle.green, emoji="💬")
+    @discord.ui.button(label="Send", style=discord.ButtonStyle.green, emoji="💬", row=0)
     async def send_button(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
@@ -327,6 +559,50 @@ class CustomEmbedView(discord.ui.View):
         Send the embed to a channel
         """
         await interaction.response.send_modal(CustomEmbedSendModal(self))
+
+    @discord.ui.button(
+        label="Author", style=discord.ButtonStyle.blurple, emoji="📝", row=2
+    )
+    async def author_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Edit the author
+        """
+        await interaction.response.send_modal(CustomEmbedAuthorModal(self))
+
+    @discord.ui.button(
+        label="Base", style=discord.ButtonStyle.blurple, emoji="🗒️", row=2
+    )
+    async def base_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Edit the base
+        """
+        await interaction.response.send_modal(CustomEmbedBaseModal(self))
+
+    @discord.ui.button(
+        label="Image", style=discord.ButtonStyle.blurple, emoji="🖼️", row=2
+    )
+    async def image_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Edit the image
+        """
+        await interaction.response.send_modal(CustomEmbedImageModal(self))
+
+    @discord.ui.button(
+        label="Footer", style=discord.ButtonStyle.blurple, emoji="📜", row=2
+    )
+    async def footer_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Edit the footer
+        """
+        await interaction.response.send_modal(CustomEmbedFooterModal(self))
 
     @discord.ui.button(
         label="Add Field",
@@ -340,12 +616,50 @@ class CustomEmbedView(discord.ui.View):
         """
         Add a field
         """
+        self.embed.add_field(
+            name="New Field", value="Put Something here!", inline=False
+        )
+
+        if len(self.embed.fields) == 24:
+            button.disabled = True
+        if len(self.embed.fields) > 0:
+            for child in self.children:
+                if (
+                    isinstance(child, discord.ui.Button)
+                    and child.label == "Remove Field"
+                ):
+                    child.disabled = False
+                elif (
+                    isinstance(child, discord.ui.Button)
+                    and child.label == "Clear Fields"
+                ):
+                    child.disabled = False
+
+        for child in self.children:
+            if (
+                isinstance(child, discord.ui.Select)
+                and child.placeholder == "Choose a Field to Edit"
+            ):
+                for option in child.options:
+                    if option.label == "No Fields":
+                        child.options.remove(option)
+                child.options.append(
+                    discord.SelectOption(
+                        label=f"Edit Field {len(self.embed.fields)}",
+                        description="New Field",
+                        emoji="📝",
+                        value=str(len(self.embed.fields) - 1),
+                    )
+                )
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
 
     @discord.ui.button(
         label="Remove Field",
         style=discord.ButtonStyle.red,
         emoji=style.Emoji.REGULAR.cancel,
         row=3,
+        disabled=True,
     )
     async def remove_field_button(
         self, interaction: discord.Interaction, button: discord.Button
@@ -353,3 +667,126 @@ class CustomEmbedView(discord.ui.View):
         """
         Remove a field
         """
+        self.embed.remove_field(len(self.embed.fields) - 1)
+        if len(self.embed.fields) < 25:
+            for child in self.children:
+                if isinstance(child, discord.ui.Button) and child.label == "Add Field":
+                    child.disabled = False
+        if len(self.embed.fields) == 0:
+            button.disabled = True
+            for child in self.children:
+                if (
+                    isinstance(child, discord.ui.Button)
+                    and child.label == "Clear Fields"
+                ):
+                    child.disabled = True
+
+        for child in self.children:
+            if (
+                isinstance(child, discord.ui.Select)
+                and child.placeholder == "Choose a Field to Edit"
+            ):
+                child.options.pop()
+                if len(child.options) == 0:
+                    child.options.append(
+                        discord.SelectOption(
+                            label="No Fields", value="no_fields", emoji="❌"
+                        )
+                    )
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
+
+    @discord.ui.button(
+        label="Clear Fields",
+        style=discord.ButtonStyle.red,
+        emoji=style.Emoji.REGULAR.cancel,
+        row=4,
+        disabled=True,
+    )
+    async def clear_fields_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Clear all fields
+        """
+        self.embed.clear_fields()
+        if len(self.embed.fields) == 0:
+            button.disabled = True
+
+        for child in self.children:
+            if (
+                isinstance(child, discord.ui.Select)
+                and child.placeholder == "Choose a Field to Edit"
+            ):
+                child.options = [
+                    discord.SelectOption(
+                        label="No Fields", value="no_fields", emoji="❌"
+                    )
+                ]
+            elif isinstance(child, discord.ui.Button) and child.label == "Remove Field":
+                child.disabled = True
+
+        await interaction.response.edit_message(embed=self.embed, view=self)
+
+    @discord.ui.button(
+        label="Remove Author",
+        style=discord.ButtonStyle.red,
+        emoji=style.Emoji.REGULAR.cancel,
+        row=4,
+        disabled=True,
+    )
+    async def remove_author_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Remove the author
+        """
+        self.embed.remove_author()
+        button.disabled = True
+        await interaction.response.edit_message(embed=self.embed, view=self)
+
+    @discord.ui.button(
+        label="Remove Footer",
+        style=discord.ButtonStyle.red,
+        emoji=style.Emoji.REGULAR.cancel,
+        row=4,
+        disabled=True,
+    )
+    async def remove_footer_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Remove the footer
+        """
+        self.embed.remove_footer()
+        button.disabled = True
+        await interaction.response.edit_message(embed=self.embed, view=self)
+
+    @discord.ui.button(
+        label="Cancel",
+        style=discord.ButtonStyle.red,
+        emoji=style.Emoji.REGULAR.cancel,
+        row=4,
+    )
+    async def cancel_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Cancel the embed
+        """
+        await interaction.delete_original_message()
+
+    @discord.ui.button(
+        label="Complete",
+        style=discord.ButtonStyle.green,
+        emoji=style.Emoji.REGULAR.check,
+        row=4,
+    )
+    async def complete_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Complete the embed
+        """
+        await interaction.response.edit_message(embed=self.embed, view=None)
+        self.stop()
