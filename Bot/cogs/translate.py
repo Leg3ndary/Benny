@@ -1,3 +1,5 @@
+from typing import Union
+
 import aiogtrans
 import discord
 import discord.app_commands as app_commands
@@ -19,7 +21,11 @@ class Translator:
             bot.loop, bot.sessions.get("translate")
         )
 
-    async def process(self, channel: discord.TextChannel, text: str) -> None:
+    async def process(
+        self,
+        method: Union[commands.Context, discord.Interaction, discord.Message],
+        text: str,
+    ) -> None:
         """
         Process a translation
         """
@@ -42,7 +48,12 @@ class Translator:
 
         view = TranslateView(translated)
 
-        await channel.send(embed=embed, view=view)
+        if isinstance(method, commands.Context):
+            await method.reply(embed=embed, view=view)
+        elif isinstance(method, discord.Interaction):
+            await method.response.send_message(embed=embed, view=view)
+        elif isinstance(method, discord.Message):
+            await method.reply(embed=embed, view=view)
 
 
 class TranslateView(discord.ui.View):
@@ -129,7 +140,6 @@ class Translate(commands.Cog):
         """
         Translate text
         """
-        await ctx.defer()
         await self.translator.process(ctx.channel, text)
 
     async def translate_context_menu(
@@ -138,8 +148,7 @@ class Translate(commands.Cog):
         """
         Translate context menu
         """
-        await interaction.response.defer()
-        await self.translator.process(msg.channel, msg.content)
+        await self.translator.process(interaction, msg.content)
 
 
 async def setup(bot: commands.Bot) -> None:
