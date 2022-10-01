@@ -325,7 +325,7 @@ class CustomEmbedAuthorModal(discord.ui.Modal):
             name=self.name.value, url=self.url.value, icon_url=self.icon_url.value
         )
         for child in self.view.children:
-            if isinstance(child, discord.ui.Button) and child.label == "Author":
+            if isinstance(child, discord.ui.Button) and child.label == "Remove Author":
                 child.disabled = False
         await interaction.response.edit_message(embed=self.view.embed, view=self.view)
 
