@@ -376,7 +376,7 @@ class CustomEmbedBaseModal(discord.ui.Modal):
                 self.view.embed.color.value if self.view.embed.color else 0
             ),
             max_length=7,
-            min_length=6,
+            min_length=1,
             required=False,
         )
         self.timestamp = discord.ui.TextInput(
@@ -499,17 +499,14 @@ class CustomEmbedView(discord.ui.View):
     Embed view for storing the embed editor
     """
 
-    def __init__(self, ctx: commands.Context) -> None:
+    def __init__(self, ctx: commands.Context, embed: discord.Embed) -> None:
         """
         Create the embed view
         """
         super().__init__()
+        self.completed: bool = False
         self.ctx = ctx
-        self.embed: discord.Embed = discord.Embed(
-            title="Embed Creator",
-            description="Create an embed with this view!",
-            timestamp=discord.utils.utcnow(),
-        )
+        self.embed: discord.Embed = embed
         self.add_item(CustomEmbedFieldDropdown(self.embed))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -789,4 +786,5 @@ class CustomEmbedView(discord.ui.View):
         Complete the embed
         """
         await interaction.response.edit_message(embed=self.embed, view=None)
+        self.completed = True
         self.stop()
