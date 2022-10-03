@@ -677,7 +677,7 @@ Total Uptime: {resolved_rel}"""
             description="Create an embed with this view!",
             timestamp=discord.utils.utcnow(),
         )
-        view = embed_creator.CustomEmbedView(ctx)
+        view = embed_creator.CustomEmbedView(ctx, embed)
         await ctx.reply(embed=embed, view=view)
 
 
