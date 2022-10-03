@@ -2,7 +2,7 @@ git+https://github.com/Rapptz/asqlite
 git+https://github.com/Leg3ndary/aiogtransaiogtrans==1.1.5
 git+https://github.com/Leg3ndary/musescore-scraper
 git+https://github.com/Leg3ndary/uvloop
-bTagScript==3.1.5
+bTagScript==4.0.0
 cleantext==1.1.4
 colorama==0.4.4
 detoxify==0.5.0

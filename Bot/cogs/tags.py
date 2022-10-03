@@ -400,7 +400,6 @@ class Tags(commands.Cog):
                         can_send = False
                 if send_blacklist:
                     await ctx.send(action["response"])
-
         return can_send
 
     async def handle_debug(
@@ -474,12 +473,15 @@ class Tags(commands.Cog):
         dest = None
         can_send = None
         embeds = []
+        can_send = True
 
         if response.actions:
             can_send = await self.handle_actions(response.actions, ctx, embeds)
 
-        if response.debug:
-            await self.handle_debug(ctx, tag, response.debug, embeds, start, end)
+        if response.extras.get("debug"):
+            await self.handle_debug(
+                ctx, tag, response.extras.get("debug"), embeds, start, end
+            )
 
         if can_send:
             await self.send_message(ctx, dest, response.body, embeds)
