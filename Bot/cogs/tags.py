@@ -471,7 +471,6 @@ class Tags(commands.Cog):
         end = time.monotonic()
 
         dest = None
-        can_send = None
         embeds = []
         can_send = True
 
