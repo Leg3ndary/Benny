@@ -264,6 +264,7 @@ class Settings(commands.Cog):
             );
             """
         )
+        await self.users_db.commit()
         await self.bot.blogger.load("Users")
         self.server_db = await asqlite.connect("Databases/server.db")
 

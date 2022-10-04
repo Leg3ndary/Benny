@@ -187,6 +187,7 @@ class Tags(commands.Cog):
             );
         """
         )
+        await self.db.commit()
 
         async with self.db.cursor() as cursor:
             row = await cursor.execute("""SELECT MAX(tag_id) FROM tags;""")

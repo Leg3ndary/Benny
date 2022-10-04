@@ -799,6 +799,7 @@ class Sentinel(commands.Cog):
             );
             """
         )
+        await self.db.commit()
         await self.bot.blogger.load("Sentinel Config")
         self.sm = SentinelManager(
             self.bot.sessions.get("sentinel"),

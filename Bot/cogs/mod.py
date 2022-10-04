@@ -286,6 +286,7 @@ class Mod(commands.Cog):
             );
             """
         )
+        await self.db.commit()
         await self.bot.blogger.load("Mod")
         self.mm = ModerationManager(self.bot, self.db)
 

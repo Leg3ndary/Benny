@@ -43,6 +43,7 @@ class LoggingManager:
             );
             """
         )
+        await self.db.commit()
         await self.bot.blogger.load("Logging")
 
     async def create_webhook(

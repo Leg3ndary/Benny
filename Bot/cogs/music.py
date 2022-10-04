@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import random
+from re import A
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
@@ -689,6 +690,7 @@ class Music(commands.Cog):
                 );
                 """
             )
+            await db.commit()
         await self.bot.blogger.load("Recently Played")
 
     @commands.Cog.listener()
@@ -835,6 +837,7 @@ class Music(commands.Cog):
                 """,
                 (_id, track.id),
             )
+            await db.commit()
 
     @commands.hybrid_command(
         name="play",
