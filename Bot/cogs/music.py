@@ -1,7 +1,6 @@
 import asyncio
 import datetime
 import random
-from re import A
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
