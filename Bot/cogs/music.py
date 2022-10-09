@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import os
 import random
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -1306,39 +1307,39 @@ class Music(commands.Cog):
         help="""Get sheet music from musescore""",
         brief="Get sheet music from musescore",
         aliases=["sheet", "sheets"],
-        enabled=False,
+        enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 10.0, commands.BucketType.default)
     async def musescore_cmd(self, ctx: commands.Context, *, search: str) -> None:
         """
         Get sheet music from musescore
-
-        Disabled for now since there's a lot I want to add but haven't yet added
         """
         async with MuseScraper() as ms:
             url = urlparse(search)
 
             if url.scheme == "https" and url.netloc == "musescore.com":
                 if url.hostname == "musescore.com":
-                    path = await ms.to_pdf(search, "Musescore/")
+                    embed = discord.Embed(
+                        title="Downloading...",
+                        timestamp=discord.utils.utcnow(),
+                        color=style.Color.GREY
+                    )
+                    message = await ctx.reply(embed=embed)
+                    path = await ms.download(search, "Musescore/")
                     file = discord.File(path)
-                    await ctx.reply(file=file)
 
+                    embed = discord.Embed(
+                        title="Downloaded Successfully",
+                        timestamp=discord.utils.utcnow(),
+                        color=style.Color.GREEN
+                    )
+                    await message.edit(embed=embed, file=file)
+                    await self.bot.loop.run_in_executor(os.remove, path)
+                else:
+                    raise commands.BadArgument("Invalid URL")
             else:
-                # sheets: List[QueriedSheetMusic] = (await ms.search(search))[:25]
-                sheets = []
-                embed = discord.Embed(
-                    title=f"Viewing Sheets for {search}",
-                    description=f"""Showing {len(sheets)} sheets""",
-                    timestamp=discord.utils.utcnow(),
-                    color=0x3269BC,
-                )
-                embed.set_footer(
-                    text=ctx.author.display_name,
-                    icon_url=ctx.author.display_avatar.url,
-                )
-                await ctx.reply(embed=embed, view=MusescoreView(ctx, ms, sheets))
+                raise commands.BadArgument("Invalid URL")
 
 
 async def setup(bot: commands.Bot) -> None:
