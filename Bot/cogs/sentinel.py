@@ -924,6 +924,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_guild=True)
     async def decancer_enable_cmd(self, ctx: commands.Context) -> None:
         """
         Enable decancer
@@ -952,6 +953,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_guild=True)
     async def decancer_disable_cmd(self, ctx: commands.Context) -> None:
         """
         Disable Decancer
@@ -978,6 +980,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_guild=True)
     async def decancer_logs_cmd(
         self, ctx: commands.Context, channel: discord.TextChannel = None
     ) -> None:
@@ -1025,6 +1028,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.guild)
+    @commands.has_permissions(manage_guild=True)
     async def decancer_auto_cmd(self, ctx: commands.Context) -> None:
         """
         Automatically configure the decancer feature
@@ -1051,6 +1055,7 @@ class Sentinel(commands.Cog):
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_nicknames=True)
     async def decancer_user_cmd(self, ctx: commands.Context, user: discord.Member):
         """
         Decancer a discord user
