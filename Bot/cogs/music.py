@@ -1307,7 +1307,7 @@ class Music(commands.Cog):
         help="""Get sheet music from musescore""",
         brief="Get sheet music from musescore",
         aliases=["sheet", "sheets"],
-        enabled=True,
+        enabled=False,
         hidden=False,
     )
     @commands.cooldown(1.0, 10.0, commands.BucketType.default)
