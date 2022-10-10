@@ -3,8 +3,35 @@ import json
 import asqlite
 import discord
 import discord.utils
+from bTagScript import AsyncInterpreter
 from discord.ext import commands
-from gears import style
+from gears import embed_creator, style
+
+
+async def process_embed(embed: discord.Embed, tsei: AsyncInterpreter) -> discord.Embed:
+    """
+    Process the embed.
+    """
+    seed_vars = {}
+    if embed.author.name:
+        embed.set_author(name=(await tsei.process(embed.author.name, seed_vars)).body)
+    if embed.author.url:
+        embed.set_author(url=(await tsei.process(embed.author.url, seed_vars)).body)
+    if embed.author.icon_url:
+        embed.set_author(
+            icon_url=(await tsei.process(embed.author.icon_url, seed_vars)).body
+        )
+    if embed.title:
+        embed.title = (await tsei.process(embed.title, seed_vars)).body
+    if embed.description:
+        embed.description = (await tsei.process(embed.description, seed_vars)).body
+    if embed.footer.text:
+        embed.set_footer(text=(await tsei.process(embed.footer.text, seed_vars)).body)
+    if embed.footer.icon_url:
+        embed.set_footer(
+            icon_url=(await tsei.process(embed.footer.icon_url, seed_vars)).body
+        )
+    return embed
 
 
 class WelcomeManager:
@@ -122,9 +149,9 @@ class Welcome(commands.Cog):
                                 NOT NULL,
                 role TEXT
             );
-        """
+            """
         )
-
+        await self.db.execute()
         self.wm = WelcomeManager(self.bot, self.db)
 
     async def cog_unload(self) -> None:
@@ -197,9 +224,9 @@ class Welcome(commands.Cog):
 
     @welcome_group.command(
         name="set",
-        description="""Set the welcome command""",
-        help="""Set the welcome command""",
-        brief="Set the welcome command",
+        description="""Set the welcome message""",
+        help="""Set the welcome message""",
+        brief="Set the welcome message",
         aliases=[],
         enabled=True,
         hidden=False,
@@ -207,8 +234,84 @@ class Welcome(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def welcome_set_group(self, ctx: commands.Context) -> None:
         """
-        Set the welcome command
+        Set the welcome message
         """
+        embed = discord.Embed(
+            title="Set your welcome message here!",
+            description="""Tagscript will be processed in every field!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+        embed.set_footer(text="Make sure to press complete when finished.")
+        view = embed_creator.CustomEmbedView(ctx, embed)
+        await ctx.reply(embed=embed, view=view)
+        await view.wait()
+        if view.completed:
+            embed = discord.Embed(
+                title="Welcome Message Set!",
+                description=f"""""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.random(),
+            )
+            await ctx.send(embed=embed)
+
+    @welcome_group.command(
+        name="channel",
+        description="""Set the welcome channel""",
+        help="""Set the welcome channel""",
+        brief="Set the welcome channel",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def welcome_channel_group(
+        self, ctx: commands.Context, channel: discord.TextChannel
+    ) -> None:
+        """
+        Set the welcome channel
+        """
+        embed = discord.Embed(
+            title="Set your welcome channel here!",
+            description="""Tagscript will be processed in every field!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+        embed.set_footer(text="Make sure to press complete when finished.")
+        await ctx.reply(embed=embed)
+
+    @welcome_group.command(
+        name="goodbye",
+        description="""Set the goodbye message""",
+        help="""Set the goodbye message""",
+        brief="Set the goodbye message",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def goodbye_group(self, ctx: commands.Context) -> None:
+        """
+        Set the goodbye message
+        """
+        embed = discord.Embed(
+            title="Set your goodbye message here!",
+            description="""Tagscript will be processed in every field!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+        embed.set_footer(text="Make sure to press complete when finished.")
+        view = embed_creator.CustomEmbedView(ctx, embed)
+        await ctx.reply(embed=embed, view=view)
+        await view.wait()
+        if view.completed:
+            embed = discord.Embed(
+                title="Goodbye Message Set!",
+                description=f"""""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.random(),
+            )
+            await ctx.send(embed=embed)
 
     @commands.hybrid_group(
         name="autorole",
@@ -286,7 +389,7 @@ class Welcome(commands.Cog):
         if ctx.me.roles[-1] <= role:
             raise commands.BadArgument(
                 f"""I cannot assign a role higher than mine!
-            
+
             The role {role.mention} is above my highest role ({ctx.me.roles[-1].mention})."""
             )
 

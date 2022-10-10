@@ -1315,6 +1315,7 @@ class Music(commands.Cog):
         """
         Get sheet music from musescore
         """
+        await ctx.defer()
         async with MuseScraper() as ms:
             url = urlparse(search)
 
@@ -1323,7 +1324,7 @@ class Music(commands.Cog):
                     embed = discord.Embed(
                         title="Downloading...",
                         timestamp=discord.utils.utcnow(),
-                        color=style.Color.GREY
+                        color=style.Color.GREY,
                     )
                     message = await ctx.reply(embed=embed)
                     path = await ms.download(search, "Musescore/")
@@ -1332,7 +1333,7 @@ class Music(commands.Cog):
                     embed = discord.Embed(
                         title="Downloaded Successfully",
                         timestamp=discord.utils.utcnow(),
-                        color=style.Color.GREEN
+                        color=style.Color.GREEN,
                     )
                     await message.edit(embed=embed, file=file)
                     await self.bot.loop.run_in_executor(os.remove, path)
