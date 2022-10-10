@@ -1335,7 +1335,7 @@ class Music(commands.Cog):
                         timestamp=discord.utils.utcnow(),
                         color=style.Color.GREEN,
                     )
-                    await message.edit(embed=embed, file=file)
+                    await message.edit(embed=embed, attachments={file})
                     await self.bot.loop.run_in_executor(os.remove, path)
                 else:
                     raise commands.BadArgument("Invalid URL")
