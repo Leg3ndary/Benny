@@ -96,13 +96,13 @@ class PlayerDropdown(discord.ui.Select):
         self.player = player
         self.songs = songs
         options = []
-        for counter, song in enumerate(songs):
+        for count, song in enumerate(songs):
             options.append(
                 discord.SelectOption(
-                    emoji=style.Emoji.REGULAR.youtube,
+                    emoji=style.Emoji.REGULAR.music,
                     label=song.title,
                     description=f"""{song.author} - Duration: {duration(song.length)}""",
-                    value=counter,
+                    value=count,
                 )
             )
 
@@ -119,13 +119,29 @@ class PlayerDropdown(discord.ui.Select):
         """
         track = self.songs[int(self.values[0])]
 
+        total = track.length
+
+        for track in self.player.queue._queue:
+            if isinstance(track, wavelink.PartialTrack):
+                pass
+            else:
+                total += track.length
+
+        playing_message = (
+            "Playing now"
+            if self.player.queue.count == 0
+            and (not self.player.is_playing() or self.player.is_paused())
+            else f"Playing {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
+        )
+
         embed = discord.Embed(
-            title="Track Queued",
+            title=f"Track Queued - Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 0}",
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
 = Duration: {duration(track.length)} =
-```""",
+```
+{playing_message}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
@@ -182,7 +198,7 @@ class PlayerSelector(discord.ui.View):
         """
         Delete the message if clicked
         """
-        await interaction.delete_original_message()
+        await interaction.message.delete()
 
 
 class QueueDropdown(discord.ui.Select):
@@ -209,7 +225,7 @@ class QueueDropdown(discord.ui.Select):
         for counter, song in enumerate(songs):
             options.append(
                 discord.SelectOption(
-                    emoji=style.Emoji.REGULAR.youtube,
+                    emoji=style.Emoji.REGULAR.music,
                     label=song.title,
                     description=f"""{song.author} - Duration: {duration(song.length)}""",
                     value=counter,
@@ -715,7 +731,8 @@ class Music(commands.Cog):
         else:
             if player.looping:
                 await player.request(track)
-            await player.play(player.queue.get())
+            else:
+                await player.play(player.queue.get())
 
     async def await_disconnect(self, player: Player) -> None:
         """
@@ -726,6 +743,7 @@ class Music(commands.Cog):
             player.is_connected
             and (not player.is_playing() or not player.is_paused())
             and player.queue.is_empty
+            and len(player.channel.members) == 1
         ):
             try:
                 await player.disconnect()
@@ -873,7 +891,7 @@ class Music(commands.Cog):
                 cls=wavelink.YouTubeTrack, query=f"ytsearch:{search}"
             )
             embed = discord.Embed(
-                title=f"{style.Emoji.REGULAR.youtube} Select a Song to Play",
+                title=f"{style.Emoji.REGULAR.music} Select a Song to Play",
                 description=f"""```asciidoc
 = Showing Song Results for: =
 [ {search} ]
@@ -900,10 +918,10 @@ class Music(commands.Cog):
         player = await self.get_player(ctx)
 
         if not player.track:
-            raise NothingPlaying
+            raise NothingPlaying()
 
         if player.queue.is_empty:
-            raise QueueEmpty
+            raise QueueEmpty()
 
         visual = ""
         total_dur = player.track.length
