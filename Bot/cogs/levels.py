@@ -44,4 +44,4 @@ async def setup(bot: commands.Bot) -> None:
     """
     Setup the cog.
     """
-    await bot.add_cog(Levels(bot))
+    # await bot.add_cog(Levels(bot))
