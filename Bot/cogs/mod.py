@@ -82,7 +82,7 @@ class ModerationManager:
         """
         (
             time_struct,
-            parse_status, # pylint: disable=unused-variable
+            parse_status,  # pylint: disable=unused-variable
         ) = self.calendar.parse(string)
         """if parse_status == 0:
             raise commands.BadArgument("Time not found")"""
