@@ -76,6 +76,7 @@ class RegularEmoji:
     spotify = "<:_:922245976226402306>"
     soundcloud = "<:_:927006460834111518>"
     youtube = "<:_:927005602964729887>"
+    music = "<:_:1030661483400548432>"
 
 
 class IDEmoji:
@@ -95,6 +96,7 @@ class IDEmoji:
     spotify = "922245976226402306"
     soundcloud = "927006460834111518"
     youtube = "927005602964729887"
+    music = "1030661483400548432"
 
 
 class ImageEmoji:
@@ -114,6 +116,7 @@ class ImageEmoji:
     spotify = "https://cdn.discordapp.com/emojis/922245976226402306.png?size=256"
     soundcloud = "https://cdn.discordapp.com/emojis/927006460834111518?size=256"
     youtube = "https://cdn.discordapp.com/emojis/927005602964729887?size=256"
+    music = "https://cdn.discordapp.com/emojis/1030661483400548432?size=256"
 
 
 class Emoji:
