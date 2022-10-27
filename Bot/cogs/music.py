@@ -724,7 +724,9 @@ class Music(commands.Cog):
         On end, check if the queue has another song to play if not disconnect after 5 min
         """
         if player.queue.is_empty:
-            if not player.is_playing() or not player.is_paused():
+            if player.looping:
+                await player.request(track)
+            elif not player.is_playing() or not player.is_paused():
                 self.disconnect_tasks[player.channel.id] = self.bot.loop.create_task(
                     self.await_disconnect(player)
                 )

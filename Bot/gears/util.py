@@ -64,6 +64,7 @@ class BotUtil:
                 "Docs",
                 "Website",
                 "Assets",
+                "plugins"
             ):
                 directories = []
             else:
