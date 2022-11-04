@@ -184,11 +184,12 @@ class DictionaryMenu(discord.ui.View):
     Dictionary Menu
     """
 
-    def __init__(self, word: dictapi.Word) -> None:
+    def __init__(self, ctx: commands.Context, word: dictapi.Word) -> None:
         """
         Initiative it
         """
         super().__init__()
+        self.ctx = ctx
         self.add_item(DictDropdown(word))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -325,7 +326,7 @@ class Chat(commands.Cog):
                 url=word.license.url,
             )
             embed.set_footer(text=f"Meaning -/{len(word.meanings)}")
-            await ctx.send(embed=embed, view=DictionaryMenu(word))
+            await ctx.send(embed=embed, view=DictionaryMenu(ctx, word))
 
     @commands.hybrid_command(
         name="imgread",
