@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import itertools
 import json
@@ -222,6 +223,43 @@ class SystemView(discord.ui.View):
         self, interaction: discord.Interaction, error: Exception, item
     ) -> None:
         print(error.with_traceback(error.__traceback__))
+
+
+class RoleAllSelect(discord.ui.RoleSelect):
+    """ """
+
+
+class RoleAllView(discord.ui.View):
+    """
+    A view to start giving roles to everyone
+    """
+
+    def __init__(self, ctx: commands.Context, roles: list[discord.Role]):
+        super().__init__()
+        self.ctx = ctx
+        self.roles = roles
+        self.role = None
+        # self.add_item(None)
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="Start", emoji="👍")
+    async def start_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Start giving roles to everyone
+        """
+        await interaction.response.defer()
+        # await self.start_giving_roles(self.role)
+
+    async def start_giving_roles(self, role: discord.Role) -> None:
+        """
+        Start giving roles to everyone
+        """
+        for member in self.ctx.guild.members:
+            if role not in member.roles:
+                await member.add_roles(role)
+                await asyncio.sleep(1)
+        await self.ctx.send("Done!")
 
 
 class Base(commands.Cog):
@@ -624,6 +662,113 @@ Total Uptime: {resolved_rel}"""
         )
         view = embed_creator.CustomEmbedView(ctx, embed)
         await ctx.reply(embed=embed, view=view)
+
+    @commands.hybrid_group(
+        name="role",
+        description="""Role related commands""",
+        help="""Role related commands""",
+        brief="Role related commands",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def role_group(self, ctx: commands.Context) -> None:
+        """
+        Role related commands
+        """
+        if not ctx.invoked_subcommand:
+            await ctx.send_help(ctx.command)
+
+    @role_group.command(
+        name="add",
+        description="""Add a role to a member""",
+        help="""Add a role to a member""",
+        brief="Add a role to a member",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_roles=True)
+    async def role_add_cmd(
+        self, ctx: commands.Context, member: discord.Member, role: discord.Role
+    ) -> None:
+        """
+        Add a role to a member
+        """
+        if role > member.top_role:
+            raise commands.BadArgument(
+                f"You cannot add {role.mention} to {member.mention} as it's higher than their top role ({member.top_role.mention})."
+            )
+        await member.add_roles(role)
+        embed = discord.Embed(
+            title="Role Added",
+            description=f"""Added {role.mention} to {member.mention}""",
+            timestamp=discord.utils.utcnow(),
+            color=role.color,
+        )
+        embed.set_footer(text=f"Role ID: {role.id}")
+        await ctx.reply(embed=embed)
+
+    @role_group.command(
+        name="remove",
+        description="""Remove a role from a member""",
+        help="""Remove a role from a member""",
+        brief="Remove a role from a member",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.has_permissions(manage_roles=True)
+    async def role_remove_cmd(
+        self, ctx: commands.Context, member: discord.Member, role: discord.Role
+    ) -> None:
+        """
+        Remove a role from a member
+        """
+        if role > member.top_role:
+            raise commands.BadArgument(
+                f"You cannot remove {role.mention} from {member.mention} as it's higher than their top role ({member.top_role.mention})."
+            )
+
+        await member.remove_roles(role)
+        embed = discord.Embed(
+            title="Role Removed",
+            description=f"""Removed {role.mention} from {member.mention}""",
+            timestamp=discord.utils.utcnow(),
+            color=role.color,
+        )
+        embed.set_footer(text=f"Role ID: {role.id}")
+        await ctx.reply(embed=embed)
+
+    @role_group.command(
+        name="all",
+        description="""Give everyone a role""",
+        help="""Give everyone a role""",
+        brief="Give everyone a role",
+        aliases=[],
+        enabled=False,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 3600.0, commands.BucketType.guild)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def role_all_cmd(self, ctx: commands.Context, *, role) -> None:
+        """
+        Add roles to all members that don't already have the role
+        """
+
+        # create a view with blacklist options
+        embed = discord.Embed(
+            title="Bulk Role Add",
+            description="""This will add the role to """,
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
