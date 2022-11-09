@@ -1,5 +1,3 @@
-from typing import Union
-
 import aiogtrans
 import discord
 import discord.app_commands as app_commands
@@ -21,39 +19,11 @@ class Translator:
             bot.loop, bot.sessions.get("translate")
         )
 
-    async def process(
-        self,
-        method: Union[commands.Context, discord.Interaction, discord.Message],
-        text: str,
-    ) -> None:
+    async def process(self, text: str) -> aiogtrans.Translated:
         """
         Process a translation
         """
-
-        translated = await self.translator.translate(text)
-
-        embed = discord.Embed(
-            title="Translating Text",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.PINK,
-        )
-        embed.add_field(
-            name=f"Original: {aiogtrans.LANGUAGES.get(translated.src).capitalize()}",
-            value=translated.origin[:1000],
-        )
-        embed.add_field(
-            name=f"Translated: {aiogtrans.LANGUAGES.get(translated.dest).capitalize()}",
-            value=translated.text[:1000],
-        )
-
-        view = TranslateView(translated)
-
-        if isinstance(method, commands.Context):
-            await method.reply(embed=embed, view=view)
-        elif isinstance(method, discord.Interaction):
-            await method.response.send_message(embed=embed, view=view)
-        elif isinstance(method, discord.Message):
-            await method.reply(embed=embed, view=view)
+        return await self.translator.translate(text)
 
 
 class TranslateView(discord.ui.View):
@@ -140,7 +110,25 @@ class Translate(commands.Cog):
         """
         Translate text
         """
-        await self.translator.process(ctx.channel, text)
+        translated = await self.translator.process(text)
+
+        embed = discord.Embed(
+            title="Translating Text",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PINK,
+        )
+        embed.add_field(
+            name=f"Original: {aiogtrans.LANGUAGES.get(translated.src).capitalize()}",
+            value=translated.origin[:1000],
+        )
+        embed.add_field(
+            name=f"Translated: {aiogtrans.LANGUAGES.get(translated.dest).capitalize()}",
+            value=translated.text[:1000],
+        )
+
+        view = TranslateView(translated)
+
+        await ctx.reply(embed=embed, view=view)
 
     async def translate_context_menu(
         self, interaction: discord.Interaction, msg: discord.Message
@@ -148,7 +136,24 @@ class Translate(commands.Cog):
         """
         Translate context menu
         """
-        await self.translator.process(interaction, msg.content)
+        translated = await self.translator.process(msg.content)
+
+        embed = discord.Embed(
+            title="Translating Text",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.PINK,
+        )
+        embed.add_field(
+            name=f"Original: {aiogtrans.LANGUAGES.get(translated.src).capitalize()}",
+            value=translated.origin[:1000],
+        )
+        embed.add_field(
+            name=f"Translated: {aiogtrans.LANGUAGES.get(translated.dest).capitalize()}",
+            value=translated.text[:1000],
+        )
+        view = TranslateView(translated)
+
+        await interaction.response.send_message(embed=embed, view=view)
 
 
 async def setup(bot: commands.Bot) -> None:
