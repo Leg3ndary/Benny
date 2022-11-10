@@ -331,28 +331,39 @@ class Dev(commands.Cog):
         """
         Leave a guild.
         """
-        try:
-            await ctx.guild.leave()
-            embed = discord.Embed(
-                title=f"Left {guild.name}",
-                description=f"""```md
+        await ctx.guild.leave()
+        embed = discord.Embed(
+            title=f"Left {guild.name}",
+            description=f"""```md
 - Owned by {guild.owner} - {guild.owner_id}
 ```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.random(),
-            )
-            await ctx.send(embed=embed)
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+        await ctx.reply(embed=embed)
 
-        except Exception as e:
-            embed_error = discord.Embed(
-                title="Error",
-                description=f"""```diff
-- {e}
-```""",
-                timestamp=discord.utils.utcnow(),
-                color=style.Color.RED,
-            )
-            await ctx.send(embed=embed_error)
+    @dev_group.command(
+        name="clear",
+        description="""Clears the bots slash commands""",
+        help="""Clears the bots slash commands""",
+        brief="Clears the bots slash commands",
+        aliases=[],
+        enabled=True,
+        hidden=True,
+    )
+    async def dev_clear_cmd(self, ctx: commands.Context) -> None:
+        """
+        Clears the bots slash commands
+        """
+        self.bot.tree.clear_commands(guild=None)
+        await self.bot.tree.sync()
+        embed = discord.Embed(
+            title="Tree Clear",
+            description="""Bot tree has been cleared""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await ctx.reply(embed=embed)
 
     @commands.command(
         name="eval",
