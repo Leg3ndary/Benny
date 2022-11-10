@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import discord
 from discord.ext import commands
 from gears import style, util
@@ -197,6 +199,51 @@ class Help(commands.Cog):
         help_command = BennyHelp()
         help_command.cog = self
         bot.help_command = help_command
+
+    # @discord.app_commands.command(
+    #     name="help",
+    #     description="Get help on a command or cog",
+    # )
+    # async def help_cmd(
+    #     self, interaction: discord.Interaction, command: Optional[str]
+    # ) -> None:
+    #     """
+    #     Slash help command
+    #     """
+    #     await interaction.response.defer()
+    #     ctx = await self.bot.get_context(interaction, cls=commands.Context)
+    #     if command is not None:
+    #         await ctx.send_help(command)
+    #     else:
+    #         await ctx.send_help()
+
+    # @help_cmd.autocomplete("command")
+    # async def command_autocomplete(
+    #     self, interaction: discord.Interaction, needle: str
+    # ) -> List[discord.app_commands.Choice[str]]:
+    #     """
+    #     Slash help command autocomplete
+    #     """
+    #     assert self.bot.help_command
+    #     ctx = await self.bot.get_context(interaction, cls=commands.Context)
+    #     help_command = self.bot.help_command.copy()
+    #     help_command.context = ctx
+    #     if not needle:
+    #         return [
+    #             discord.app_commands.Choice(name=cog_name, value=cog_name)
+    #             for cog_name, cog in self.bot.cogs.items()
+    #             if await help_command.filter_commands(cog.get_commands())
+    #         ][:25]
+    #     needle = needle.lower()
+    #     return [
+    #         discord.app_commands.Choice(
+    #             name=command.qualified_name, value=command.qualified_name
+    #         )
+    #         for command in await help_command.filter_commands(
+    #             self.bot.walk_commands(), sort=True
+    #         )
+    #         if needle in command.qualified_name
+    #     ][:25]
 
 
 async def setup(bot: commands.Bot) -> None:
