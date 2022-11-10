@@ -1,23 +1,7 @@
-import asyncio
-
-import asqlite
 import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
-
-
-class MemberView(discord.ui.View):
-    """
-    MemberView for members we wanna view
-    """
-
-    def __init__(self, member: discord.Member) -> None:
-        """
-        MemberView for members we wanna view
-        """
-        self.member = member
-        super().__init__()
 
 
 class Info(commands.Cog):
@@ -87,11 +71,42 @@ class Info(commands.Cog):
         )
         await ctx.reply(embed=embed)
 
-    # Make a permissions command along with a more complicated info view for above
+    @commands.command(
+        name="permissions",
+        description="""View a server members permissions.""",
+        help="""View a server members permissions.""",
+        brief="""Permissions of a member""",
+        aliases=["perms"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
+    async def permissions_cmd(
+        self, ctx: commands.Context, member: discord.Member = None
+    ) -> None:
+        """
+        View an member permissions
+        """
+        if not member:
+            member = ctx.author
+
+        perms = member.guild_permissions
+        perms = [perm for perm, value in perms if value]
+        perms = '"\n"'.join(perms)
+
+        embed = discord.Embed(
+            title=f"{member.name}#{member.discriminator} Permissions",
+            description=f"""```ahk
+"{perms}"
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.random(),
+        )
+        await ctx.reply(embed=embed)
 
 
 async def setup(bot: commands.Bot) -> None:
     """
     Setup the cog.
     """
-    # await bot.add_cog(Info(bot))
+    await bot.add_cog(Info(bot))
