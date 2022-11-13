@@ -359,7 +359,7 @@ class Reminders(commands.Cog):
     """
 
     COLOR = style.Color.LIME
-    ICON = ":reminder_ribbon:"
+    ICON = "🎗️"
 
     def __init__(self, bot: commands.Bot):
         """

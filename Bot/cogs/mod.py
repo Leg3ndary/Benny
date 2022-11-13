@@ -225,7 +225,7 @@ class Mod(commands.Cog):
     """
 
     COLOR = style.Color.SILVER
-    ICON = ":tools:"
+    ICON = "🛠️"
 
     def __init__(self, bot: commands.Bot):
         """

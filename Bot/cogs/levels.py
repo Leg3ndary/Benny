@@ -13,7 +13,7 @@ class Levels(commands.Cog):
     """
 
     COLOR = style.Color.GREEN
-    ICON = ":floppy_disk:"
+    ICON = "🎚️"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

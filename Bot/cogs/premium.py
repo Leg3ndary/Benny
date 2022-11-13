@@ -61,7 +61,7 @@ class Premium(commands.Cog):
     """
 
     COLOR = style.Color.AQUA
-    ICON = ":crown:"
+    ICON = "👑"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

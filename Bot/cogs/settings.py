@@ -236,7 +236,7 @@ class Settings(commands.Cog):
     """
 
     COLOR = style.Color.AQUA
-    ICON = ":gear:"
+    ICON = "⚙️"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

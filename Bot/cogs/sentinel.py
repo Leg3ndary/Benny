@@ -704,7 +704,7 @@ class Sentinel(commands.Cog):
     """
 
     COLOR = style.Color.RED
-    ICON = ":shield:"
+    ICON = "🛡️"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

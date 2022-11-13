@@ -39,9 +39,6 @@ class WelcomeManager:
     Managing welcoming and related things
     """
 
-    COLOR = style.Color.GREEN
-    ICON = "👋"
-
     def __init__(self, bot: commands.Bot, db: asqlite.Connection) -> None:
         """
         Init method
@@ -114,7 +111,7 @@ class Welcome(commands.Cog):
     """
 
     COLOR = style.Color.GREEN
-    ICON = ":wave:"
+    ICON = "👋"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

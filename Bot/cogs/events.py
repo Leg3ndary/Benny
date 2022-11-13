@@ -147,7 +147,7 @@ class Events(commands.Cog):
     """
 
     COLOR = style.Color.BLUE
-    ICON = ":clock7:"
+    ICON = "🕖"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

@@ -268,7 +268,7 @@ class Base(commands.Cog):
     """
 
     COLOR = style.Color.AQUA
-    ICON = ":bricks:"
+    ICON = "🧱"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

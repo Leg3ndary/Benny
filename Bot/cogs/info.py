@@ -9,8 +9,8 @@ class Info(commands.Cog):
     This cog deals with levels
     """
 
-    COLOR = style.Color.GREEN
-    ICON = ":floppy_disk:"
+    COLOR = style.Color.AQUA
+    ICON = "ℹ️"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

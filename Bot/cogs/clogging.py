@@ -58,7 +58,7 @@ class Logging(commands.Cog):
     """
 
     COLOR = style.Color.PURPLE
-    ICON = ":newspaper:"
+    ICON = "📰"
 
     def __init__(self, bot: commands.Bot) -> None:
         """

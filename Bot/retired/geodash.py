@@ -25,7 +25,7 @@ class GeometryDash(commands.Cog):
     """
 
     COLOR = style.Color.NAVY
-    ICON = ":blue_square:"
+    ICON = "🟦"
 
     def __init__(self, bot: commands.Bot) -> None:
         """
