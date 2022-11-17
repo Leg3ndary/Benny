@@ -1,5 +1,6 @@
-from discord.ext import commands
 from aiohttp import web
+from discord.ext import commands
+
 
 class BotApp(web.Application):
     """
@@ -11,8 +12,8 @@ class BotApp(web.Application):
         Init"""
         super().__init__()
         self.bot = bot
-        self.add_routes([web.get('/', self.home)])
-        self.add_routes([web.get('/ping', self.ping)])
+        self.add_routes([web.get("/", self.home)])
+        self.add_routes([web.get("/ping", self.ping)])
 
     async def home(self, request: web.Request) -> web.Response:
         """
