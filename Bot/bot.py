@@ -13,6 +13,7 @@ import mystbin
 from cogs.tags import Tags
 from discord.ext import commands
 from gears import cooldowns, util
+from api import BotApp
 
 start = time.monotonic()
 
@@ -223,6 +224,9 @@ async def start_bot() -> None:
         )
 
         bot.loop.create_task(when_bot_ready())
+
+        bot.app = BotApp(bot)
+        await bot.app.start('localhost', 433)
 
         await bot.start(
             bot.config.get("Bot").get("Token")
