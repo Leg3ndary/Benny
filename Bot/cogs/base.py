@@ -33,7 +33,9 @@ class AvatarView(discord.ui.View):
     """
 
     @discord.ui.button(
-        emoji=style.Emoji.ID.cancel, label="Delete", style=discord.ButtonStyle.danger
+        emoji=style.Emoji.REGULAR.cancel,
+        label="Delete",
+        style=discord.ButtonStyle.danger,
     )
     async def button_callback(
         self, interaction: discord.Interaction, button: discord.Button
@@ -219,14 +221,11 @@ class SystemView(discord.ui.View):
         embed.set_footer(text="Select one of the below options for more info")
         await interaction.response.edit_message(embed=embed, view=self)
 
-    async def on_error(
-        self, interaction: discord.Interaction, error: Exception, item
-    ) -> None:
-        print(error.with_traceback(error.__traceback__))
-
 
 class RoleAllSelect(discord.ui.RoleSelect):
-    """ """
+    """
+    Custom role select to add roles to everyone
+    """
 
 
 class RoleAllView(discord.ui.View):
@@ -619,7 +618,7 @@ Total Uptime: {resolved_rel}"""
         )
         await ctx.reply(embed=embed)
 
-    @commands.command(
+    @commands.hybrid_command(
         name="invite",
         description="""Invite the bot to your server""",
         help="""Invite the bot to your server""",
@@ -755,7 +754,7 @@ Total Uptime: {resolved_rel}"""
     @commands.cooldown(1.0, 3600.0, commands.BucketType.guild)
     @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
-    async def role_all_cmd(self, ctx: commands.Context, *, role) -> None:
+    async def role_all_cmd(self, ctx: commands.Context, *, role: discord.Role) -> None:
         """
         Add roles to all members that don't already have the role
         """
