@@ -228,6 +228,7 @@ async def start_bot() -> None:
 
         bot.app = BotApp(bot)
         await bot.app.start("0.0.0.0", 8080)
+        await bot.blogger.bot_info("", "Started")
 
         await bot.start(
             bot.config.get("Bot").get("Token")
