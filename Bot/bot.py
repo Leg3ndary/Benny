@@ -89,6 +89,7 @@ class BennyBot(commands.Bot):
     blogger: util.BotLogger = None
     config: dict = config
     file_list: dict = {}
+    app: BotApp
 
     def __init__(self) -> None:
         """
@@ -226,7 +227,7 @@ async def start_bot() -> None:
         bot.loop.create_task(when_bot_ready())
 
         bot.app = BotApp(bot)
-        await bot.app.start("localhost", 8080)
+        await bot.app.start("0.0.0.0", 8080)
 
         await bot.start(
             bot.config.get("Bot").get("Token")
