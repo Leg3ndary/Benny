@@ -213,10 +213,8 @@ class Events(commands.Cog):
                 title="Sorry!",
                 description=f"""Your server has **{guild_bots} Bots ** compared to **{len(guild.members)} Members**
                 Either:
-                - Have `6+` humans
-                Currently **{humans}** humans
-                - Lower your servers percentage of bots to under 20%
-                Currently **{bot_percentage}%** bots""",
+                - Have `6+` humans (Currently **{humans}** humans)
+                - Lower your servers percentage of bots to under 20% (Currently **{bot_percentage}%** bots)""",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
