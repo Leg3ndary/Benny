@@ -4,7 +4,7 @@ import math
 import discord
 import discord.utils
 from colorama import Fore
-from discord.ext import commands
+from discord.ext import commands, tasks
 from gears import style
 
 
@@ -165,6 +165,22 @@ class Events(commands.Cog):
             )
         )
         self.logger.addHandler(handler)
+        self.ping_loop.start()
+
+    async def cog_unload(self) -> None:
+        """
+        Unload the the pingloop
+        """
+        self.ping_loop.cancel()
+
+    @tasks.loop(seconds=15.0)
+    async def ping_loop(self) -> None:
+        """
+        Update bot latency dict every 3 seconds
+        """
+        if len(self.bot.ping_list) > 10:
+            self.bot.ping_list.pop(0)
+        self.bot.ping_list.append(self.bot.latency)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
