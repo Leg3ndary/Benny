@@ -89,7 +89,8 @@ class BennyBot(commands.Bot):
     blogger: util.BotLogger = None
     config: dict = config
     file_list: dict = {}
-    app: BotApp
+    app: BotApp = None
+    ping_list: list = []
 
     def __init__(self) -> None:
         """
@@ -193,7 +194,6 @@ async def global_check(ctx: commands.context) -> bool:
         return True
     return True
 
-
 async def start_bot() -> None:
     """
     Start the bot with everything it needs
@@ -226,9 +226,9 @@ async def start_bot() -> None:
 
         bot.loop.create_task(when_bot_ready())
 
-        bot.app = BotApp(bot)
-        await bot.app.start("0.0.0.0", 8080)
-        await bot.blogger.bot_info("", "Started")
+        # bot.app = BotApp(bot)
+        # await bot.app.start("0.0.0.0", 8080)
+        # await bot.blogger.bot_info("", "Started Webserver")
 
         await bot.start(
             bot.config.get("Bot").get("Token")
