@@ -25,7 +25,14 @@ class BotApp(web.Application):
         """
         Ping the bot
         """
-        return web.json_response({"status": "ok", "latency": self.bot.ping_list if self.bot.ping_list is not None else self.bot.latency})
+        return web.json_response(
+            {
+                "status": "ok",
+                "latency": self.bot.ping_list
+                if self.bot.ping_list is not None
+                else self.bot.latency,
+            }
+        )
 
     async def start(self, host: str, port: int) -> None:
         """

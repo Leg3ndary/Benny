@@ -194,6 +194,7 @@ async def global_check(ctx: commands.context) -> bool:
         return True
     return True
 
+
 async def start_bot() -> None:
     """
     Start the bot with everything it needs
