@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Mapping, Optional
 
 import discord
 from discord.ext import commands
@@ -69,25 +69,22 @@ class BennyHelp(commands.HelpCommand):
 
         return f"{colored_prefix}{colored_command_name} {colored_signature}"
 
-    async def send_bot_help(self, mapping: dict) -> None:
+    async def send_bot_help(
+        self, mapping: Mapping[Optional[commands.Cog], List[commands.Command]]
+    ) -> None:
         """
         When help is ran on its own no args
         """
-        embed = discord.Embed(title="Benny Help", color=style.Color.AQUA)
-        for cog, _commands in mapping.items():
-            command_signatures = []
+        embed = discord.Embed(
+            title="Benny Help",
+            description=f"""Welcome to Benny's Help Page, find information and help about all of Benny's commands here!
+            
+            Benny currently has {len(self.context.bot.commands)} commands, and {len(self.context.bot.cogs)} cogs loaded.""",
+            color=style.Color.AQUA,
+            timestamp=discord.utils.utcnow(),
+        )
 
-            for command in _commands:
-                command_signatures.append(self.get_command_signature(command))
-
-            if command_signatures:
-                cog_name = getattr(cog, "qualified_name", "ERROR")
-                if cog_name not in ("Errors", "Dev", "Events", "ERROR", "Help"):
-                    embed.add_field(
-                        name=f"{cog.ICON} {cog_name}",
-                        value="Not finished as of yet",
-                        inline=True,
-                    )
+        view = BotHelpView(self, mapping)
 
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
@@ -95,7 +92,7 @@ class BennyHelp(commands.HelpCommand):
         )
 
         channel = self.get_destination()
-        await channel.send(embed=embed)
+        await channel.send(embed=embed, view=view)
 
     async def send_cog_help(self, cog: commands.Cog) -> None:
         """
@@ -183,13 +180,145 @@ class BennyHelp(commands.HelpCommand):
         await channel.send(embed=embed)
 
 
+class BotHelpSelect(discord.ui.Select):
+    """
+    A select menu for the help command
+    """
+
+    def __init__(
+        self,
+        help_command: BennyHelp,
+        mapping: Mapping[Optional[commands.Cog], List[commands.Command]],
+    ) -> None:
+        """
+        Construct the help select menu
+        """
+        self.help_command = help_command
+        super().__init__(placeholder="Select a Category")
+        for cog, _commands in mapping.items():
+            command_signatures = []
+
+            for command in _commands:
+                command_signatures.append(help_command.get_command_signature(command))
+
+            if command_signatures:
+                cog_name = getattr(cog, "qualified_name", "ERROR")
+                if cog_name not in ("Errors", "Dev", "Events", "ERROR", "Help"):
+                    self.add_option(
+                        label=cog_name,
+                        description=cog.description,
+                        value=cog_name,
+                        emoji=cog.ICON,
+                    )
+
+    async def callback(self, interaction: discord.Interaction):
+        """
+        Callback for the select menu
+        """
+        cog = self.help_command.context.bot.get_cog(self.values[0])
+
+        embed = discord.Embed(
+            title=cog.qualified_name,
+            description=cog.description,
+            color=cog.COLOR,
+        )
+        cog_commands = []
+        for command in cog.get_commands():
+            if isinstance(command, commands.HybridCommand):
+                cog_commands.append(command.name)
+            elif isinstance(command, commands.HybridGroup):
+                cog_commands.append(command.name)
+            else:
+                cog_commands.append(command.name)
+        embed.add_field(name="Commands", value="\n".join(cog_commands), inline=False)
+        embed.set_author(
+            name=f"{self.help_command.context.author.name}#{self.help_command.context.author.discriminator}",
+            icon_url=self.help_command.context.author.avatar,
+        )
+
+        new_view = discord.ui.View()
+        new_view.add_item(self)
+        new_view.add_item(CogHelpSelect(self.help_command, cog))
+
+        await interaction.response.edit_message(embed=embed, view=new_view)
+
+
+class BotHelpView(discord.ui.View):
+    """
+    A help view for the bot
+    """
+
+    def __init__(
+        self,
+        help_command: BennyHelp,
+        mapping: Mapping[Optional[commands.Cog], List[commands.Command]],
+    ) -> None:
+        """
+        Construct the help view
+        """
+        super().__init__()
+        self.add_item(BotHelpSelect(help_command, mapping))
+
+
+class CogHelpSelect(discord.ui.Select):
+    """
+    A select menu for the cog help command
+    """
+
+    def __init__(self, help_command: commands.HelpCommand, cog: commands.Cog) -> None:
+        """
+        Construct the cog help select menu
+        """
+        super().__init__(placeholder="Select a Command")
+        for command in cog.get_commands():
+            self.add_option(
+                label=command.name,
+                description=command.brief,
+                value=command.name,
+            )
+        self.help_command = help_command
+        self.cog = cog
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """
+        Change the embed to a nice help view
+        """
+        await interaction.response.defer()
+        for command in self.cog.get_commands():
+            if command.name == self.values[0]:
+                alias = command.aliases
+                if alias:
+                    alias_text = ", ".join(alias)
+                else:
+                    alias_text = "No Aliases"
+                embed = discord.Embed(
+                    title=self.help_command.get_command_signature(command),
+                    description=f"""{command.help}
+```ansi
+{util.ansi('red', None, 'bold', 'underline')}Usage{util.ansi('clear')}
+{HELP_FORMAT}
+{self.help_command.get_colored_command_signature(command)}
+
+{util.ansi('red', None, 'bold', 'underline')}Aliases{util.ansi('clear')}
+{util.ansi('cyan', None, 'underline')}{alias_text}
+```""",
+                    color=command.cog.COLOR,
+                )
+                embed.set_author(
+                    name=f"{self.help_command.context.author.name}#{self.help_command.context.author.discriminator}",
+                    icon_url=self.help_command.context.author.avatar,
+                )
+                await interaction.edit_original_response(embed=embed)
+                break
+
+
 class Help(commands.Cog):
     """
     The help cog
     """
 
     COLOR = style.Color.AQUA
-    ICON = ":blue_book:"
+    ICON = "📘"
 
     def __init__(self, bot: commands.Bot) -> None:
         """
