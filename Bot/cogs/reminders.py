@@ -415,6 +415,34 @@ class Reminders(commands.Cog):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
+    @commands.command(
+        name="remind",
+        description="""Shorter way to create a reminder.""",
+        help="""Shorter way to create a reminder.""",
+        brief="Shorter way to create a reminder.",
+        aliases=[],
+        enabled=True,
+        hidden=False
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    async def remind_cmd(self, ctx: commands.Context, *, reminder: str) -> None:
+        """
+        Shorter way to create a reminder
+        """
+        unix = await self.pull_time(reminder)
+
+        if unix < datetime.datetime.now().timestamp():
+            unix = None
+
+        embed = discord.Embed(
+            title="Creating Reminder",
+            description=f""">>> {reminder}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(text="This is what your reminder will look like")
+        await ctx.reply(embed=embed, view=ReminderView(self.rm, unix, reminder))
+
     @reminder_group.command(
         name="create",
         description="""Remind yourself of something in the future.""",
