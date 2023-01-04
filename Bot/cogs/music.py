@@ -105,7 +105,6 @@ class PlayerDropdown(discord.ui.Select):
                     value=count,
                 )
             )
-
         super().__init__(
             placeholder="Select a Song",
             min_values=1,
@@ -121,21 +120,23 @@ class PlayerDropdown(discord.ui.Select):
 
         total = track.length
 
-        for track in self.player.queue._queue:
-            if isinstance(track, wavelink.PartialTrack):
+        for queued_track in self.player.queue._queue:
+            if isinstance(queued_track, wavelink.PartialTrack):
                 pass
             else:
-                total += track.length
+                total += queued_track.length
 
-        playing_message = (
-            "Playing now"
-            if self.player.queue.count == 0
-            and (not self.player.is_playing() or self.player.is_paused())
-            else f"Playing {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
-        )
+        if self.player.queue.count == 0 and (
+            not self.player.is_playing() or self.player.is_paused()
+        ):
+            title = "Playing now"
+            playing_message = "Playing now"
+        else:
+            title = f"Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 1}"
+            playing_message = f"Playing {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
 
         embed = discord.Embed(
-            title=f"Track Queued - Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 0}",
+            title=f"Track Queued - {title}",
             url=track.uri,
             description=f"""```asciidoc
 [ {track.title} ]
