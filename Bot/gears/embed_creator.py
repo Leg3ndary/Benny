@@ -760,20 +760,6 @@ class CustomEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=self.embed, view=self)
 
     @discord.ui.button(
-        label="Cancel",
-        style=discord.ButtonStyle.red,
-        emoji=style.Emoji.REGULAR.cancel,
-        row=4,
-    )
-    async def cancel_button(
-        self, interaction: discord.Interaction, button: discord.Button
-    ) -> None:
-        """
-        Cancel the embed
-        """
-        await interaction.delete_original_message()
-
-    @discord.ui.button(
         label="Complete",
         style=discord.ButtonStyle.green,
         emoji=style.Emoji.REGULAR.check,

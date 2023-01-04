@@ -342,7 +342,7 @@ class Base(commands.Cog):
         name="avatar",
         description="""Show a users avatar""",
         help="""Show a users avatar in a nice clean embed.""",
-        brief="""Short help text""",
+        brief="""Show a users avatar""",
         aliases=["av", "pfp"],
         enabled=True,
         hidden=False,
@@ -390,28 +390,6 @@ class Base(commands.Cog):
             color=style.Color.YELLOW,
         )
         await ctx.reply(embed=embed)
-
-    # Temporarily removed
-    # @commands.hybrid_command(
-    #     name="dog",
-    #     description="""Get a random dog image!""",
-    #     help="""What good bot doesn't have a dog command?""",
-    #     brief="Get a random dog image",
-    #     aliases=["doggo"],
-    #     enabled=True,
-    #     hidden=False,
-    # )
-    # @commands.cooldown(2.0, 5.0, commands.BucketType.channel)
-    # async def dog_cmd(self, ctx: commands.Context) -> None:
-    #     """
-    #     Dog command
-    #     """
-    #     dog = await self.session.get("https://dog.ceo/api/breeds/image/random")
-
-    #     dog_image = (await dog.json()).get("message")
-    #     embed = discord.Embed(color=style.Color.random())
-    #     embed.set_image(url=dog_image)
-    #     await ctx.send(embed=embed)
 
     @commands.command(
         name="uptime",
@@ -465,23 +443,23 @@ Total Uptime: {resolved_rel}"""
         )
         msg = await ctx.reply(embed=embed)
         end = time.monotonic()
-        ping = round((end - start) * 1000, 2)
-        bot_ping = round(self.bot.latency * 1000, 2)
+        ping = round((end - start), 2)
+        bot_ping = round(self.bot.latency, 2)
         average_ping = (bot_ping + ping) / 2
 
-        if average_ping >= 500:
+        if average_ping >= 3:
             color = style.Color.RED
-        elif average_ping >= 250:
+        elif average_ping >= 2:
             color = style.Color.ORANGE
-        elif average_ping >= 100:
+        elif average_ping >= 1:
             color = style.Color.YELLOW
         else:
             color = style.Color.GREEN
 
         ping_embed = discord.Embed(
             title="Pinging...",
-            description=f"""**Overall Latency:** {ping} ms
-            **Discord WebSocket Latency:** {bot_ping}""",
+            description=f"""**Overall Latency:** `{ping}`s
+            **Discord WebSocket Latency:** `{bot_ping}`s""",
             timestamp=discord.utils.utcnow(),
             color=color,
         )
@@ -636,7 +614,7 @@ Total Uptime: {resolved_rel}"""
             title="Invite Me",
             description=f"""[Invite](https://discord.com/api/oauth2/authorize?client_id={self.bot.user.id}&permissions=1636352650487&scope=applications.commands%20bot) me to your server!""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.PURPLE,
+            color=style.Color.AQUA,
         )
         await ctx.reply(embed=embed)
 
@@ -645,7 +623,7 @@ Total Uptime: {resolved_rel}"""
         description="""Create a custom embed""",
         help="""Create a custom embed""",
         brief="Create a custom embed",
-        aliases=["ce"],
+        aliases=["cembed", "ce"],
         enabled=True,
         hidden=False,
     )
