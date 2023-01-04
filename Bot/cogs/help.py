@@ -106,11 +106,11 @@ class BennyHelp(commands.HelpCommand):
         cog_commands = []
         for command in cog.get_commands():
             if isinstance(command, commands.HybridCommand):
-                cog_commands.append(command.name)
+                cog_commands.append(f"`{command.name}` - {command.brief}")
             elif isinstance(command, commands.HybridGroup):
-                cog_commands.append(command.name)
+                cog_commands.append(f"`{command.name}` - {command.brief}")
             else:
-                cog_commands.append(command.name)
+                cog_commands.append(f"`{command.name}` - {command.brief}")
         embed.add_field(name="Commands", value="\n".join(cog_commands), inline=False)
         embed.set_author(
             name=f"{self.context.author.name}#{self.context.author.discriminator}",
@@ -225,11 +225,11 @@ class BotHelpSelect(discord.ui.Select):
         cog_commands = []
         for command in cog.get_commands():
             if isinstance(command, commands.HybridCommand):
-                cog_commands.append(command.name)
+                cog_commands.append(f"`{command.name}` - {command.brief}")
             elif isinstance(command, commands.HybridGroup):
-                cog_commands.append(command.name)
+                cog_commands.append(f"`{command.name}` - {command.brief}")
             else:
-                cog_commands.append(command.name)
+                cog_commands.append(f"`{command.name}` - {command.brief}")
         embed.add_field(name="Commands", value="\n".join(cog_commands), inline=False)
         embed.set_author(
             name=f"{self.help_command.context.author.name}#{self.help_command.context.author.discriminator}",
@@ -328,6 +328,19 @@ class Help(commands.Cog):
         help_command = BennyHelp()
         help_command.cog = self
         bot.help_command = help_command
+
+    @discord.app_commands.command(name="help", description="Get help for the bot")
+    async def help_cmd(self, interaction: discord.Interaction) -> None:
+        """
+        Slash help command
+        """
+        embed = discord.Embed(
+            title="Sorry!",
+            description="""The bot currently does not have a slash help command, while this is subject to change, please use the regular text help command for now.""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.RED,
+        )
+        await interaction.response.send_message(embed=embed)
 
     # @discord.app_commands.command(
     #     name="help",
