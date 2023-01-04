@@ -167,8 +167,8 @@ class PlayerSelector(discord.ui.View):
         """
         Constructing the player selector
         """
-        self.ctx = ctx
         super().__init__(timeout=60)
+        self.ctx = ctx
         self.add_item(PlayerDropdown(ctx, player, songs))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -625,7 +625,7 @@ def duration(seconds: float) -> str:
 
 class Music(commands.Cog):
     """
-    Music cog to hold Wavelink related commands and listeners.
+    Music commands, join a voice channel and start listening with the play command
     """
 
     COLOR = style.Color.PINK
