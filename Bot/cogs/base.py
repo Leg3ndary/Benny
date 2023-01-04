@@ -275,6 +275,7 @@ class Base(commands.Cog):
         """
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
+        self.RoleConverter = commands.RoleConverter()
         self.afk = AFKManager(bot)
         self.session = bot.sessions.get("base")
 
@@ -667,6 +668,7 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     async def role_add_cmd(
         self, ctx: commands.Context, member: discord.Member, role: discord.Role
@@ -674,10 +676,15 @@ Total Uptime: {resolved_rel}"""
         """
         Add a role to a member
         """
+        if ctx.author.top_role < member.top_role:
+            raise commands.BadArgument(
+                f"You cannot add {role.mention} to {member.mention} as their highest role is higher than your highest role ({member.top_role.mention})."
+            )
         if role > member.top_role:
             raise commands.BadArgument(
                 f"You cannot add {role.mention} to {member.mention} as it's higher than their top role ({member.top_role.mention})."
             )
+
         await member.add_roles(role)
         embed = discord.Embed(
             title="Role Added",
@@ -698,6 +705,7 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     async def role_remove_cmd(
         self, ctx: commands.Context, member: discord.Member, role: discord.Role
@@ -705,9 +713,13 @@ Total Uptime: {resolved_rel}"""
         """
         Remove a role from a member
         """
-        if role > member.top_role:
+        if ctx.author.top_role < member.top_role:
             raise commands.BadArgument(
-                f"You cannot remove {role.mention} from {member.mention} as it's higher than their top role ({member.top_role.mention})."
+                f"You cannot remove {role.mention} from {member.mention} as their highest role ({member.top_role.mention}) is higher than your highest role ({ctx.author.top_role.mention})."
+            )
+        if role == member.top_role:
+            raise commands.BadArgument(
+                f"You cannot remove {role.mention} from {member.mention} as it's their highest role ({member.top_role.mention})."
             )
 
         await member.remove_roles(role)
@@ -716,6 +728,74 @@ Total Uptime: {resolved_rel}"""
             description=f"""Removed {role.mention} from {member.mention}""",
             timestamp=discord.utils.utcnow(),
             color=role.color,
+        )
+        embed.set_footer(text=f"Role ID: {role.id}")
+        await ctx.reply(embed=embed)
+
+    @role_group.command(
+        name="custom",
+        description="""Custom add/remove roles to a member""",
+        help="""Custom add/remove roles to a member, use +role and -role to add and remove roles respectively, use ! to invert them, if they have the role, it will be removed, if they don't have it, it will be added.""",
+        brief="Custom add/remove roles to a member",
+        aliases=["c"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.guild_only()
+    @commands.has_permissions(manage_roles=True)
+    async def role_custom_command(
+        self, ctx: commands.Context, member: discord.Member, *, role_str: str
+    ) -> None:
+        """
+        Add roles to a member based on a string customly, does that make sense?
+        """
+        add = []
+        remove = []
+
+        for role in role_str.split():
+            if role.startswith("+"):
+                add.append(await self.RoleConverter.convert(ctx, role[1:]))
+            elif role.startswith("-"):
+                remove.append(await self.RoleConverter.convert(ctx, role[1:]))
+            elif role.startswith("!"):
+                temp = await self.RoleConverter.convert(ctx, role[1:])
+                if temp in member.roles:
+                    remove.append(temp)
+                else:
+                    add.append(temp)
+
+        if ctx.author.top_role < member.top_role:
+            raise commands.BadArgument(
+                f"You cannot manage these roles from {member.mention} as their highest role ({member.top_role.mention}) is higher than your highest role ({ctx.author.top_role.mention})."
+            )
+
+        for role in add:
+            if role > member.top_role:
+                raise commands.BadArgument(
+                    f"You cannot add {role.mention} to {member.mention} as it's higher than their top role ({member.top_role.mention})."
+                )
+        for role in remove:
+            if role == member.top_role:
+                raise commands.BadArgument(
+                    f"You cannot remove {role.mention} from {member.mention} as it's their highest role ({member.top_role.mention})."
+                )
+
+        await member.add_roles(*add)
+        await member.remove_roles(*remove)
+
+        embed = discord.Embed(
+            title="Role Custom",
+            timestamp=discord.utils.utcnow(),
+            color=role.color,
+        )
+        embed.add_field(
+            name="Added",
+            value="\n".join([role.mention for role in add]) or "None",
+        )
+        embed.add_field(
+            name="Removed",
+            value="\n".join([role.mention for role in remove]) or "None",
         )
         embed.set_footer(text=f"Role ID: {role.id}")
         await ctx.reply(embed=embed)
