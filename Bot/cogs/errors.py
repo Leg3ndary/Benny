@@ -71,17 +71,6 @@ class Errors(commands.Cog):
     ) -> None:
         """
         The event triggered when an error is raised while invoking a command.
-
-        Parameters
-        ----------
-        ctx: commands.Context
-            The context used for command invocation.
-        error: commands.CommandError
-            The Exception raised.
-
-        Returns
-        -------
-        None
         """
         if hasattr(ctx.command, "on_error"):
             return
@@ -292,6 +281,7 @@ class Errors(commands.Cog):
             await ctx.send(embed=color, view=ColoredView(normal, color))
 
         elif isinstance(error, commands.MemberNotFound):
+            _traceback = False
             embed = discord.Embed(
                 title="Member Not Found",
                 description=f"""`{error.argument}` was not found""",
@@ -300,9 +290,11 @@ class Errors(commands.Cog):
             )
 
         elif isinstance(error, commands.DisabledCommand):
+            _traceback = False
             await ctx.send(f"{ctx.command} has been disabled.")
 
         elif isinstance(error, commands.NoPrivateMessage):
+            _traceback = False
             try:
                 await ctx.author.send(
                     f"{ctx.command} can not be used in Private Messages."
@@ -330,6 +322,7 @@ class Errors(commands.Cog):
             )
 
         elif isinstance(error, commands.BadArgument):
+            _traceback = False
             embed = discord.Embed(
                 title="Error - Bad Argument",
                 description=f"""{error.args[0]}""",
