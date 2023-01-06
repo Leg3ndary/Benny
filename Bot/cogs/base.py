@@ -12,7 +12,7 @@ import discord.utils
 import psutil
 import pygit2
 from discord.ext import commands
-from gears import embed_creator, style, util
+from gears import embed_creator, style
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
