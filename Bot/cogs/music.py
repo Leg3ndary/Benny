@@ -991,7 +991,7 @@ class Music(commands.Cog):
                     return
                 if len(previous) >= 25:
                     previous.pop(0)
-                previous.append(track.id)
+                previous = [track.id] + previous
 
                 new = "|".join(previous)
                 await cursor.execute(
