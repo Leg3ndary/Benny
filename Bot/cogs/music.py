@@ -12,7 +12,8 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
-from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
+from gears.music_exceptions import (NotConnected, NothingPlaying, QueueEmpty,
+                                    QueueFull)
 from musescore_scraper import MuseScraper
 from wavelink.ext import spotify
 
@@ -126,14 +127,15 @@ class PlayerDropdown(discord.ui.Select):
             else:
                 total += queued_track.length
 
-        if self.player.queue.count == 0 and (
-            not self.player.is_playing() or self.player.is_paused()
-        ):
+        if self.player.queue.count == 0:
             title = "Playing now"
-            playing_message = "Playing now"
+            playing_message = ""
+        elif self.player.queue.count == 1:
+            title = "Up Next"
+            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
         else:
-            title = f"Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 1}"
-            playing_message = f"Playing {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
+            title = f"Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 'Unknown'}"
+            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
 
         embed = discord.Embed(
             title=f"Track Queued - {title}",
@@ -141,8 +143,7 @@ class PlayerDropdown(discord.ui.Select):
             description=f"""```asciidoc
 [ {track.title} ]
 = Duration: {duration(track.length)} =
-```
-{playing_message}""",
+```{playing_message}""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
@@ -153,6 +154,85 @@ class PlayerDropdown(discord.ui.Select):
         )
 
         await self.player.request(track)
+        self.ctx.bot.dispatch("music_add_to_recent", str(self.ctx.author.id), track)
+        await interaction.response.edit_message(embed=embed, view=None)
+        self.view.stop()
+
+
+class RecentlyPlayedDropdown(discord.ui.Select):
+    """
+    Display recently played tracks
+    """
+
+    def __init__(
+        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+    ) -> None:
+        """
+        Constructing the dropdown view
+        """
+        self.ctx = ctx
+        self.player = player
+        self.songs = songs
+        options = []
+
+        for count, song in enumerate(songs):
+            options.append(
+                discord.SelectOption(
+                    emoji=style.Emoji.REGULAR.music,
+                    label=song.title,
+                    description=f"""{song.author} - Duration: {duration(song.length)}""",
+                    value=count,
+                )
+            )
+        super().__init__(
+            placeholder="Recently Played",
+            min_values=1,
+            max_values=1,
+            options=options,
+        )
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """
+        Callback for the queue
+        """
+        track = self.songs[int(self.values[0])]
+
+        total = track.length
+
+        for queued_track in self.player.queue._queue:
+            if isinstance(queued_track, wavelink.PartialTrack):
+                pass
+            else:
+                total += queued_track.length
+
+        if self.player.queue.count == 0 and self.player.is_playing():
+            title = "Playing now"
+            playing_message = ""
+        elif self.player.queue.count == 1:
+            title = "Up Next"
+            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
+        else:
+            title = f"Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 'Unknown'}"
+            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
+
+        embed = discord.Embed(
+            title=f"Track Queued - {title}",
+            url=track.uri,
+            description=f"""```asciidoc
+[ {track.title} ]
+= Duration: {duration(track.length)} =
+```{playing_message}""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        embed.set_author(name=track.author)
+        embed.set_footer(
+            text=self.ctx.author.display_name,
+            icon_url=self.ctx.author.display_avatar.url,
+        )
+
+        await self.player.request(track)
+        self.ctx.bot.dispatch("music_add_to_recent", str(self.ctx.author.id), track)
         await interaction.response.edit_message(embed=embed, view=None)
         self.view.stop()
 
@@ -163,13 +243,19 @@ class PlayerSelector(discord.ui.View):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+        self,
+        ctx: commands.Context,
+        node: wavelink.Node,
+        player: Player,
+        songs: List[wavelink.Track],
     ) -> None:
         """
         Constructing the player selector
         """
         super().__init__(timeout=60)
         self.ctx = ctx
+        self.node = node
+        self.player = player
         self.add_item(PlayerDropdown(ctx, player, songs))
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
@@ -186,6 +272,22 @@ class PlayerSelector(discord.ui.View):
         """
         for item in self.children:
             item.disabled = True
+
+    async def add_recently_played(self, cursor: asqlite.Cursor) -> None:
+        """
+        Add recently played to the view
+        """
+        songs = await cursor.execute(
+            """SELECT recent FROM recently_played WHERE id = ?;""",
+            (str(self.ctx.author.id)),
+        )
+        songs = (await songs.fetchone())[0]
+        if songs:
+            songs = [
+                await self.node.build_track(wavelink.Track, song)
+                for song in songs.split("|")
+            ]
+            self.add_item(RecentlyPlayedDropdown(self.ctx, self.player, songs))
 
     @discord.ui.button(
         emoji=style.Emoji.REGULAR.cancel,
@@ -697,17 +799,16 @@ class Music(commands.Cog):
         """
         await self.connect_nodes()
         self.musicDB = await asqlite.connect("Databases/music.db")
-        async with self.musicDB as db:
-            await db.execute(
-                """
-                CREATE TABLE IF NOT EXISTS recently_played (
-                    id  TEXT NOT NULL
-                            PRIMARY KEY,
-                    recent TEXT NOT NULL
-                );
-                """
-            )
-            await db.commit()
+        await self.musicDB.execute(
+            """
+            CREATE TABLE IF NOT EXISTS recently_played (
+                id  TEXT NOT NULL
+                    PRIMARY KEY,
+                recent TEXT NOT NULL
+            );
+            """
+        )
+        await self.musicDB.commit()
         await self.bot.blogger.load("Recently Played")
 
     @commands.Cog.listener()
@@ -737,6 +838,28 @@ class Music(commands.Cog):
             else:
                 await player.play(player.queue.get())
 
+    @commands.Cog.listener()
+    async def on_voice_state_update(
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,
+        after: discord.VoiceState,
+    ) -> None:
+        """
+        Check if the bot should disconnect
+        """
+        if after.channel or member.guild.voice_client is None:
+            return
+        if before.channel and before.channel.id not in self.disconnect_tasks:
+            player = member.guild.voice_client
+            self.disconnect_tasks[player.channel.id] = self.bot.loop.create_task(
+                self.await_disconnect(player)
+            )
+        if after.channel and after.channel.id in self.disconnect_tasks:
+            if not member.bot:
+                self.disconnect_tasks[before.channel.id].cancel()
+                del self.disconnect_tasks[before.channel.id]
+
     async def await_disconnect(self, player: Player) -> None:
         """
         Wait for the player to disconnect
@@ -744,8 +867,8 @@ class Music(commands.Cog):
         await asyncio.sleep(180)
         if (
             player.is_connected()
-                and (not player.is_playing() or not player.is_paused())
-                and player.queue.is_empty
+            and (not player.is_playing() or not player.is_paused())
+            and player.queue.is_empty
             and len(player.channel.members) == 1
         ):
             try:
@@ -762,8 +885,8 @@ class Music(commands.Cog):
         track = await spotify.SpotifyTrack.search(
             query=decoded["id"], return_first=True
         )
-
         await player.request(track)
+        ctx.bot.dispatch("music_add_to_recent", str(ctx.author.id), track)
 
         embed = discord.Embed(
             title=f"{style.Emoji.REGULAR.spotify} Playing Track From Spotify",
@@ -846,19 +969,47 @@ class Music(commands.Cog):
         )
         await sent.edit(embed=finished)
 
-    async def add_to_recent(self, _id: int, track: wavelink.Track) -> None:
+    async def add_to_recent(self, user_id: str, track: wavelink.Track) -> None:
         """
         Add a track to the recently played table
         """
-        async with self.musicDB as db:
-            await db.execute(
+        async with self.musicDB.cursor() as cursor:
+            previous = await cursor.execute(
                 """
-                INSERT INTO recently_played (id, recent)
-                VALUES (?, ?)
+                SELECT recent FROM recently_played WHERE id = ?;
                 """,
-                (_id, track.id),
+                (user_id,),
             )
-            await db.commit()
+            previous = (await previous.fetchone())[0].split("|")
+            if previous:
+                if track.id == previous[0]:
+                    return
+                if len(previous) >= 25:
+                    previous.pop(0)
+                previous.append(track.id)
+
+                new = "|".join(previous)
+                await cursor.execute(
+                    """
+                    UPDATE recently_played SET recent = ? WHERE id = ?;
+                    """,
+                    (new, user_id),
+                )
+            else:
+                await cursor.execute(
+                    """
+                    INSERT INTO recently_played VALUES (?, ?);
+                    """,
+                    (user_id, track.id),
+                )
+            await cursor.commit()
+
+    @commands.Cog.listener()
+    async def on_music_add_to_recent(self, user_id: str, track: wavelink.Track) -> None:
+        """
+        Add a track to the recently played table
+        """
+        await self.add_to_recent(user_id, track)
 
     @commands.hybrid_command(
         name="play",
@@ -902,7 +1053,10 @@ class Music(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.GREY,
             )
-            await ctx.reply(embed=embed, view=PlayerSelector(ctx, player, tracks[:25]))
+            selector = PlayerSelector(ctx, node, player, tracks[:25])
+            async with self.musicDB.cursor() as cursor:
+                await selector.add_recently_played(cursor)
+            await ctx.reply(embed=embed, view=selector)
 
     @commands.hybrid_command(
         name="queue",
