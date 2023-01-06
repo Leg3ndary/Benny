@@ -741,11 +741,11 @@ class Music(commands.Cog):
         """
         Wait for the player to disconnect
         """
-        await asyncio.sleep(300)
+        await asyncio.sleep(180)
         if (
-            player.is_connected
-            and (not player.is_playing() or not player.is_paused())
-            and player.queue.is_empty
+            player.is_connected()
+                and (not player.is_playing() or not player.is_paused())
+                and player.queue.is_empty
             and len(player.channel.members) == 1
         ):
             try:
