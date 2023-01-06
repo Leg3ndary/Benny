@@ -932,9 +932,9 @@ Total Uptime: {resolved_rel}"""
             title="Bulk Role Add",
             description=f"""This will add {role.mention} to {len(members)} different members, are you sure you want to do this?
             
-            This will take {len(members)} seconds to complete.
+            This will take `{len(members)}` seconds to complete.
             
-            You will not be able to cancel this action.""",
+            **You will not be able to cancel this action.**""",
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
