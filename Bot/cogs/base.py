@@ -5,13 +5,14 @@ import json
 import platform
 import time
 import unicodedata
+from typing import List
 
 import discord
 import discord.utils
 import psutil
 import pygit2
 from discord.ext import commands
-from gears import embed_creator, style
+from gears import embed_creator, style, util
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
@@ -222,43 +223,152 @@ class SystemView(discord.ui.View):
         await interaction.response.edit_message(embed=embed, view=self)
 
 
-class RoleAllSelect(discord.ui.RoleSelect):
-    """
-    Custom role select to add roles to everyone
-    """
-
-
 class RoleAllView(discord.ui.View):
     """
     A view to start giving roles to everyone
     """
 
-    def __init__(self, ctx: commands.Context, roles: list[discord.Role]):
+    def __init__(
+        self, ctx: commands.Context, members: List[discord.Member], role: discord.Role
+    ) -> None:
+        """
+        Initialize the view
+        """
         super().__init__()
         self.ctx = ctx
-        self.roles = roles
-        self.role = None
-        # self.add_item(None)
+        self.members = members
+        self.role = role
 
-    @discord.ui.button(style=discord.ButtonStyle.primary, label="Start", emoji="👍")
+    @discord.ui.button(
+        style=discord.ButtonStyle.green,
+        label="Start",
+        emoji=style.Emoji.REGULAR.check,
+    )
     async def start_button(
         self, interaction: discord.Interaction, button: discord.Button
     ) -> None:
         """
         Start giving roles to everyone
         """
-        await interaction.response.defer()
-        # await self.start_giving_roles(self.role)
+        await self.start_giving_roles(interaction, self.role)
 
-    async def start_giving_roles(self, role: discord.Role) -> None:
+    @discord.ui.button(
+        style=discord.ButtonStyle.danger,
+        label="Cancel",
+        emoji=style.Emoji.REGULAR.cancel,
+    )
+    async def cancel_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Cancel the view
+        """
+        await interaction.message.delete()
+        await self.ctx.command.reset_cooldown(self.ctx)
+
+    async def start_giving_roles(
+        self, interaction: discord.Interaction, role: discord.Role
+    ) -> None:
         """
         Start giving roles to everyone
         """
-        for member in self.ctx.guild.members:
+        embed = discord.Embed(
+            title="Bulk Role Add - In Progress",
+            description="""This message will edit itself when it is finished.""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.YELLOW,
+        )
+        await interaction.message.edit(embed=embed, view=None)
+        await interaction.response.send_message(
+            "Starting to give roles to everyone...", ephemeral=True
+        )
+
+        for member in self.members:
             if role not in member.roles:
                 await member.add_roles(role)
                 await asyncio.sleep(1)
-        await self.ctx.send("Done!")
+
+        embed = discord.Embed(
+            title="Bulk Role Add - Finished",
+            description="""Finished giving roles to everyone!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await interaction.message.edit(embed=embed)
+
+
+class RoleRallView(discord.ui.View):
+    """
+    A view to start removing roles to everyone
+    """
+
+    def __init__(
+        self, ctx: commands.Context, members: List[discord.Member], role: discord.Role
+    ) -> None:
+        """
+        Initialize the view
+        """
+        super().__init__()
+        self.ctx = ctx
+        self.members = members
+        self.role = role
+
+    @discord.ui.button(
+        style=discord.ButtonStyle.green,
+        label="Start",
+        emoji=style.Emoji.REGULAR.check,
+    )
+    async def start_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Start removing roles from everyone
+        """
+        await self.start_removing_roles(interaction, self.role)
+
+    @discord.ui.button(
+        style=discord.ButtonStyle.danger,
+        label="Cancel",
+        emoji=style.Emoji.REGULAR.cancel,
+    )
+    async def cancel_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Cancel the view
+        """
+        await interaction.message.delete()
+        await self.ctx.command.reset_cooldown(self.ctx)
+
+    async def start_removing_roles(
+        self, interaction: discord.Interaction, role: discord.Role
+    ) -> None:
+        """
+        Start giving roles to everyone
+        """
+        embed = discord.Embed(
+            title="Bulk Role Remove - In Progress",
+            description="""This message will edit itself when it is finished.""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.YELLOW,
+        )
+        await interaction.message.edit(embed=embed, view=None)
+        await interaction.response.send_message(
+            "Starting to remove roles from everyone...", ephemeral=True
+        )
+
+        for member in self.members:
+            if role in member.roles:
+                await member.remove_roles(role)
+                await asyncio.sleep(1)
+
+        embed = discord.Embed(
+            title="Bulk Role Remove - Finished",
+            description="""Finished removing roles from everyone!""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREEN,
+        )
+        await interaction.message.edit(embed=embed)
 
 
 class Base(commands.Cog):
@@ -805,27 +915,60 @@ Total Uptime: {resolved_rel}"""
         description="""Give everyone a role""",
         help="""Give everyone a role""",
         brief="Give everyone a role",
-        aliases=[],
-        enabled=False,
+        aliases=["bulk"],
+        enabled=True,
         hidden=False,
     )
     @commands.cooldown(1.0, 3600.0, commands.BucketType.guild)
     @commands.guild_only()
-    @commands.has_permissions(manage_roles=True)
+    @commands.has_permissions(administrator=True)
     async def role_all_cmd(self, ctx: commands.Context, *, role: discord.Role) -> None:
         """
         Add roles to all members that don't already have the role
         """
-
-        # create a view with blacklist options
+        await ctx.defer()
+        members = [member for member in ctx.guild.members if role not in member.roles]
         embed = discord.Embed(
             title="Bulk Role Add",
-            description="""This will add the role to """,
+            description=f"""This will add {role.mention} to {len(members)} different members, are you sure you want to do this?
+            
+            This will take {len(members)} seconds to complete.
+            
+            You will not be able to cancel this action.""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.random(),
+            color=style.Color.AQUA,
         )
+        await ctx.send(embed=embed, view=RoleAllView(ctx, members, role))
 
-        await ctx.send(embed=embed)
+    @role_group.command(
+        name="rall",
+        description="""Remove a role from everyone""",
+        help="""Remove a role from everyone""",
+        brief="Remove a role from everyone",
+        aliases=["removeall"],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 3600.0, commands.BucketType.guild)
+    @commands.guild_only()
+    @commands.has_permissions(administrator=True)
+    async def role_rall_cmd(self, ctx: commands.Context, *, role: discord.Role) -> None:
+        """
+        Remove roles from all members that have the role
+        """
+        await ctx.defer()
+        members = [member for member in ctx.guild.members if role in member.roles]
+        embed = discord.Embed(
+            title="Bulk Role Remove",
+            description=f"""This will remove {role.mention} from {len(members)} different members, are you sure you want to do this?
+            
+            This will take `{len(members)}` seconds to complete.
+            
+            **You will not be able to cancel this action.**""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.AQUA,
+        )
+        await ctx.send(embed=embed, view=RoleRallView(ctx, members, role))
 
 
 async def setup(bot: commands.Bot) -> None:
