@@ -12,8 +12,7 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
-from gears.music_exceptions import (NotConnected, NothingPlaying, QueueEmpty,
-                                    QueueFull)
+from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
 from musescore_scraper import MuseScraper
 from wavelink.ext import spotify
 

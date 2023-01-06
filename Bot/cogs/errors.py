@@ -7,8 +7,7 @@ import discord.utils
 from colorama import Fore, Style
 from discord.ext import commands
 from gears import style
-from gears.music_exceptions import (NotConnected, NothingPlaying, QueueEmpty,
-                                    QueueFull)
+from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
 
 
 def log_error(error: str) -> None:
