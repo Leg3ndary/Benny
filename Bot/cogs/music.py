@@ -204,10 +204,10 @@ class RecentlyPlayedDropdown(discord.ui.Select):
             else:
                 total += queued_track.length
 
-        if self.player.queue.count == 0 and self.player.is_playing():
+        if self.player.queue.count == 0 and not self.player.is_playing():
             title = "Playing now"
             playing_message = ""
-        elif self.player.queue.count == 1:
+        elif self.player.queue.count == 0 and self.player.is_playing():
             title = "Up Next"
             playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
         else:
@@ -276,12 +276,18 @@ class PlayerSelector(discord.ui.View):
         """
         Add recently played to the view
         """
+        await cursor.execute(
+            """INSERT OR IGNORE INTO recently_played (id, recent) VALUES (?, ?);""",
+            (str(self.ctx.author.id), ""),
+        )
         songs = await cursor.execute(
             """SELECT recent FROM recently_played WHERE id = ?;""",
             (str(self.ctx.author.id)),
         )
         songs = (await songs.fetchone())[0]
-        if songs:
+        if songs.strip() != "":
+            if songs[0] == "|":
+                songs = songs[1:]
             songs = [
                 await self.node.build_track(wavelink.Track, song)
                 for song in songs.split("|")
