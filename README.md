@@ -1,5 +1,4 @@
 # Benny Bot
-
 ![image](https://user-images.githubusercontent.com/57199957/185969892-cd62402c-b323-4b63-bc54-aa0dbdccc7ff.png)
 
 The bot that does basically you could ever need (WIP).
@@ -15,8 +14,10 @@ If you do think that this is an interesting project, come back to it later, and 
 ## More Features
 Please join our discord server [here](https://discord.gg/V55WS7Vsfx) to suggest any changes you would like to add.
 
-## License Info
+## Terms of Service? Privacy Policy?
+You can view all of this at our website [here](https://bennybot.me/).
 
+## License Info
 Under the Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0);
 
 You are free to copy and redistribute the material in any medium or format so long as the following conditions are met.
