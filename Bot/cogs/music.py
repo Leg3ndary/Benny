@@ -1061,6 +1061,7 @@ class Music(commands.Cog):
             selector = PlayerSelector(ctx, node, player, tracks[:25])
             async with self.musicDB.cursor() as cursor:
                 await selector.add_recently_played(cursor)
+                await self.musicDB.commit()
             await ctx.reply(embed=embed, view=selector)
 
     @commands.hybrid_command(
