@@ -288,11 +288,11 @@ class PlayerSelector(discord.ui.View):
         if songs.strip() != "":
             if songs[0] == "|":
                 songs = songs[1:]
-            songs = [
-                await self.node.build_track(wavelink.Track, song)
-                for song in songs.split("|")
-            ]
-            self.add_item(RecentlyPlayedDropdown(self.ctx, self.player, songs))
+            built = []
+            for song in songs.split("|"):
+                if song:
+                    built.append(await self.node.build_track(wavelink.Track, song))
+            self.add_item(RecentlyPlayedDropdown(self.ctx, self.player, built))
 
     @discord.ui.button(
         emoji=style.Emoji.REGULAR.cancel,
@@ -993,7 +993,7 @@ class Music(commands.Cog):
                     previous.pop(0)
                 previous = [track.id] + previous
 
-                new = "|".join(previous)
+                new = "|".join(previous).replace("||", "|")  # I don't even know
                 await cursor.execute(
                     """
                     UPDATE recently_played SET recent = ? WHERE id = ?;
@@ -1007,7 +1007,7 @@ class Music(commands.Cog):
                     """,
                     (user_id, track.id),
                 )
-            await cursor.commit()
+        await self.musicDB.commit()
 
     @commands.Cog.listener()
     async def on_music_add_to_recent(self, user_id: str, track: wavelink.Track) -> None:
