@@ -1049,6 +1049,8 @@ class Music(commands.Cog):
             tracks = await node.get_tracks(
                 cls=wavelink.YouTubeTrack, query=f"ytsearch:{search}"
             )
+            if not tracks:
+                raise commands.BadArgument("No songs could be queried, youtube links do not work.")
             embed = discord.Embed(
                 title=f"{style.Emoji.REGULAR.music} Select a Song to Play",
                 description=f"""```asciidoc
@@ -1091,7 +1093,7 @@ class Music(commands.Cog):
 
         for count, track in enumerate(player.queue._queue, 1):
             if isinstance(track, wavelink.PartialTrack):
-                visual += f"\n{count}. {track.title} [ N/A ] ( Added from Playlist. )"
+                visual += f"\n{count}. {track.title} ( Added from Playlist. )"
             else:
                 visual += f"\n{count}. {track.title} [{track.author}] ({duration(track.length)})"
                 total_dur += track.length
