@@ -30,7 +30,7 @@ class LoggingManager:
         """
         Load our db on start
         """
-        self.db = await asqlite.connect("Databases/logging.db")
+        self.db = await asqlite.connect("databases/logging.db")
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS webhooks (

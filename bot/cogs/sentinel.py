@@ -765,7 +765,7 @@ class Sentinel(commands.Cog):
         """
         Load decancer manager when bots loaded
         """
-        self.db = await asqlite.connect("Databases/sentinel.db")
+        self.db = await asqlite.connect("databases/sentinel.db")
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS config (

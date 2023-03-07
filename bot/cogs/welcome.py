@@ -125,7 +125,7 @@ class Welcome(commands.Cog):
         """
         On cog load create a connection because yes
         """
-        self.db: asqlite.Connection = await asqlite.connect("Databases/server.db")
+        self.db: asqlite.Connection = await asqlite.connect("databases/server.db")
 
         await self.db.execute(
             """

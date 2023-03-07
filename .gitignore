@@ -132,7 +132,7 @@ dmypy.json
 application.yml
 
 # Databases for obvious reasons
-Databases
+databases
 
 # Vscode files
 .vscode
@@ -159,8 +159,6 @@ env/
 env__/
 .vscode/symbols.json
 app/db.sqlite3
-
-Musescore/
 
 testing.py
 

@@ -13,7 +13,6 @@ import wavelink
 from discord.ext import commands
 from gears import style, util
 from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
-from musescore_scraper import MuseScraper
 from wavelink.ext import spotify
 
 
@@ -523,207 +522,6 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
 
-class MusescoreDropdown(discord.ui.Select):
-    """
-    Shows up to 25 sheets in a Select so you can choose one to download
-    """
-
-    def __init__(
-        self,
-        ctx: commands.Context,
-        ams: MuseScraper,
-        sheets: None,  # List[QueriedSheetMusic],
-    ) -> None:
-        """
-        Construct the queue dropdown view
-        """
-        self.ctx = ctx
-        self.ams = ams
-        options = []
-
-        self.sheets = sheets
-        for counter, sheet in enumerate(sheets[:25]):
-            options.append(
-                discord.SelectOption(
-                    label=sheet.title,
-                    description=f"""{sheet.author} - Pages: {sheet.pages} - Playtime: {sheet.ttp}""",
-                    value=counter,
-                )
-            )
-
-        super().__init__(
-            placeholder="Select a Sheet to Download",
-            min_values=1,
-            max_values=1,
-            options=options,
-        )
-
-    async def callback(self, interaction: discord.Interaction) -> None:
-        """
-        Callback for the queue
-        """
-        sheet = self.sheets[int(self.values[0])]
-        embed = discord.Embed(
-            title=f"Viewing Sheet {sheet.title}",
-            url=sheet.url,
-            description=f"""```yaml
-            Author   : {sheet.author}
-            Parts    : {sheet.parts}
-            Pages    : {sheet.pages}
-            Length   : {sheet.ttp}
-            Views    : {sheet.views}
-            Favorites: {sheet.favorites}
-            Votes    : {sheet.votes}
-            ```""",
-            timestamp=discord.utils.utcnow(),
-            color=0x3269BC,
-        )
-        embed.set_footer(
-            text=self.ctx.author.display_name,
-            icon_url=self.ctx.author.display_avatar.url,
-        )
-        await interaction.response.edit_message(
-            embed=embed, view=MusescoreDownload(self.ctx, self.ams, sheet, self)
-        )
-
-
-class MusescoreView(discord.ui.View):
-    """
-    Display all sheets found during a search and display them
-    """
-
-    def __init__(
-        self,
-        ctx: commands.Context,
-        ams: MuseScraper,
-        sheets: None,  # List[QueriedSheetMusic],
-    ) -> None:
-        """
-        Construct the sheets view with dropdown attached
-        """
-        self.ctx = ctx
-        super().__init__(timeout=60)
-
-        self.add_item(MusescoreDropdown(ctx, ams, sheets))
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """
-        If the interaction isn't by the user, return a fail.
-        """
-        if interaction.user != self.ctx.author:
-            return False
-        return True
-
-    async def on_timeout(self) -> None:
-        """
-        On timeout make this look cool
-        """
-        for item in self.children:
-            item.disabled = True
-
-        embed = discord.Embed(
-            title="Viewing Sheets",
-            description="""Timed out""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.RED,
-        )
-        await self.play_embed.edit(embed=embed, view=self)
-
-    @discord.ui.button(
-        emoji=style.Emoji.REGULAR.cancel,
-        label="Cancel",
-        style=discord.ButtonStyle.danger,
-        row=2,
-    )
-    async def button_callback(
-        self, interaction: discord.Interaction, button: discord.Button
-    ) -> None:
-        """
-        Delete the message if clicked
-        """
-        await self.ctx.message.delete()
-
-
-class MusescoreDownload(discord.ui.View):
-    """
-    Provide a download button
-    """
-
-    def __init__(
-        self,
-        ctx: commands.Context,
-        ams: MuseScraper,
-        sheet: None,  # QueriedSheetMusic,
-        original_view: MusescoreView,
-    ) -> None:
-        """
-        Construct the download view attached
-        """
-        self.ctx = ctx
-        self.ams = ams
-        self.sheet = sheet
-        self.ov = original_view
-        super().__init__(timeout=60)
-
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        """
-        If the interaction isn't by the user, return a fail.
-        """
-        if interaction.user != self.ctx.author:
-            return False
-        return True
-
-    async def on_timeout(self) -> None:
-        """
-        On timeout make this look cool
-        """
-        for item in self.children:
-            item.disabled = True
-
-    @discord.ui.button(
-        emoji=style.Emoji.REGULAR.check,
-        label="Download",
-        style=discord.ButtonStyle.green,
-    )
-    async def download_button(
-        self, interaction: discord.Interaction, button: discord.Button
-    ) -> None:
-        """
-        Download and send the pdf if clicked
-        """
-        embed = discord.Embed(
-            title="Downloading...",
-            description="""Please be patient, this may take a while.""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.GREY,
-        )
-        await self.ctx.edit(embed=embed)
-        path = await self.ams.to_pdf(self.sheet.url)
-        embed = discord.Embed(
-            title="Downloaded",
-            description="""This will remain on discord as long as you save the original message, enjoy!""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.GREEN,
-        )
-        await self.ctx.edit(
-            embed=embed, file=discord.File(path, filename=f"{self.sheet.title}.pdf")
-        )
-
-    @discord.ui.button(
-        emoji=style.Emoji.REGULAR.cancel,
-        label="Cancel",
-        style=discord.ButtonStyle.danger,
-    )
-    async def cancel_button(
-        self, interaction: discord.Interaction, button: discord.Button
-    ) -> None:
-        """
-        Delete the message if clicked
-        """
-        await self.play_embed.delete()
-        await interaction.response.send_message("Cancelled", ephemeral=True)
-
-
 def duration(seconds: float) -> str:
     """
     Return a human readable duration because
@@ -803,7 +601,7 @@ class Music(commands.Cog):
         On cog load do stuff
         """
         await self.connect_nodes()
-        self.musicDB = await asqlite.connect("Databases/music.db")
+        self.musicDB = await asqlite.connect("databases/music.db")
         await self.musicDB.execute(
             """
             CREATE TABLE IF NOT EXISTS recently_played (
@@ -1485,48 +1283,6 @@ class Music(commands.Cog):
             color=style.Color.PURPLE,
         )
         await ctx.reply(embed=embed, view=FilterSpinView(ctx, player))
-
-    @commands.hybrid_command(
-        name="musescore",
-        description="""Get sheet music from musescore""",
-        help="""Get sheet music from musescore""",
-        brief="Get sheet music from musescore",
-        aliases=["sheet", "sheets"],
-        enabled=False,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 10.0, commands.BucketType.default)
-    async def musescore_cmd(self, ctx: commands.Context, *, search: str) -> None:
-        """
-        Get sheet music from musescore
-        """
-        await ctx.defer()
-        async with MuseScraper() as ms:
-            url = urlparse(search)
-
-            if url.scheme == "https" and url.netloc == "musescore.com":
-                if url.hostname == "musescore.com":
-                    embed = discord.Embed(
-                        title="Downloading...",
-                        timestamp=discord.utils.utcnow(),
-                        color=style.Color.GREY,
-                    )
-                    message = await ctx.reply(embed=embed)
-                    path = await ms.download(search, "Musescore/")
-                    file = discord.File(path)
-
-                    embed = discord.Embed(
-                        title="Downloaded Successfully",
-                        timestamp=discord.utils.utcnow(),
-                        color=style.Color.GREEN,
-                    )
-                    await message.edit(embed=embed)
-                    await ctx.send(file=file)
-                    await self.bot.loop.run_in_executor(os.remove, path)
-                else:
-                    raise commands.BadArgument("Invalid URL")
-            else:
-                raise commands.BadArgument("Invalid URL")
 
 
 async def setup(bot: commands.Bot) -> None:

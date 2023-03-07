@@ -239,7 +239,7 @@ class Mod(commands.Cog):
         """
         Load our sqlite db yay
         """
-        self.db = await asqlite.connect("Databases/mod.db")
+        self.db = await asqlite.connect("databases/mod.db")
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS warns (

@@ -171,7 +171,7 @@ class Tags(commands.Cog):
         """
         On cog load start up our nice db
         """
-        self.db = await asqlite.connect("Databases/tags.db")
+        self.db = await asqlite.connect("databases/tags.db")
 
         await self.db.execute(
             """

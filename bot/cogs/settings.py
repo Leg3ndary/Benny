@@ -250,7 +250,7 @@ class Settings(commands.Cog):
         """
         On cog load, load up some users
         """
-        self.users_db = await asqlite.connect("Databases/users.db")
+        self.users_db = await asqlite.connect("databases/users.db")
         await self.users_db.execute(
             """
             CREATE TABLE IF NOT EXISTS users (
@@ -266,7 +266,7 @@ class Settings(commands.Cog):
         )
         await self.users_db.commit()
         await self.bot.blogger.load("Users")
-        self.server_db = await asqlite.connect("Databases/server.db")
+        self.server_db = await asqlite.connect("databases/server.db")
 
     async def cog_unload(self) -> None:
         """

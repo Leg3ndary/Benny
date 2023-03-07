@@ -374,7 +374,7 @@ class Reminders(commands.Cog):
         """
         Dispatch to start load reminders
         """
-        self.reminders_db = await asqlite.connect("Databases/users.db")
+        self.reminders_db = await asqlite.connect("databases/users.db")
         self.rm = ReminderManager(self.bot, self.reminders_db)
 
     async def pull_time(self, string: str) -> int:
