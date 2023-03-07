@@ -224,7 +224,7 @@ async def start_bot() -> None:
             bot.dispatch("load_reminders")
             await bot.blogger.bot_update("LOGGED IN")
 
-        await bot.util.load_cogs(os.listdir("Bot/cogs"))
+        await bot.util.load_cogs(os.listdir("bot/cogs"))
         bot.tag_cog = bot.get_cog("Tags")
 
         end = time.monotonic()
