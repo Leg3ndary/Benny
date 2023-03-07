@@ -8,6 +8,7 @@ import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
+from interfaces.database import BennyDatabases
 
 FAKE_SEED = {
     "user": None,
@@ -129,7 +130,7 @@ class Tags(commands.Cog):
         Init the bot with all the blocks the bot needs
         """
         self.bot = bot
-        self.db: asqlite.Connection = None
+        self.databases: BennyDatabases = bot.databases
         bot.custom_tags = self.custom_tags
         tse_blocks = [
             tse.block.BreakBlock(),
@@ -171,11 +172,9 @@ class Tags(commands.Cog):
         """
         On cog load start up our nice db
         """
-        self.db = await asqlite.connect("databases/tags.db")
-
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS tags (
+            CREATE TABLE IF NOT EXISTS tags_tags (
                 tag_id     TEXT PRIMARY KEY
                                 NOT NULL,
                 guild      TEXT NOT NULL,
@@ -185,12 +184,12 @@ class Tags(commands.Cog):
                 uses       INT  NOT NULL,
                 tagscript  TEXT NOT NULL
             );
-        """
+            """
         )
-        await self.db.commit()
+        await self.databases.servers.commit()
 
-        async with self.db.cursor() as cursor:
-            row = await cursor.execute("""SELECT MAX(tag_id) FROM tags;""")
+        async with self.databases.servers.cursor() as cursor:
+            row = await cursor.execute("""SELECT MAX(tag_id) FROM tags_tags;""")
             _max = tuple(await row.fetchone())[0]
             if _max:
                 self.latest_tag = int(_max)
@@ -203,7 +202,7 @@ class Tags(commands.Cog):
         """
         On cog unload close our db
         """
-        await self.db.close()
+        # await self.db.close()
 
     @commands.Cog.listener()
     async def on_initiate_all_tags(self) -> None:
@@ -211,8 +210,8 @@ class Tags(commands.Cog):
         Initiate all tags.
         """
         start = time.monotonic()
-        async with self.db.cursor() as cursor:
-            row = await cursor.execute("""SELECT * FROM tags;""")
+        async with self.databases.servers.cursor() as cursor:
+            row = await cursor.execute("""SELECT * FROM tags_tags;""")
             tags = tuple(await row.fetchall())
             for tag in tags:
                 tag = tuple(tag)
@@ -254,8 +253,10 @@ class Tags(commands.Cog):
         ):
             raise commands.BadArgument(f"There isn't a custom tag called {self.name}")
         del self.custom_tags[tag.name][tag.guild]
-        await self.db.execute("""DELETE FROM tags WHERE tag_id = ?;""", (tag.tag_id,))
-        await self.db.commit()
+        await self.databases.servers.execute(
+            """DELETE FROM tags_tags WHERE tag_id = ?;""", (tag.tag_id,)
+        )
+        await self.databases.servers.commit()
 
     async def use_tag(self, tag: Tag) -> None:
         """
@@ -264,10 +265,11 @@ class Tags(commands.Cog):
         tag.uses += 1
 
         await asyncio.gather(
-            self.db.execute(
-                """UPDATE tags SET uses = ? WHERE tag_id = ?;""", (tag.uses, tag.tag_id)
+            self.databases.servers.execute(
+                """UPDATE tags_tags SET uses = ? WHERE tag_id = ?;""",
+                (tag.uses, tag.tag_id),
             ),
-            self.db.commit(),
+            self.databases.servers.commit(),
         )
 
     async def get_tags(self, guild: str) -> List[Tag]:
@@ -276,10 +278,10 @@ class Tags(commands.Cog):
 
         Returns all of them as a Tag class
         """
-        async with self.db.cursor() as cursor:
+        async with self.databases.servers.cursor() as cursor:
             tags_list = []
             row = await cursor.execute(
-                """SELECT * FROM tags WHERE guild = ?;""", (guild,)
+                """SELECT * FROM tags_tags WHERE guild = ?;""", (guild,)
             )
             tags = tuple(await row.fetchall())
             for tag in tags:
@@ -549,11 +551,11 @@ class Tags(commands.Cog):
                 )
 
         if tag:
-            await self.db.execute(
-                """UPDATE tags SET tagscript = ? WHERE tag_id = ?;""",
+            await self.databases.servers.execute(
+                """UPDATE tags_tags SET tagscript = ? WHERE tag_id = ?;""",
                 (content, tag.tag_id),
             )
-            await self.db.commit()
+            await self.databases.servers.commit()
             new_tag = Tag(
                 self.latest_tag,
                 str(ctx.guild.id),
@@ -585,10 +587,10 @@ class Tags(commands.Cog):
                 content,
             )
 
-            await self.db.execute(
-                """INSERT INTO tags VALUES(?, ?, ?, ?, ?, ?, ?);""", tag_data
+            await self.databases.servers.execute(
+                """INSERT INTO tags_tags VALUES(?, ?, ?, ?, ?, ?, ?);""", tag_data
             )
-            await self.db.commit()
+            await self.databases.servers.commit()
 
             tag_mod = Tag(
                 tag_data[0],

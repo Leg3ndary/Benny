@@ -24,7 +24,9 @@ class UserAccess:
         """
         Create a user in our small database
         """
-        await self.db.execute("""INSERT INTO users VALUES(?, 0, False);""", (user_id,))
+        await self.db.execute(
+            """INSERT INTO settings_users VALUES(?, 0, False);""", (user_id,)
+        )
         await self.db.commit()
 
     async def get_user(self, user_id: str) -> tuple:
@@ -32,7 +34,7 @@ class UserAccess:
         Get a users info
         """
         async with self.db.execute(
-            """SELECT * FROM users WHERE user_id = ?;""", (user_id,)
+            """SELECT * FROM settings_users WHERE user_id = ?;""", (user_id,)
         ) as cursor:
             if not cursor.fetchone():
                 await self.create_user(user_id)
@@ -99,7 +101,7 @@ class PrefixManager:
         list
         """
         async with self.db.execute(
-            """SELECT prefixes FROM prefixes WHERE guild = ?;""", (str(guild),)
+            """SELECT prefixes FROM settings_prefixes WHERE guild = ?;""", (str(guild),)
         ) as cursor:
             result = await cursor.fetchone()
 

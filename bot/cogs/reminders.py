@@ -106,7 +106,9 @@ class ReminderManager:
         await self.load_config()
         await self.create_table()
 
-        async with self.databases.users.execute("""SELECT * FROM reminders_reminders;""") as cursor:
+        async with self.databases.users.execute(
+            """SELECT * FROM reminders_reminders;"""
+        ) as cursor:
             results = await cursor.fetchall()
 
         for result in results:

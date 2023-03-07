@@ -6,6 +6,7 @@ import discord.utils
 from bTagScript import AsyncInterpreter
 from discord.ext import commands
 from gears import embed_creator, style
+from interfaces.database import BennyDatabases
 
 
 async def process_embed(embed: discord.Embed, tsei: AsyncInterpreter) -> discord.Embed:
@@ -69,7 +70,7 @@ class WelcomeManager:
         async with self.db.cursor() as cur:
             result = await (
                 await cur.execute(
-                    """SELECT welcome_channel FROM welcome WHERE guild = ?;""",
+                    """SELECT welcome_channel FROM welcome_welcome WHERE guild = ?;""",
                     (str(guild)),
                 )
             ).fetchone()
@@ -91,7 +92,7 @@ class WelcomeManager:
         async with self.db.cursor() as cur:
             result = await (
                 await cur.execute(
-                    """SELECT goodbye_channel FROM welcome WHERE guild = ?;""",
+                    """SELECT goodbye_channel FROM welcome_welcome WHERE guild = ?;""",
                     (str(guild)),
                 )
             ).fetchone()
@@ -118,18 +119,16 @@ class Welcome(commands.Cog):
         Init for the bot
         """
         self.bot = bot
-        self.db: asqlite.Connection = None
+        self.databases: BennyDatabases = bot.databases
         self.wm: WelcomeManager = None
 
     async def cog_load(self) -> None:
         """
         On cog load create a connection because yes
         """
-        self.db: asqlite.Connection = await asqlite.connect("databases/server.db")
-
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS welcome (
+            CREATE TABLE IF NOT EXISTS welcome_welcome (
                 guild           TEXT    PRIMARY KEY
                                             NOT NULL,
                 welcome         TEXT,
@@ -139,23 +138,23 @@ class Welcome(commands.Cog):
             );
             """
         )
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS autoroles (
+            CREATE TABLE IF NOT EXISTS welcome_autoroles (
                 guild TEXT  PRIMARY KEY
                                 NOT NULL,
                 role TEXT
             );
             """
         )
-        await self.db.commit()
+        await self.databases.servers.commit()
         self.wm = WelcomeManager(self.bot, self.db)
 
     async def cog_unload(self) -> None:
         """
         On cog unload, close connection
         """
-        await self.db.close()
+        # await self.db.close()
 
     async def autorole(self, member: discord.Member) -> None:
         """
@@ -163,10 +162,10 @@ class Welcome(commands.Cog):
         """
         guild = member.guild.id
 
-        async with self.db.cursor() as cur:
+        async with self.databases.servers.cursor() as cur:
             result = await (
                 await cur.execute(
-                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    """SELECT role FROM welcome_autoroles WHERE guild = ?;""",
                     (str(guild)),
                 )
             ).fetchone()
@@ -342,10 +341,10 @@ class Welcome(commands.Cog):
         """
         Show the current autorole role
         """
-        async with self.db.cursor() as cur:
+        async with self.databases.servers.cursor() as cur:
             result = await (
                 await cur.execute(
-                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    """SELECT role FROM welcome_autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
             ).fetchone()
@@ -393,10 +392,10 @@ class Welcome(commands.Cog):
         if not ctx.bot_permissions.manage_roles:
             raise commands.BotMissingPermissions(["manage_roles"])
 
-        async with self.db.cursor() as cur:
+        async with self.databases.servers.cursor() as cur:
             result = await (
                 await cur.execute(
-                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    """SELECT role FROM welcome_autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
             ).fetchone()
@@ -404,9 +403,10 @@ class Welcome(commands.Cog):
             if result:
                 result = result["role"]
                 await cur.execute(
-                    """UPDATE autoroles SET role = ? WHERE guild = ?;""",
+                    """UPDATE welcome_autoroles SET role = ? WHERE guild = ?;""",
                     (str(role.id), str(ctx.guild.id)),
                 )
+                await self.databases.servers.commit()
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Updated autorole to {role.mention} (Previously <@&{result}>)""",
@@ -417,10 +417,10 @@ class Welcome(commands.Cog):
 
             else:
                 await cur.execute(
-                    """INSERT INTO autoroles (guild, role) VALUES (?, ?);""",
+                    """INSERT INTO welcome_autoroles (guild, role) VALUES (?, ?);""",
                     (str(ctx.guild.id), str(role.id)),
                 )
-                await self.db.commit()
+                await self.databases.servers.commit()
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Added autorole {role.mention} successfully!""",
@@ -443,10 +443,10 @@ class Welcome(commands.Cog):
         """
         Remove autorole from the server
         """
-        async with self.db.cursor() as cur:
+        async with self.databases.servers.cursor() as cur:
             result = await (
                 await cur.execute(
-                    """SELECT role FROM autoroles WHERE guild = ?;""",
+                    """SELECT role FROM welcome_autoroles WHERE guild = ?;""",
                     (str(ctx.guild.id)),
                 )
             ).fetchone()
@@ -454,9 +454,10 @@ class Welcome(commands.Cog):
             if result:
                 result = result["role"]
                 await cur.execute(
-                    """DELETE FROM autoroles WHERE guild = ?;""", (str(ctx.guild.id))
+                    """DELETE FROM welcome_autoroles WHERE guild = ?;""",
+                    (str(ctx.guild.id)),
                 )
-                await self.db.commit()
+                await self.databases.servers.commit()
                 embed = discord.Embed(
                     title="Success",
                     description=f"""Removed autorole <@&{result}> ({result}) successfully!""",

@@ -305,7 +305,9 @@ class Mod(commands.Cog):
         """
         Queue infraction actions for the next hour
         """
-        async with self.databases.servers.execute("""SELECT * FROM mod_mutes;""") as cursor:
+        async with self.databases.servers.execute(
+            """SELECT * FROM mod_mutes;"""
+        ) as cursor:
             for row in cursor:
                 mute = Infraction(row)
                 self.bot.loop.create_task(self.queue_infraction("mute", mute))

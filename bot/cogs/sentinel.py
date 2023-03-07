@@ -10,6 +10,7 @@ from colorama import Fore
 from detoxify import Detoxify
 from discord.ext import commands
 from gears import style
+from interfaces.database import BennyDatabases
 
 
 class Toxicity:
@@ -145,7 +146,7 @@ class SentinelManager:
         """
         self.sentinel = Detoxify(model_type="unbiased")
         self.loop = loop
-        self.db = db
+        self.db: asqlite.Connection = db
         self.sentinels = {}
         self.session = session
         self.username = "Benny Sentinel"
@@ -272,7 +273,7 @@ Average                                     {bars_colors[7]}{round(float(values[
         Load all sentinels objects into a cache so we can retrieve it quickly
         """
         async with self.db.cursor() as cursor:
-            query = """SELECT * FROM config;"""
+            query = """SELECT * FROM sentinels_config;"""
             data = await cursor.execute(query)
             data = await data.fetchall()
             if data:
@@ -298,7 +299,7 @@ Average                                     {bars_colors[7]}{round(float(values[
         """
         async with self.db.cursor() as cursor:
             async with await cursor.execute(
-                """SELECT * FROM config WHERE guild = ?;""", (str(guild),)
+                """SELECT * FROM sentinels_config WHERE guild = ?;""", (str(guild),)
             ) as data:
                 config = await data.fetchone()
                 self.sentinels[config[0]] = SentinelConfig(
@@ -374,7 +375,7 @@ Average                                     {bars_colors[7]}{round(float(values[
         """
         await self.db.execute(
             """
-            INSERT INTO config VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            INSERT INTO sentinels_config VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
             """,
             (
                 str(guild),
@@ -433,7 +434,7 @@ class DecancerManager:
         """
         Init the manager
         """
-        self.db = db
+        self.db: asqlite.Connection = db
         self.username = "Benny Decancer"
         self.avatar = avatar
 
@@ -443,12 +444,13 @@ class DecancerManager:
         """
         async with self.db.cursor() as cur:
             check = await cur.execute(
-                """SELECT guild FROM decancer WHERE guild = ?;""", (str(guild))
+                """SELECT guild FROM sentinels_decancer WHERE guild = ?;""",
+                (str(guild)),
             )
             if not await check.fetchone():
                 # second false needs to be changed later to premium
                 await cur.execute(
-                    """INSERT INTO decancer VALUES(?, ?, ?, ?, ?,?);""",
+                    """INSERT INTO sentinels_decancer VALUES(?, ?, ?, ?, ?,?);""",
                     (str(guild), None, False, False, self.username, self.avatar),
                 )
                 await self.db.commit()
@@ -460,7 +462,7 @@ class DecancerManager:
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
             await cur.execute(
-                """UPDATE decancer SET decancer = ? WHERE guild = ?;""",
+                """UPDATE sentinels_decancer SET decancer = ? WHERE guild = ?;""",
                 (True, str(guild)),
             )
             await self.db.commit()
@@ -472,7 +474,7 @@ class DecancerManager:
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
             await cur.execute(
-                """UPDATE decancer SET decancer = ? WHERE guild = ?;""",
+                """UPDATE sentinels_decancer SET decancer = ? WHERE guild = ?;""",
                 (False, str(guild)),
             )
             await self.db.commit()
@@ -484,7 +486,7 @@ class DecancerManager:
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
             await cur.execute(
-                """UPDATE decancer SET webhook_url = ? WHERE guild = ?;""",
+                """UPDATE sentinels_decancer SET webhook_url = ? WHERE guild = ?;""",
                 (webhook_url, str(guild)),
             )
             await self.db.commit()
@@ -495,7 +497,8 @@ class DecancerManager:
         """
         async with self.db.cursor() as cur:
             results = await cur.execute(
-                """SELECT webhook_url FROM decancer WHERE guild = ?;""", (str(guild),)
+                """SELECT webhook_url FROM sentinels_decancer WHERE guild = ?;""",
+                (str(guild),),
             )
             return (await results.fetchone())["webhook_url"]
 
@@ -506,7 +509,7 @@ class DecancerManager:
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
             await cur.execute(
-                """UPDATE decancer SET username = ?, avatar = ? WHERE guild = ?;""",
+                """UPDATE sentinels_decancer SET username = ?, avatar = ? WHERE guild = ?;""",
                 (username, avatar, str(guild)),
             )
             await self.db.commit()
@@ -518,7 +521,8 @@ class DecancerManager:
         await self.ensure_guild(guild)
         async with self.db.cursor() as cur:
             results = await cur.execute(
-                """SELECT decancer FROM decancer WHERE guild = ?;""", (str(guild),)
+                """SELECT decancer FROM sentinels_decancer WHERE guild = ?;""",
+                (str(guild),),
             )
             return (await results.fetchone())["decancer"]
 
@@ -645,12 +649,18 @@ class SentinelWatcherView(discord.ui.View):
     async def ban(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
+        """
+        Ban a user for their actions
+        """
         await interaction.send("Add ban stuff idiot")
 
     @discord.ui.button(label="Mute", emoji=":mute:", style=discord.ButtonStyle.danger)
     async def mute(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
+        """
+        Mute a user for their actions
+        """
         await interaction.send("Add mute stuff here idiot")
 
     @discord.ui.button(
@@ -659,6 +669,8 @@ class SentinelWatcherView(discord.ui.View):
     async def warn(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ) -> None:
+        """
+        Warn a user for their actions"""
         await interaction.send("add warn stuff loser")
 
 
@@ -711,9 +723,9 @@ class Sentinel(commands.Cog):
         Init the detoxify models and get sessions ready!
         """
         self.bot = bot
+        self.databases: BennyDatabases = bot.databases
         self.sm: SentinelManager = None
         self.decancer: DecancerManager = None
-        self.db: asqlite.Connection = None
 
     async def clean_username(self, username: str) -> str:
         """
@@ -765,10 +777,9 @@ class Sentinel(commands.Cog):
         """
         Load decancer manager when bots loaded
         """
-        self.db = await asqlite.connect("databases/sentinel.db")
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS config (
+            CREATE TABLE IF NOT EXISTS sentinels_config (
                 guild           TEXT PRIMARY KEY
                                      NOT NULL,
                 channels        TEXT NOT NULL,
@@ -786,9 +797,9 @@ class Sentinel(commands.Cog):
             );
             """
         )
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS decancer (
+            CREATE TABLE IF NOT EXISTS sentinels_decancer (
                 guild           TEXT NOT NULL
                                     PRIMARY KEY,
                 webhook_url     TEXT,
@@ -799,18 +810,20 @@ class Sentinel(commands.Cog):
             );
             """
         )
-        await self.db.commit()
+        await self.databases.servers.commit()
         await self.bot.blogger.load("Sentinel Config")
         self.sm = SentinelManager(
             self.bot.sessions.get("sentinel"),
-            self.db,
+            self.databases.servers,
             self.bot.loop,
             self.bot.user.avatar.url,
         )
         self.bot.sentinel_manager = self.sm
         await self.sm.load_sentinels()
 
-        self.decancer = DecancerManager(self.db, self.bot.user.avatar.url)
+        self.decancer = DecancerManager(
+            self.databases.servers, self.bot.user.avatar.url
+        )
         self.bot.decancer_manager = self.decancer
 
     @commands.Cog.listener()
