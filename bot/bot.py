@@ -147,11 +147,13 @@ class BennyBot(commands.Bot):
 
     async def close(self) -> None:
         """
-        Close all aiohttp sessions on close
+        Close all aiohttp sessions on close as well as databases
         """
         await super().close()
         for session in self.sessions.values():
             await session.close()
+        await self.databases.users.close()
+        await self.databases.servers.close()
 
     async def on_message(self, message: discord.Message) -> None:
         """

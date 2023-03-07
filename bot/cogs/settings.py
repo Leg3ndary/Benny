@@ -6,6 +6,7 @@ import discord.utils
 from colorama import Fore
 from discord.ext import commands
 from gears import style
+from interfaces.database import BennyDatabases
 
 
 class UserAccess:
@@ -243,17 +244,15 @@ class Settings(commands.Cog):
         Init for the bot
         """
         self.bot = bot
-        self.users_db: asqlite.Connection = None
-        self.server_db: asqlite.Connection = None
+        self.databases: BennyDatabases = bot.databases
 
     async def cog_load(self) -> None:
         """
         On cog load, load up some users
         """
-        self.users_db = await asqlite.connect("databases/users.db")
-        await self.users_db.execute(
+        await self.databases.users.execute(
             """
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS settings_users (
                 id           TEXT    PRIMARY KEY
                                     NOT NULL,
                 patron_level INTEGER NOT NULL
@@ -264,16 +263,16 @@ class Settings(commands.Cog):
             );
             """
         )
-        await self.users_db.commit()
+        await self.databases.users.commit()
         await self.bot.blogger.load("Users")
-        self.server_db = await asqlite.connect("databases/server.db")
 
     async def cog_unload(self) -> None:
         """
         On cog unload, close connections
         """
-        await self.users_db.close()
-        await self.server_db.close()
+        # await self.databases.users.close()
+        # await self.databases.servers.close()
+        # we don't need to close any connections anymore
 
     @commands.Cog.listener()
     async def on_load_prefixes(self) -> None:
@@ -282,11 +281,11 @@ class Settings(commands.Cog):
         """
         start = time.monotonic()
         self.bot.prefixes = {}
-        self.bot.prefix_manager = PrefixManager(self.bot, self.server_db)
+        self.bot.prefix_manager = PrefixManager(self.bot, self.databases.servers)
 
-        await self.server_db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS prefixes (
+            CREATE TABLE IF NOT EXISTS settings_prefixes (
                 guild       TEXT PRIMARY KEY,
                 prefixes    TEXT
             );
