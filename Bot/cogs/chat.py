@@ -12,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 tokenizer: AutoTokenizer = AutoTokenizer.from_pretrained("microsoft/DialoGPT-small")
 model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(
-    "Assets/MichaelScott/"
+    "assets/MichaelScott/"
 )
 
 
