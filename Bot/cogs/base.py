@@ -44,7 +44,7 @@ class AvatarView(discord.ui.View):
         """
         Delete the message
         """
-        await interaction.delete_original_message()
+        await interaction.delete_original_response()
 
 
 class AFKManager:

@@ -195,6 +195,16 @@ async def global_check(ctx: commands.context) -> bool:
     return True
 
 
+@bot.tree.error
+async def on_app_command_error(
+    interaction: discord.Interaction, error: discord.app_commands.AppCommandError
+) -> None:
+    """
+    Error handler for app commands
+    """
+    bot.dispatch("send_app_command_error", interaction, error)
+
+
 async def start_bot() -> None:
     """
     Start the bot with everything it needs

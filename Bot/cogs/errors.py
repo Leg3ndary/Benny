@@ -1,6 +1,7 @@
 import math
 import sys
 import traceback
+from typing import Union
 
 import discord
 import discord.utils
@@ -65,26 +66,34 @@ class Errors(commands.Cog):
         """
         self.bot = bot
 
-    @commands.Cog.listener()
-    async def on_command_error(
-        self, ctx: commands.Context, error: commands.CommandError
+    async def handle_ac_errors(
+        self,
+        context: Union[commands.Context, discord.Interaction],
+        error: Union[commands.CommandError, discord.app_commands.AppCommandError],
     ) -> None:
         """
-        The event triggered when an error is raised while invoking a command.
+        Handle app command errors
         """
-        if hasattr(ctx.command, "on_error"):
+
+        if hasattr(context.command, "on_error"):
             return
 
-        cog = ctx.cog
+        cog = context.command.cog
         if cog:
             if cog._get_overridden_method(cog.cog_command_error):
                 return
         ignored_errors = (commands.CommandNotFound,)
 
-        error = getattr(error, "original", error)
+        if isinstance(error, commands.CommandError):
+            error = getattr(error, "original", error)
+        else:
+            error = error
 
         _traceback = None
         embed = None
+        person = (
+            context.author if isinstance(context, commands.Context) else context.user
+        )
 
         if isinstance(error, ignored_errors):
             return
@@ -219,7 +228,7 @@ class Errors(commands.Cog):
 
         elif isinstance(error, commands.MissingRequiredArgument):
             _traceback = False
-            parent = ctx.command.parent
+            parent = context.command.parent
             entries = []
             while parent is not None:
                 if not parent.signature or parent.invoke_without_command:
@@ -230,17 +239,21 @@ class Errors(commands.Cog):
             parent_sig = " ".join(reversed(entries))
 
             command_name = (
-                ctx.command.name
+                context.command.name
                 if not parent_sig
-                else parent_sig + " " + ctx.command.name
+                else parent_sig + " " + context.command.name
+            )
+            cleaned_prefix = (
+                context.clean_prefix if isinstance(context, commands.Context) else "/"
+            )
+            command_format = (
+                f"{cleaned_prefix}{command_name} {context.command.signature}"
             )
 
-            command_format = f"{ctx.clean_prefix}{command_name} {ctx.command.signature}"
-
-            colored_prefix = f"{Fore.BLACK}{ctx.clean_prefix}"
+            colored_prefix = f"{Fore.BLACK}{cleaned_prefix}"
             colored_command_name = f"{command_name}{Fore.WHITE}"
             colored_signature = (
-                ctx.command.signature.replace(
+                context.command.signature.replace(
                     "[",
                     f"{Fore.WHITE}[{Fore.GREEN}",
                 )
@@ -278,7 +291,12 @@ class Errors(commands.Cog):
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
             )
-            await ctx.send(embed=color, view=ColoredView(normal, color))
+            if isinstance(context, commands.Context):
+                await context.send(embed=color, view=ColoredView(normal, color))
+            else:
+                await context.response.send_message(
+                    embed=color, view=ColoredView(normal, color)
+                )
 
         elif isinstance(error, commands.MemberNotFound):
             _traceback = False
@@ -291,13 +309,18 @@ class Errors(commands.Cog):
 
         elif isinstance(error, commands.DisabledCommand):
             _traceback = False
-            await ctx.send(f"{ctx.command} has been disabled.")
+            embed = discord.Embed(
+                title="Command Disabled",
+                description=f"""{context.command} is disabled""",
+                timestamp=discord.utils.utcnow(),
+                color=style.Color.RED,
+            )
 
         elif isinstance(error, commands.NoPrivateMessage):
             _traceback = False
             try:
-                await ctx.author.send(
-                    f"{ctx.command} can not be used in Private Messages."
+                await person.send(
+                    f"{context.command} can not be used in Private Messages."
                 )
             except discord.HTTPException:
                 pass
@@ -315,7 +338,7 @@ class Errors(commands.Cog):
         elif isinstance(error, commands.CommandOnCooldown):
             _traceback = False
             embed = discord.Embed(
-                title=f"{ctx.command} is on Cooldown",
+                title=f"{context.command} is on Cooldown",
                 description=f"Please retry this command in {math.ceil(error.retry_after)} seconds",
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.RED,
@@ -384,13 +407,46 @@ class Errors(commands.Cog):
         # Printing all errors out we need to know what happened, add an else when prod finally hits
         # All other Errors not returned come here. And we can just print the default TraceBack.
         if _traceback or _traceback is None:
-            print(f"Ignoring exception in command {ctx.command}:", file=sys.stderr)
+            print(f"Ignoring exception in command {context.command}:", file=sys.stderr)
             traceback.print_exception(
                 type(error), error, error.__traceback__, file=sys.stderr
             )
-
         if embed:
-            await ctx.reply(embed=embed)
+            if isinstance(context, commands.Context):
+                await context.reply(embed=embed)
+            else:
+                await context.response.send_message(embed=embed)
+
+    @commands.Cog.listener()
+    async def on_send_app_command_error(
+        self,
+        interaction: discord.Interaction,
+        error: discord.app_commands.AppCommandError,
+    ) -> None:
+        """
+        Send an error message for app commands
+        """
+        if isinstance(error, discord.app_commands.AppCommandNotFound):
+            return
+        if isinstance(
+            error,
+            (
+                discord.app_commands.AppCommandError,
+                discord.app_commands.AppCommandInvokeError,
+            ),
+        ):
+            await self.handle_ac_errors(interaction, error)
+
+    @commands.Cog.listener()
+    async def on_command_error(
+        self, ctx: commands.Context, error: commands.CommandError
+    ) -> None:
+        """
+        The event triggered when an error is raised while invoking a command.
+        """
+        if isinstance(error, commands.CommandNotFound):
+            return
+        await self.handle_ac_errors(ctx, error)
 
 
 async def setup(bot: commands.Bot) -> None:

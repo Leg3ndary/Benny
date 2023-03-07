@@ -1050,7 +1050,9 @@ class Music(commands.Cog):
                 cls=wavelink.YouTubeTrack, query=f"ytsearch:{search}"
             )
             if not tracks:
-                raise commands.BadArgument("No songs could be queried, youtube links do not work.")
+                raise commands.BadArgument(
+                    "No songs could be queried, youtube links do not work."
+                )
             embed = discord.Embed(
                 title=f"{style.Emoji.REGULAR.music} Select a Song to Play",
                 description=f"""```asciidoc
