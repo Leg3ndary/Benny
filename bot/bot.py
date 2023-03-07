@@ -8,12 +8,14 @@ import time
 from copy import copy
 
 import aiohttp
+import asqlite
 import discord
 import mystbin
 from api import BotApp
 from cogs.tags import Tags
 from discord.ext import commands
 from gears import cooldowns, util
+from interfaces.database import BennyDatabases
 
 start = time.monotonic()
 
@@ -91,6 +93,7 @@ class BennyBot(commands.Bot):
     file_list: dict = {}
     app: BotApp = None
     ping_list: list = []
+    databases: BennyDatabases = BennyDatabases()
 
     def __init__(self) -> None:
         """
@@ -109,7 +112,13 @@ class BennyBot(commands.Bot):
     async def async_init(self) -> None:
         """
         Setup hook for the bot
+
+        First load databases
         """
+
+        self.databases.users = await asqlite.connect("databases/users.db")
+        self.databases.servers = await asqlite.connect("databases/servers.db")
+
         await super().setup_hook()
         await self.create_sessions()
         self.blogger = util.BotLogger(self, self.sessions.get("blogger"))
