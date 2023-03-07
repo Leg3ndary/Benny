@@ -33,7 +33,7 @@ class LoggerPaginator(discord.ui.View):
         Construct the paginator
         """
         super().__init__()
-        lines = (x for x in open("Logs/benny.log", "r", encoding="utf8").readlines())
+        lines = (x for x in open("logs/benny.log", "r", encoding="utf8").readlines())
         pages = []
         ctotal = 10
         current = []
@@ -157,7 +157,7 @@ class Events(commands.Cog):
         self.logger = logging.getLogger("Benny")
         self.logger.setLevel(logging.INFO)
         handler = logging.FileHandler(
-            filename="Logs/benny.log", encoding="utf-8", mode="w"
+            filename="logs/benny.log", encoding="utf-8", mode="w"
         )
         handler.setFormatter(
             logging.Formatter(

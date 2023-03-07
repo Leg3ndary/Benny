@@ -58,11 +58,9 @@ class BotUtil:
         if directory:
             if directory in (
                 "__pycache__",
-                "Databases",
-                "Logs",
+                "databases",
+                "logs",
                 ".vscode",
-                "Docs",
-                "Website",
                 "assets",
                 "plugins",
             ):
