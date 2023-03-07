@@ -25,19 +25,19 @@ class Levels(commands.Cog):
         """
         Load the cog
         """
-        async with asqlite.connect("database.db") as db:
-            await db.execute(
-                """
-                CREATE TABLE IF NOT EXISTS levels (
-                    user_id INTEGER NOT NULL,
-                    guild_id INTEGER NOT NULL,
-                    level INTEGER NOT NULL,
-                    xp INTEGER NOT NULL,
-                    PRIMARY KEY (user_id, guild_id)
-                )
-                """
-            )
-            await db.commit()
+        # async with asqlite.connect("database.db") as db:
+        #     await db.execute(
+        #         """
+        #         CREATE TABLE IF NOT EXISTS levels (
+        #             user_id INTEGER NOT NULL,
+        #             guild_id INTEGER NOT NULL,
+        #             level INTEGER NOT NULL,
+        #             xp INTEGER NOT NULL,
+        #             PRIMARY KEY (user_id, guild_id)
+        #         )
+        #         """
+        #     )
+        #     await db.commit()
 
 
 async def setup(bot: commands.Bot) -> None:

@@ -10,6 +10,7 @@ import discord.utils
 import parsedatetime
 from discord.ext import commands, tasks
 from gears import style
+from interfaces.database import BennyDatabases
 
 
 class Infraction:
@@ -232,17 +233,16 @@ class Mod(commands.Cog):
         Init with moderationmanager short mm
         """
         self.bot = bot
-        self.db: asqlite.Connection = None
+        self.databases: BennyDatabases = bot.databases
         self.mm: ModerationManager = None
 
     async def cog_load(self) -> None:
         """
         Load our sqlite db yay
         """
-        self.db = await asqlite.connect("databases/mod.db")
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS warns (
+            CREATE TABLE IF NOT EXISTS mod_warns (
                 case_id TEXT    PRIMARY KEY
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
@@ -254,24 +254,9 @@ class Mod(commands.Cog):
             );
             """
         )
-        await self.db.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS bans (
-                case_id TEXT    PRIMARY KEY
-                                NOT NULL,
-                guild   TEXT    NOT NULL,
-                mod     TEXT    NOT NULL,
-                offender TEXT   NOT NULL,
-                time    INT     NOT NULL,
-                reason  TEXT,
-                expires INT,
-                active  BOOL
-            );
-            """
-        )
-        await self.db.execute(
-            """
-            CREATE TABLE IF NOT EXISTS mutes (
+            CREATE TABLE IF NOT EXISTS mod_bans (
                 case_id TEXT    PRIMARY KEY
                                 NOT NULL,
                 guild   TEXT    NOT NULL,
@@ -284,15 +269,30 @@ class Mod(commands.Cog):
             );
             """
         )
-        await self.db.commit()
+        await self.databases.servers.execute(
+            """
+            CREATE TABLE IF NOT EXISTS mod_mutes (
+                case_id TEXT    PRIMARY KEY
+                                NOT NULL,
+                guild   TEXT    NOT NULL,
+                mod     TEXT    NOT NULL,
+                offender TEXT   NOT NULL,
+                time    INT     NOT NULL,
+                reason  TEXT,
+                expires INT,
+                active  BOOL
+            );
+            """
+        )
+        await self.databases.servers.commit()
         await self.bot.blogger.load("Mod")
-        self.mm = ModerationManager(self.bot, self.db)
+        self.mm = ModerationManager(self.bot, self.databases.servers)
 
     async def cog_unload(self) -> None:
         """
         Unload our sqlite db when the cog is closed
         """
-        await self.db.close()
+        # await self.db.close()
 
     async def queue_infraction(self, _type: str, infraction: Infraction) -> None:
         """
@@ -305,7 +305,7 @@ class Mod(commands.Cog):
         """
         Queue infraction actions for the next hour
         """
-        async with self.db.execute("""SELECT * FROM mutes;""") as cursor:
+        async with self.databases.servers.execute("""SELECT * FROM mod_mutes;""") as cursor:
             for row in cursor:
                 mute = Infraction(row)
                 self.bot.loop.create_task(self.queue_infraction("mute", mute))
@@ -321,7 +321,9 @@ class Mod(commands.Cog):
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def mod_group(self, ctx: commands.Context) -> None:
-        """Command description"""
+        """
+        Command description
+        """
 
     @commands.hybrid_command(
         name="warn",
@@ -432,7 +434,7 @@ class Mod(commands.Cog):
         help="""Check someones latest modlogs""",
         brief="Check someones latest modlogs",
         aliases=[],
-        enabled=True,
+        enabled=False,
         hidden=False,
     )
     @commands.cooldown(2.0, 5.0, commands.BucketType.user)
@@ -449,7 +451,7 @@ class Mod(commands.Cog):
         help="""Set the modlogs channel""",
         brief="Set the modlogs channel",
         aliases=["set"],
-        enabled=True,
+        enabled=False,
         hidden=False,
     )
     async def modlogs_channel(
