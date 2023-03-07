@@ -7,6 +7,7 @@ import discord
 import parsedatetime
 from discord.ext import commands
 from gears import style
+from interfaces.database import BennyDatabases
 
 
 class ActiveReminder:
@@ -45,7 +46,7 @@ class ReminderManager:
         """
         self.REMINDER_LIMIT: int = 10
         self.bot = bot
-        self.db = db
+        self.databases: BennyDatabases = bot.databases
         self.remind_id: int = None
         self.active_reminders: Dict[int, ActiveReminder] = {}
 
@@ -53,9 +54,9 @@ class ReminderManager:
         """
         Create a table for our stuff :D
         """
-        await self.db.execute(
+        await self.databases.users.execute(
             """
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE IF NOT EXISTS reminders_users (
                 id           TEXT    PRIMARY KEY
                                     NOT NULL,
                 patron_level INTEGER NOT NULL
@@ -66,9 +67,9 @@ class ReminderManager:
             );
             """
         )
-        await self.db.execute(
+        await self.databases.users.execute(
             """
-            CREATE TABLE IF NOT EXISTS reminders (
+            CREATE TABLE IF NOT EXISTS reminders_reminders (
                 rid          INTEGER PRIMARY KEY
                                     NOT NULL,
                 uid          INTEGER  NOT NULL,
@@ -77,6 +78,7 @@ class ReminderManager:
             );
             """
         )
+        await self.databases.users.commit()
 
     async def load_config(self) -> None:
         """
@@ -104,7 +106,7 @@ class ReminderManager:
         await self.load_config()
         await self.create_table()
 
-        async with self.db.execute("""SELECT * FROM reminders;""") as cursor:
+        async with self.databases.users.execute("""SELECT * FROM reminders_reminders;""") as cursor:
             results = await cursor.fetchall()
 
         for result in results:
@@ -154,9 +156,9 @@ class ReminderManager:
             raise commands.BadArgument("You have reached the reminder limit.")
 
         rid = await self.increment_reminder_id()
-        await self.db.execute(
+        await self.databases.users.execute(
             """
-            INSERT INTO reminders VALUES(?, ?, ?, ?);
+            INSERT INTO reminders_reminders VALUES(?, ?, ?, ?);
             """,
             (rid, uid, time, reminder),
         )
@@ -171,8 +173,8 @@ class ReminderManager:
         """
         Fetch all reminders for a user
         """
-        async with self.db.execute(
-            """SELECT * FROM reminders WHERE uid = ?;""", (uid,)
+        async with self.databases.users.execute(
+            """SELECT * FROM reminders_reminders WHERE uid = ?;""", (uid,)
         ) as cursor:
             results = await cursor.fetchall()
         return tuple(ActiveReminder(*result) for result in results)
@@ -181,14 +183,13 @@ class ReminderManager:
         """
         Fetch a reminder from a remind id
         """
-        async with self.db.execute(
-            """SELECT * FROM reminders WHERE rid = ?;""", (rid,)
+        async with self.databases.users.execute(
+            """SELECT * FROM reminders_reminders WHERE rid = ?;""", (rid,)
         ) as cursor:
             result = await cursor.fetchone()
             if result:
                 return ActiveReminder(*result)
-            else:
-                return None
+            return None
 
     async def delete_reminder(self, rid: int) -> None:
         """

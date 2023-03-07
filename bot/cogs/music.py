@@ -1,9 +1,7 @@
 import asyncio
 import datetime
-import os
 import random
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse
 
 import asqlite
 import discord
@@ -14,6 +12,7 @@ from discord.ext import commands
 from gears import style, util
 from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
 from wavelink.ext import spotify
+from interfaces.database import BennyDatabases
 
 
 class Player(wavelink.Player):
@@ -276,11 +275,11 @@ class PlayerSelector(discord.ui.View):
         Add recently played to the view
         """
         await cursor.execute(
-            """INSERT OR IGNORE INTO recently_played (id, recent) VALUES (?, ?);""",
+            """INSERT OR IGNORE INTO music_recently_played (id, recent) VALUES (?, ?);""",
             (str(self.ctx.author.id), ""),
         )
         songs = await cursor.execute(
-            """SELECT recent FROM recently_played WHERE id = ?;""",
+            """SELECT recent FROM music_recently_played WHERE id = ?;""",
             (str(self.ctx.author.id)),
         )
         songs = (await songs.fetchone())[0]
@@ -542,8 +541,8 @@ class Music(commands.Cog):
         Construct the music cog
         """
         self.bot = bot
+        self.databases: BennyDatabases = bot.databases
         self.wavelink: wavelink.Node = None
-        self.musicDB: asqlite.Connection = None
         self.disconnect_tasks: Dict[str, asyncio.Task] = {}
 
         app_token = tekore.request_client_token(
@@ -601,17 +600,16 @@ class Music(commands.Cog):
         On cog load do stuff
         """
         await self.connect_nodes()
-        self.musicDB = await asqlite.connect("databases/music.db")
-        await self.musicDB.execute(
+        await self.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS recently_played (
+            CREATE TABLE IF NOT EXISTS music_recently_played (
                 id  TEXT NOT NULL
                     PRIMARY KEY,
                 recent TEXT NOT NULL
             );
             """
         )
-        await self.musicDB.commit()
+        await self.databases.servers.commit()
         await self.bot.blogger.load("Recently Played")
 
     @commands.Cog.listener()
@@ -776,10 +774,10 @@ class Music(commands.Cog):
         """
         Add a track to the recently played table
         """
-        async with self.musicDB.cursor() as cursor:
+        async with self.databases.servers.cursor() as cursor:
             previous = await cursor.execute(
                 """
-                SELECT recent FROM recently_played WHERE id = ?;
+                SELECT recent FROM music_recently_played WHERE id = ?;
                 """,
                 (user_id,),
             )
@@ -794,18 +792,18 @@ class Music(commands.Cog):
                 new = "|".join(previous).replace("||", "|")  # I don't even know
                 await cursor.execute(
                     """
-                    UPDATE recently_played SET recent = ? WHERE id = ?;
+                    UPDATE music_recently_played SET recent = ? WHERE id = ?;
                     """,
                     (new, user_id),
                 )
             else:
                 await cursor.execute(
                     """
-                    INSERT INTO recently_played VALUES (?, ?);
+                    INSERT INTO music_recently_played VALUES (?, ?);
                     """,
                     (user_id, track.id),
                 )
-        await self.musicDB.commit()
+        await self.databases.servers.commit()
 
     @commands.Cog.listener()
     async def on_music_add_to_recent(self, user_id: str, track: wavelink.Track) -> None:
@@ -861,9 +859,9 @@ class Music(commands.Cog):
                 color=style.Color.GREY,
             )
             selector = PlayerSelector(ctx, node, player, tracks[:25])
-            async with self.musicDB.cursor() as cursor:
+            async with self.databases.servers.cursor() as cursor:
                 await selector.add_recently_played(cursor)
-                await self.musicDB.commit()
+                await self.databases.servers.commit()
             await ctx.reply(embed=embed, view=selector)
 
     @commands.hybrid_command(
