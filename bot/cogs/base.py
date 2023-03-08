@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import aiohttp
+import io
 import itertools
 import json
 import platform
@@ -8,16 +8,16 @@ import time
 import unicodedata
 from typing import List
 
+import aiohttp
 import discord
 import discord.utils
+import PIL as pil
 import psutil
 import pygit2
-from discord.ext import commands
-from gears import embed_creator, style, dictapi
-from motor.motor_asyncio import AsyncIOMotorClient
-import io
-import PIL as pil
 import pytesseract
+from discord.ext import commands
+from gears import dictapi, embed_creator, style
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 def get_size(_bytes: int, suffix: str = "B") -> str:
@@ -503,7 +503,6 @@ class IMGReader:
         )
 
         return text
-
 
 
 class Base(commands.Cog):
