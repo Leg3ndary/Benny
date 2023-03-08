@@ -3,6 +3,7 @@ import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
+from interfaces.database import BennyDatabases
 
 """
 Non Premium
@@ -26,11 +27,11 @@ class LoggingManager:
         self.bot = bot
         self.db: asqlite.Connection = None
 
-    async def load_db(self) -> None:
+    async def load_db(self, db: asqlite.Connection) -> None:
         """
         Load our db on start
         """
-        self.db = await asqlite.connect("databases/logging.db")
+        self.db = db
         await self.db.execute(
             """
             CREATE TABLE IF NOT EXISTS webhooks (
@@ -49,7 +50,9 @@ class LoggingManager:
     async def create_webhook(
         self, channel: discord.TextChannel, username: str = None, avatar: str = None
     ) -> None:
-        """Create a webhook"""
+        """
+        Create a webhook
+        """
 
 
 class Logging(commands.Cog):
@@ -66,13 +69,14 @@ class Logging(commands.Cog):
         """
         self.bot = bot
         self.logging_manager: LoggingManager = None
+        self.databases: BennyDatabases = bot.databases
 
     async def cog_load(self) -> None:
         """
         On Cog Load
         """
         self.logging_manager = LoggingManager(self.bot)
-        await self.logging_manager.load_db()
+        await self.logging_manager.load_db(self.databases.servers)
 
     @commands.hybrid_group(
         name="logs",
