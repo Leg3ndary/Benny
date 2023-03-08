@@ -148,7 +148,7 @@ class Welcome(commands.Cog):
             """
         )
         await self.databases.servers.commit()
-        self.wm = WelcomeManager(self.bot, self.db)
+        self.wm = WelcomeManager(self.bot, self.databases.servers)
 
     async def cog_unload(self) -> None:
         """

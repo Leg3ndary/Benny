@@ -34,7 +34,7 @@ class LoggingManager:
         self.db = db
         await self.db.execute(
             """
-            CREATE TABLE IF NOT EXISTS webhooks (
+            CREATE TABLE IF NOT EXISTS logging_webhooks (
                 id          TEXT NOT NULL
                                 PRIMARY KEY,
                 type        TEXT NOT NULL,

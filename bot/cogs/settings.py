@@ -1,5 +1,3 @@
-import time
-
 import asqlite
 import discord
 import discord.utils
@@ -146,7 +144,7 @@ class PrefixManager:
                 prefixes = sorted(prefixes, key=len)
             self.bot.prefixes[str(guild)] = prefixes
             await self.db.execute(
-                """UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                """UPDATE settings_prefixes SET prefixes = ? WHERE guild = ?;""",
                 (self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
@@ -178,7 +176,7 @@ class PrefixManager:
             prefixes.remove(prefix)
             self.bot.prefixes[str(guild)] = prefixes
             await self.db.execute(
-                """UPDATE prefixes SET prefixes = ? WHERE guild = ?;""",
+                """UPDATE settings_prefixes SET prefixes = ? WHERE guild = ?;""",
                 (self.prefixes_to_string(prefixes), str(guild)),
             )
             await self.db.commit()
@@ -198,13 +196,13 @@ class PrefixManager:
         """
         self.bot.prefixes[str(guild)] = [self.bot.PREFIX]
         await self.db.execute(
-            """INSERT INTO prefixes VALUES(?, ?);""",
+            """INSERT INTO settings_prefixes VALUES(?, ?);""",
             (str(guild), self.bot.PREFIX),
         )
         await self.db.commit()
         await self.bot.blogger.cog(
             self.bot.blogger.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
-            f"Added   {guild} to prefixes",
+            f"Added {guild} to prefixes",
         )
         return
 
@@ -223,7 +221,7 @@ class PrefixManager:
         """
         del self.bot.prefixes[str(guild)]
         await self.db.execute(
-            """DELETE FROM prefixes WHERE guild = ?;""", (str(guild),)
+            """DELETE FROM settings_prefixes WHERE guild = ?;""", (str(guild),)
         )
         await self.db.commit()
         await self.bot.blogger.cog(
@@ -281,7 +279,6 @@ class Settings(commands.Cog):
         """
         Loading every prefix into a cache so we can quickly access it
         """
-        start = time.monotonic()
         self.bot.prefixes = {}
         self.bot.prefix_manager = PrefixManager(self.bot, self.databases.servers)
 
@@ -298,10 +295,8 @@ class Settings(commands.Cog):
             self.bot.prefixes[str(guild.id)] = prefixes
 
         self.bot.LOADED_PREFIXES = True
-        end = time.monotonic()
 
-        total_load = (round((end - start) * 1000, 2)) / 1000
-        await self.bot.blogger.load(f"Prefixes loaded in {total_load} seconds")
+        await self.bot.blogger.load("Prefixes")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:

@@ -10,8 +10,7 @@ import tekore
 import wavelink
 from discord.ext import commands
 from gears import style, util
-from gears.music_exceptions import (NotConnected, NothingPlaying, QueueEmpty,
-                                    QueueFull)
+from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
 from interfaces.database import BennyDatabases
 from wavelink.ext import spotify
 
