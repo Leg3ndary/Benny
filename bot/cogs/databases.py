@@ -3,7 +3,6 @@ import asyncio
 import discord
 from discord.ext import commands, tasks
 from gears import style
-from motor.motor_asyncio import AsyncIOMotorClient
 from redis import asyncio as aioredis
 
 """
@@ -16,7 +15,7 @@ class Databases(commands.Cog):
     """
     Database related things
 
-    Currently using redis and mongodb
+    Currently using redis and sqlite
     """
 
     COLOR = style.Color.GREEN
@@ -40,14 +39,6 @@ class Databases(commands.Cog):
             decode_responses=True,
         )
         await self.bot.blogger.load("Redis")
-        mongo_uri = (
-            self.bot.config.get("Mongo")
-            .get("URL")
-            .replace("<Username>", self.bot.config.get("Mongo").get("User"))
-            .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
-        )
-        self.bot.mongo = AsyncIOMotorClient(mongo_uri)
-        await self.bot.blogger.connect("MONGODB")
 
     async def cog_unload(self) -> None:
         """

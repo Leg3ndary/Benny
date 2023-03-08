@@ -17,7 +17,6 @@ import pygit2
 import pytesseract
 from discord.ext import commands
 from gears import dictapi, embed_creator, style
-from motor.motor_asyncio import AsyncIOMotorClient
 
 
 def get_size(_bytes: int, suffix: str = "B") -> str:
@@ -51,91 +50,91 @@ class AvatarView(discord.ui.View):
         await interaction.delete_original_response()
 
 
-class AFKManager:
-    """
-    Manage afk sessions and related data
-    """
+# class AFKManager:
+#     """
+#     Manage afk sessions and related data
+#     """
 
-    pcc = None
+#     pcc = None
 
-    def __init__(self, bot: commands.Bot) -> None:
-        """
-        Init the manager
-        """
-        self.bot = bot
-        self.pcc = bot.pcc
-        mongo_uri = (
-            self.bot.config.get("Mongo")
-            .get("URL")
-            .replace("<Username>", self.bot.config.get("Mongo").get("User"))
-            .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
-        )
-        self.db = AsyncIOMotorClient(mongo_uri)["AFK"]
-        self.dc: dictapi.DictClient = dictapi.DictClient(bot.sessions.get("main"))
-        self.imgr = IMGReader(bot)
+#     def __init__(self, bot: commands.Bot) -> None:
+#         """
+#         Init the manager
+#         """
+#         self.bot = bot
+#         self.pcc = bot.pcc
+#         mongo_uri = (
+#             self.bot.config.get("Mongo")
+#             .get("URL")
+#             .replace("<Username>", self.bot.config.get("Mongo").get("User"))
+#             .replace("<Password>", self.bot.config.get("Mongo").get("Pass"))
+#         )
+#         self.db = AsyncIOMotorClient(mongo_uri)["AFK"]
+#         self.dc: dictapi.DictClient = dictapi.DictClient(bot.sessions.get("main"))
+#         self.imgr = IMGReader(bot)
 
-    async def set_afk(self, ctx: commands.Context, message: str) -> None:
-        """
-        Set an afk for a user in a certain guild
-        """
-        query = {"_id": str(ctx.author.id)}
-        afk_doc = {
-            "_id": str(ctx.author.id),
-            "message": message,
-            "unix": int(time.time()),
-        }
-        await self.db[str(ctx.message.guild.id)].replace_one(query, afk_doc, True)
-        embed = discord.Embed(
-            title="Set AFK",
-            description=f""">>> {message}""",
-            timestamp=discord.utils.utcnow(),
-            color=style.Color.AQUA,
-        )
-        await ctx.send(embed=embed)
+#     async def set_afk(self, ctx: commands.Context, message: str) -> None:
+#         """
+#         Set an afk for a user in a certain guild
+#         """
+#         query = {"_id": str(ctx.author.id)}
+#         afk_doc = {
+#             "_id": str(ctx.author.id),
+#             "message": message,
+#             "unix": int(time.time()),
+#         }
+#         await self.db[str(ctx.message.guild.id)].replace_one(query, afk_doc, True)
+#         embed = discord.Embed(
+#             title="Set AFK",
+#             description=f""">>> {message}""",
+#             timestamp=discord.utils.utcnow(),
+#             color=style.Color.AQUA,
+#         )
+#         await ctx.send(embed=embed)
 
-    async def del_afk(self, guild: int, user: int) -> None:
-        """
-        Delete an afk from the db, usually called when a user has sent a message showing that they
-        aren't actually afk
-        """
-        query = {"_id": str(user)}
-        await self.db[str(guild)].delete_one(query)
+#     async def del_afk(self, guild: int, user: int) -> None:
+#         """
+#         Delete an afk from the db, usually called when a user has sent a message showing that they
+#         aren't actually afk
+#         """
+#         query = {"_id": str(user)}
+#         await self.db[str(guild)].delete_one(query)
 
-    async def manage_afk(self, message: discord.Message) -> None:
-        """
-        Manage an afk when it gets sent here, first check if its a message from a user
-        """
-        query = {"_id": str(message.author.id)}
-        afk_data = await self.db[str(message.guild.id)].find_one(query)
-        if afk_data:
-            if afk_data.get("unix") + 3 < int(time.time()):
-                await self.del_afk(message.guild.id, message.author.id)
-                embed = discord.Embed(
-                    title="Removed AFK",
-                    description=f"""Welcome back {message.author.mention}!
-                    
-                    You've been afk since <t:{afk_data["unix"]}:R>""",
-                    timestamp=discord.utils.utcnow(),
-                    color=style.Color.PINK,
-                )
-                await message.reply(embed=embed)
+#     async def manage_afk(self, message: discord.Message) -> None:
+#         """
+#         Manage an afk when it gets sent here, first check if its a message from a user
+#         """
+#         query = {"_id": str(message.author.id)}
+#         afk_data = await self.db[str(message.guild.id)].find_one(query)
+#         if afk_data:
+#             if afk_data.get("unix") + 3 < int(time.time()):
+#                 await self.del_afk(message.guild.id, message.author.id)
+#                 embed = discord.Embed(
+#                     title="Removed AFK",
+#                     description=f"""Welcome back {message.author.mention}!
 
-        for mention in message.mentions[:3]:
-            if not message.author.id == mention.id:
-                query = {"_id": str(mention.id)}
-                afk_data = await self.db[str(message.guild.id)].find_one(query)
-                username = (
-                    self.bot.get_user(mention.id)
-                    or (await self.bot.fetch_user(mention.id))
-                ).name
-                if afk_data:
-                    embed = discord.Embed(
-                        title=f"{username} is AFK",
-                        description=afk_data["message"],
-                        timestamp=discord.utils.utcnow(),
-                        color=style.Color.PINK,
-                    )
-                    await message.channel.send(embed=embed)
+#                     You've been afk since <t:{afk_data["unix"]}:R>""",
+#                     timestamp=discord.utils.utcnow(),
+#                     color=style.Color.PINK,
+#                 )
+#                 await message.reply(embed=embed)
+
+#         for mention in message.mentions[:3]:
+#             if not message.author.id == mention.id:
+#                 query = {"_id": str(mention.id)}
+#                 afk_data = await self.db[str(message.guild.id)].find_one(query)
+#                 username = (
+#                     self.bot.get_user(mention.id)
+#                     or (await self.bot.fetch_user(mention.id))
+#                 ).name
+#                 if afk_data:
+#                     embed = discord.Embed(
+#                         title=f"{username} is AFK",
+#                         description=afk_data["message"],
+#                         timestamp=discord.utils.utcnow(),
+#                         color=style.Color.PINK,
+#                     )
+#                     await message.channel.send(embed=embed)
 
 
 class SystemView(discord.ui.View):
@@ -520,7 +519,7 @@ class Base(commands.Cog):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
         self.RoleConverter = commands.RoleConverter()
-        self.afk = AFKManager(bot)
+        # self.afk = AFKManager(bot)
         self.session = bot.sessions.get("base")
 
     def format_commit(self, commit: pygit2.Commit) -> str:
@@ -772,48 +771,48 @@ Total Uptime: {resolved_rel}"""
         )
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_group(
-        name="afk",
-        description="""All AFK related commands""",
-        help="""All AFK related commands""",
-        brief="AFK commands",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    @commands.guild_only()
-    async def afk_group(self, ctx: commands.Context) -> None:
-        """
-        Afk hybrid_group
-        """
-        if not ctx.invoked_subcommand:
-            await ctx.send_help(ctx.command)
+    # @commands.hybrid_group(
+    #     name="afk",
+    #     description="""All AFK related commands""",
+    #     help="""All AFK related commands""",
+    #     brief="AFK commands",
+    #     aliases=[],
+    #     enabled=True,
+    #     hidden=False,
+    # )
+    # @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    # @commands.guild_only()
+    # async def afk_group(self, ctx: commands.Context) -> None:
+    #     """
+    #     Afk hybrid_group
+    #     """
+    #     if not ctx.invoked_subcommand:
+    #         await ctx.send_help(ctx.command)
 
-    @afk_group.command(
-        name="set",
-        description="""Set an AFK status for mentions""",
-        help="""Set a custom AFK message""",
-        brief="Set a custom AFK message",
-        aliases=[],
-        enabled=True,
-        hidden=False,
-    )
-    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
-        """
-        Set your afk
-        """
-        await self.afk.set_afk(ctx, message)
+    # @afk_group.command(
+    #     name="set",
+    #     description="""Set an AFK status for mentions""",
+    #     help="""Set a custom AFK message""",
+    #     brief="Set a custom AFK message",
+    #     aliases=[],
+    #     enabled=True,
+    #     hidden=False,
+    # )
+    # @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    # async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
+    #     """
+    #     Set your afk
+    #     """
+    #     await self.afk.set_afk(ctx, message)
 
-    @commands.Cog.listener()
-    async def on_message(self, msg: discord.Message) -> None:
-        """
-        On a message, check if that user is either pinging an afk user or is an afk user with an
-        active afk
-        """
-        if not msg.author.bot:
-            await self.afk.manage_afk(msg)
+    # @commands.Cog.listener()
+    # async def on_message(self, msg: discord.Message) -> None:
+    #     """
+    #     On a message, check if that user is either pinging an afk user or is an afk user with an
+    #     active afk
+    #     """
+    #     if not msg.author.bot:
+    #         await self.afk.manage_afk(msg)
 
     @commands.hybrid_command(
         name="version",
