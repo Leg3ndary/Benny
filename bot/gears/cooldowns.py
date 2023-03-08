@@ -72,3 +72,35 @@ class CustomCooldown:
 @commands.dynamic_cooldown(CooldownModified(2, 30), type = commands.BucketType.user)
 @commands.dynamic_cooldown(CooldownModified(3, 180), type = commands.BucketType.channel)
 """
+
+# def get_cooldown(ctx: commands.Context) -> commands.Cooldown:
+#     """
+#     Gets the cooldown for a command
+#     """
+#     bot = ctx.bot
+
+#     is_premium = None # Prob use some bot attr
+
+# def get_app_cooldown(interaction: discord.Interaction) -> app_commands.Cooldown:
+#     """
+#     Gets the cooldown for an app command
+#     """
+#     bot = interaction.bot
+
+#     is_premium = None # Prob use some bot attr
+
+# Import the func everywhere
+
+# @commands.dynamic_cooldown(get_cooldown, type=commands.BucketType.user) # or whatever
+# @commands.command()
+# async def cmd(ctx: commands.Context) -> None:
+#     """
+#     Some command
+#     """
+#     await ctx.send("test")
+
+# @tree.command()
+# @app_commands.checks.dynamic_cooldown(get_cooldown)
+# async def cmd(interaction):
+#     await interaction.response.send_message("test")
+
