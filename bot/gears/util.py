@@ -1,19 +1,14 @@
-import datetime
 import math
 import os
-import time
 from enum import Enum
 from typing import Tuple
 
-import aiohttp
-import discord
-from colorama import Fore, Style
 from discord.ext import commands
 
 
 class BotUtil:
     """
-    Bot utility.
+    Bot utility class which has small functions that I may need to use
     """
 
     def __init__(self, bot: commands.Bot) -> None:
@@ -115,11 +110,11 @@ class BotUtil:
             for file in cogs:
                 try:
                     await self.bot.load_extension(f"cogs.{file[:-3]}")
-                    await self.bot.blogger.cog_update(file[:-3], "LOAD")
+                    await self.bot.terminal.cog_update(file[:-3], "LOAD")
                     cog_list.append(f"cogs.{file[:-3]}")
 
                 except Exception as e:
-                    await self.bot.blogger.cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                    await self.bot.terminal.cog_update(f"{file[:-3]}\n{e}", "FAIL")
                     print(e.with_traceback)
 
         else:
@@ -130,11 +125,11 @@ class BotUtil:
                         filename not in ("cog_template", "mod", "levels")
                     ):
                         await self.bot.load_extension(f"cogs.{file[:-3]}")
-                        await self.bot.blogger.cog_update(file[:-3], "LOAD")
+                        await self.bot.terminal.cog_update(file[:-3], "LOAD")
                         cog_list.append(f"cogs.{file[:-3]}")
 
                 except Exception as e:
-                    await self.bot.blogger.cog_update(f"{file[:-3]}\n{e}", "FAIL")
+                    await self.bot.terminal.cog_update(f"{file[:-3]}\n{e}", "FAIL")
                     print(e.with_traceback)
 
         self.bot.cog_list = cog_list
@@ -275,127 +270,3 @@ def ansi(
         origin += "0;"
     origin += AnsiColor[color.upper()].value + "m"
     return origin
-
-
-class BotLogger:
-    """
-    Printing info to our terminal from our bot in a nice way
-    """
-
-    def __init__(self, bot: commands.Bot, session: aiohttp.ClientSession) -> None:
-        """
-        Init for the printer
-        """
-        self.bot = bot
-        self.webhook_url = bot.config.get("Bot").get("Webhook")
-        self.last_sent = int(time.time()) - 13
-        self.updates = []
-        self.session = session
-        self.webhook = discord.Webhook.from_url(url=self.webhook_url, session=session)
-
-    def gen_category(self, category: str) -> str:
-        """
-        Generate a category and return so this looks cool
-
-        Parameters
-        ----------
-        category: str
-            What the middle text should be
-
-        Returns
-        -------
-        str
-        """
-        time_str = datetime.datetime.now().strftime("%x | %X")
-        categorystr = f"[{Style.RESET_ALL} {category} {Fore.WHITE}]{Style.RESET_ALL}"
-        generated = (
-            f"""{Fore.WHITE}[{Style.RESET_ALL} {time_str} {Fore.WHITE}]{categorystr}"""
-        )
-        return generated
-
-    async def load(self, info: str) -> None:
-        """
-        [LOAD] When something has loaded.
-
-        Parameters
-        ----------
-        info: str
-            The info you want to print out after
-        """
-        msg = f"{self.gen_category(f'{Fore.BLUE}LOADED')} {info}"
-        print(msg)
-
-    async def cog_update(self, cog: str, update: str) -> None:
-        """
-        [COG LOAD|UNLOAD|RELOAD] When a cog is loaded or unloaded (ALSO ON SYNC)
-
-        Parameters
-        ----------
-        cog: str
-            The cog that's been updated
-        update:
-            The update kind, LOAD|UNLOAD|RELOAD
-        """
-        if update == "LOAD":
-            category = f"{Fore.GREEN}COG LOAD"
-        elif update == "UNLOAD":
-            category = f"{Fore.RED}COG UNLOAD"
-        elif update == "RELOAD":
-            category = f"{Fore.MAGENTA}COG RELOAD"
-        elif update == "FAIL":
-            category = f"{Fore.RED}COG FAILED"
-        msg = f"{self.gen_category(category)} {cog}"
-        print(msg)
-
-    async def bot_update(self, status: str) -> None:
-        """
-        [LOGGED IN|LOGGED OUT] When the bots logged in or logged out with relevant info
-
-        Parameters
-        ----------
-        status: str
-            The status to print in the category
-        """
-        discrim = f"{self.bot.user.name}#{self.bot.user.discriminator}"
-        msg = f"{self.gen_category(f'{Fore.CYAN}{status}')} {discrim}"
-        print(msg)
-
-    async def connect(self, info: str) -> None:
-        """
-        [CONNECTED] When the bot has connected successfully to something
-
-        Parameters
-        ----------
-        info: str
-            The info to add and print
-        """
-        msg = f"{self.gen_category(f'{Fore.YELLOW}CONNECTED')} {info}"
-        print(msg)
-
-    async def bot_info(self, categories: str, info: str):
-        """
-        [BOT] Bot related info that needs to be printed
-
-        Parameters
-        ----------
-        categories: str
-            Extra categories if I need it
-        info: str
-            The info to add or print
-        """
-        msg = f"{self.gen_category(f'{Fore.CYAN}BOT')}{categories} {info}"
-        print(msg)
-
-    async def cog(self, categories: str, info: str):
-        """
-        [COG] Cog related info that needs to be printed
-
-        Parameters
-        ----------
-        categories: str
-            Extra categories if I need it
-        info: str
-            The info to add or print
-        """
-        msg = f"{self.gen_category(f'{Fore.RED}COG')}{categories} {info}"
-        print(msg)

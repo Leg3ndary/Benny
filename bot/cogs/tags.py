@@ -196,7 +196,7 @@ class Tags(commands.Cog):
             else:
                 self.latest_tag = 0
 
-        await self.bot.blogger.load(f"Loaded tags up to {self.latest_tag}")
+        await self.bot.terminal.load(f"Loaded tags up to {self.latest_tag}")
 
     async def cog_unload(self) -> None:
         """
@@ -221,7 +221,7 @@ class Tags(commands.Cog):
         end = time.monotonic()
 
         total_load = (round((end - start) * 1000, 2)) / 1000
-        await self.bot.blogger.load(
+        await self.bot.terminal.load(
             f"Loaded {self.latest_tag} tags in {total_load} seconds."
         )
 

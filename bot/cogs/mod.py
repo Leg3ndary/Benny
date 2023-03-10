@@ -285,7 +285,7 @@ class Mod(commands.Cog):
             """
         )
         await self.databases.servers.commit()
-        await self.bot.blogger.load("Mod")
+        await self.bot.terminal.load("Mod")
         self.mm = ModerationManager(self.bot, self.databases.servers)
 
     async def cog_unload(self) -> None:

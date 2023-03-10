@@ -610,14 +610,14 @@ class Music(commands.Cog):
             """
         )
         await self.databases.servers.commit()
-        await self.bot.blogger.load("Recently Played")
+        await self.bot.terminal.load("Recently Played")
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node) -> None:
         """
         Event fired when a node has finished connecting.
         """
-        await self.bot.blogger.connect(f"{node.identifier} is ready.")
+        await self.bot.terminal.connect(f"{node.identifier} is ready.")
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(
@@ -675,7 +675,7 @@ class Music(commands.Cog):
             try:
                 await player.disconnect()
             except Exception as e:
-                await self.bot.blogger.error(e)
+                await self.bot.terminal.error(e)
 
     async def handle_spotify_track(
         self, ctx: commands.Context, player: Player, decoded: Dict[str, Any]

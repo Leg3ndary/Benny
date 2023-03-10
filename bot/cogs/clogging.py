@@ -45,7 +45,7 @@ class LoggingManager:
             """
         )
         await self.db.commit()
-        await self.bot.blogger.load("Logging")
+        await self.bot.terminal.load("Logging")
 
     async def create_webhook(
         self, channel: discord.TextChannel, username: str = None, avatar: str = None

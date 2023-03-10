@@ -201,8 +201,8 @@ class Events(commands.Cog):
 
         bot_percentage = math.trunc((guild_bots / len(guild.members)) * 10000) / 100
 
-        await self.bot.blogger.bot_info(
-            self.bot.blogger.gen_category(f"{Fore.GREEN}JOINED"),
+        await self.bot.terminal.bot_info(
+            self.bot.terminal.gen_category(f"{Fore.GREEN}JOINED"),
             f" {guild.name} {guild.id} | Server is {bot_percentage}% Bots ({guild_bots}/{len(guild.members)})",
         )
         self.logger.info(f"Joined Guild {guild.name} ({guild.id})")
@@ -229,8 +229,8 @@ class Events(commands.Cog):
                 except:
                     pass
             await guild.leave()
-            await self.bot.blogger.bot_info(
-                self.bot.blogger.gen_category(f"{Fore.MAGENTA}AUTOLEFT"),
+            await self.bot.terminal.bot_info(
+                self.bot.terminal.gen_category(f"{Fore.MAGENTA}AUTOLEFT"),
                 f" {guild.name} {guild.id}",
             )
             self.logger.info(f"AutoLeft Guild {guild.name} ({guild.id})")
@@ -240,8 +240,8 @@ class Events(commands.Cog):
         """
         When we leave a guild
         """
-        await self.bot.blogger.bot_info(
-            self.bot.blogger.gen_category(f"{Fore.RED}LEFT"),
+        await self.bot.terminal.bot_info(
+            self.bot.terminal.gen_category(f"{Fore.RED}LEFT"),
             f" {guild.name} {guild.id}",
         )
         self.logger.info(f"Left Guild {guild.name} ({guild.id})")

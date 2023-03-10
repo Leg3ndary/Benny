@@ -811,7 +811,7 @@ class Sentinel(commands.Cog):
             """
         )
         await self.databases.servers.commit()
-        await self.bot.blogger.load("Sentinel Config")
+        await self.bot.terminal.load("Sentinel Config")
         self.sm = SentinelManager(
             self.bot.sessions.get("sentinel"),
             self.databases.servers,

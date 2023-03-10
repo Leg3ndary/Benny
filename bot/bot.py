@@ -22,6 +22,7 @@ from api import BotApp
 from cogs.tags import Tags
 from discord.ext import commands
 from gears import cooldowns, util
+from gears.terminal_printer import TerminalPrinter
 from interfaces.database import BennyDatabases
 
 start = time.monotonic()
@@ -91,7 +92,7 @@ async def when_bot_ready() -> None:
     )
     for dispatch in dispatches:
         bot.dispatch(dispatch)
-    await bot.blogger.bot_update("LOGGED IN")
+    await bot.terminal.bot_update("LOGGED IN")
 
 
 class BennyBot(commands.Bot):
@@ -109,10 +110,9 @@ class BennyBot(commands.Bot):
         "base": None,
         "sentinel": None,
         "discordstatus": None,
-        "blogger": None,
         "translate": None,
     }
-    blogger: util.BotLogger = None
+    terminal: TerminalPrinter = None
     config: dict = config
     file_list: dict = {}
     app: BotApp = None
@@ -152,11 +152,11 @@ class BennyBot(commands.Bot):
 
         await self.create_sessions()
 
-        self.blogger = util.BotLogger(self, self.sessions.get("blogger"))
-        await bot.blogger.load("BotLogger")
+        self.terminal = util.BotLogger(self)
+        await bot.terminal.load("BotLogger")
 
         self.util = util.BotUtil(bot)
-        await bot.blogger.load("Bot Util")
+        await bot.terminal.load("Bot Util")
 
         lines = 0
         chars = 0
@@ -266,7 +266,7 @@ async def start_bot() -> None:
         end = time.monotonic()
         total_load = (round((end - start) * 1000, 2)) / 1000
 
-        await bot.blogger.bot_info(
+        await bot.terminal.bot_info(
             "",
             f"Bot loaded in approximately {total_load} seconds",
         )
@@ -275,7 +275,7 @@ async def start_bot() -> None:
 
         # bot.app = BotApp(bot)
         # await bot.app.start("0.0.0.0", 8080)
-        # await bot.blogger.bot_info("", "Started Webserver")
+        # await bot.terminal.bot_info("", "Started Webserver")
 
         await bot.start(
             bot.config.get("Bot").get("Token")

@@ -200,8 +200,8 @@ class PrefixManager:
             (str(guild), self.bot.PREFIX),
         )
         await self.db.commit()
-        await self.bot.blogger.cog(
-            self.bot.blogger.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
+        await self.bot.terminal.cog(
+            self.bot.terminal.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
             f"Added {guild} to prefixes",
         )
         return
@@ -224,8 +224,8 @@ class PrefixManager:
             """DELETE FROM settings_prefixes WHERE guild = ?;""", (str(guild),)
         )
         await self.db.commit()
-        await self.bot.blogger.cog(
-            self.bot.blogger.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
+        await self.bot.terminal.cog(
+            self.bot.terminal.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
             f"Deleted {guild} from prefixes",
         )
         return
@@ -264,7 +264,7 @@ class Settings(commands.Cog):
             """
         )
         await self.databases.users.commit()
-        await self.bot.blogger.load("Users")
+        await self.bot.terminal.load("Users")
 
     async def cog_unload(self) -> None:
         """
@@ -296,7 +296,7 @@ class Settings(commands.Cog):
 
         self.bot.LOADED_PREFIXES = True
 
-        await self.bot.blogger.load("Prefixes")
+        await self.bot.terminal.load("Prefixes")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild) -> None:
