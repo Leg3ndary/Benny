@@ -7,7 +7,7 @@ import asqlite
 
 class BennyDatabases:
     """
-    Simple database class
+    Database class with users and servers connection
     """
 
     def __init__(self) -> None:

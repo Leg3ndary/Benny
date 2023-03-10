@@ -1,3 +1,9 @@
+"""
+Main Benny Bot File
+
+Please read the license.
+"""
+
 import asyncio
 import datetime
 import json
@@ -6,6 +12,7 @@ import os
 import sys
 import time
 from copy import copy
+from typing import List
 
 import aiohttp
 import asqlite
@@ -19,6 +26,9 @@ from interfaces.database import BennyDatabases
 
 start = time.monotonic()
 
+with open("bot_config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
+
 logger = logging.getLogger("discord")
 logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename="logs/discord.log", encoding="utf-8", mode="w")
@@ -26,9 +36,6 @@ handler.setFormatter(
     logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 )
 logger.addHandler(handler)
-
-with open("bot_config.json", "r", encoding="utf-8") as f:
-    config = json.load(f)
 
 intents = discord.Intents(
     bans=True,
@@ -53,7 +60,7 @@ intents = discord.Intents(
 )
 
 
-async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> list:
+async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> List[str]:
     """
     Gets the prefix from built cache, if a guild isn't found (Direct Messages) assumes
     prefix is just pinging the bot
@@ -68,6 +75,23 @@ async def get_prefix(_bot: commands.Bot, msg: discord.Message) -> list:
             return prefixes + _bot.prefixes.get(str(msg.guild.id), "")
         return prefixes.append(_bot.prefix)
     return ""
+
+
+async def when_bot_ready() -> None:
+    """
+    On ready dispatch and print stuff
+    """
+    await bot.wait_until_ready()
+    dispatches = (
+        "load_prefixes",
+        "initiate_all_tags",
+        "connect_wavelink",
+        "load_sentinel_managers",
+        "load_reminders",
+    )
+    for dispatch in dispatches:
+        bot.dispatch(dispatch)
+    await bot.blogger.bot_update("LOGGED IN")
 
 
 class BennyBot(commands.Bot):
@@ -113,16 +137,24 @@ class BennyBot(commands.Bot):
         """
         Setup hook for the bot
 
-        First load databases
+        1. Super setup hook
+        2. Connect and set both databases
+        3. Create all aiohttp user sessions
+        4. Create and set the bot logger
+        5. Create and set bot util
+
         """
+
+        await super().setup_hook()
 
         self.databases.users = await asqlite.connect("databases/users.db")
         self.databases.servers = await asqlite.connect("databases/servers.db")
 
-        await super().setup_hook()
         await self.create_sessions()
+
         self.blogger = util.BotLogger(self, self.sessions.get("blogger"))
         await bot.blogger.load("BotLogger")
+
         self.util = util.BotUtil(bot)
         await bot.blogger.load("Bot Util")
 
@@ -157,10 +189,15 @@ class BennyBot(commands.Bot):
 
     async def on_message(self, message: discord.Message) -> None:
         """
-        On message, do all the stuff you need to do before it's processed
+        On message run through a few steps
+
+        1. Ignore all bots, I don't care
+        2. Process any and all commands
+        3. Check if the command is a tag and we need to invoke it (Redo this ugly shit)
         """
         if message.author.bot:
             return
+
         await self.process_commands(message)
 
         # Tags
@@ -222,18 +259,6 @@ async def start_bot() -> None:
     """
     async with bot:
         await bot.async_init()
-
-        async def when_bot_ready():
-            """
-            On ready dispatch and print stuff
-            """
-            await bot.wait_until_ready()
-            bot.dispatch("load_prefixes")
-            bot.dispatch("initiate_all_tags")
-            bot.dispatch("connect_wavelink")
-            bot.dispatch("load_sentinel_managers")
-            bot.dispatch("load_reminders")
-            await bot.blogger.bot_update("LOGGED IN")
 
         await bot.util.load_cogs(os.listdir("bot/cogs"))
         bot.tag_cog = bot.get_cog("Tags")
