@@ -103,4 +103,3 @@ class CustomCooldown:
 # @app_commands.checks.dynamic_cooldown(get_cooldown)
 # async def cmd(interaction):
 #     await interaction.response.send_message("test")
-
