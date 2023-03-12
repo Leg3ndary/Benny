@@ -3,42 +3,8 @@ import discord
 import discord.utils
 from colorama import Fore
 from discord.ext import commands
-from gears import style
+from gears import style, users
 from interfaces.database import BennyDatabases
-
-
-class UserAccess:
-    """
-    Class to access our users info
-    """
-
-    def __init__(self, db: asqlite.Connection) -> None:
-        """
-        Init with the userdb
-        """
-        self.db = db
-
-    async def create_user(self, user_id: str) -> tuple:
-        """
-        Create a user in our small database
-        """
-        await self.db.execute(
-            """INSERT INTO settings_users VALUES(?, 0, False);""", (user_id,)
-        )
-        await self.db.commit()
-
-    async def get_user(self, user_id: str) -> tuple:
-        """
-        Get a users info
-        """
-        async with self.db.execute(
-            """SELECT * FROM settings_users WHERE user_id = ?;""", (user_id,)
-        ) as cursor:
-            if not cursor.fetchone():
-                await self.create_user(user_id)
-                return await self.get_user(user_id)
-            else:
-                return cursor.fetchone()
 
 
 class PrefixManager:
@@ -46,12 +12,12 @@ class PrefixManager:
     A way to update prefixes both in the bot's cache and in the database with nice simple functions
     """
 
-    def __init__(self, bot: commands.Bot, db: asqlite.Connection) -> None:
+    def __init__(self, bot: commands.Bot, database: asqlite.Connection) -> None:
         """
         Init
         """
         self.bot = bot
-        self.db = db
+        self.database = database
 
     def sanitize_prefix(self, prefix: str) -> str:
         """
@@ -98,7 +64,7 @@ class PrefixManager:
         -------
         list
         """
-        async with self.db.execute(
+        async with self.database.execute(
             """SELECT prefixes FROM settings_prefixes WHERE guild = ?;""", (str(guild),)
         ) as cursor:
             result = await cursor.fetchone()
@@ -143,11 +109,11 @@ class PrefixManager:
             if prefixes:
                 prefixes = sorted(prefixes, key=len)
             self.bot.prefixes[str(guild)] = prefixes
-            await self.db.execute(
+            await self.database.execute(
                 """UPDATE settings_prefixes SET prefixes = ? WHERE guild = ?;""",
                 (self.prefixes_to_string(prefixes), str(guild)),
             )
-            await self.db.commit()
+            await self.database.commit()
         return
 
     async def delete_prefix(self, guild: str, prefix: str) -> None:
@@ -175,15 +141,15 @@ class PrefixManager:
         else:
             prefixes.remove(prefix)
             self.bot.prefixes[str(guild)] = prefixes
-            await self.db.execute(
+            await self.database.execute(
                 """UPDATE settings_prefixes SET prefixes = ? WHERE guild = ?;""",
                 (self.prefixes_to_string(prefixes), str(guild)),
             )
-            await self.db.commit()
+            await self.database.commit()
 
     async def add_guild(self, guild: str) -> None:
         """
-        Add a guild to our db with default prefixes
+        Add a guild to our database with default prefixes
 
         Parameters
         ----------
@@ -195,11 +161,11 @@ class PrefixManager:
         None
         """
         self.bot.prefixes[str(guild)] = [self.bot.PREFIX]
-        await self.db.execute(
+        await self.database.execute(
             """INSERT INTO settings_prefixes VALUES(?, ?);""",
             (str(guild), self.bot.PREFIX),
         )
-        await self.db.commit()
+        await self.database.commit()
         await self.bot.terminal.cog(
             self.bot.terminal.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
             f"Added {guild} to prefixes",
@@ -208,7 +174,7 @@ class PrefixManager:
 
     async def delete_guild(self, guild: str) -> None:
         """
-        Delete a guild from our db, remove all prefixes
+        Delete a guild from our database, remove all prefixes
 
         Parameters
         ----------
@@ -220,10 +186,10 @@ class PrefixManager:
         None
         """
         del self.bot.prefixes[str(guild)]
-        await self.db.execute(
+        await self.database.execute(
             """DELETE FROM settings_prefixes WHERE guild = ?;""", (str(guild),)
         )
-        await self.db.commit()
+        await self.database.commit()
         await self.bot.terminal.cog(
             self.bot.terminal.gen_category(f"{Fore.CYAN}SERVER SETTINGS"),
             f"Deleted {guild} from prefixes",
@@ -264,15 +230,15 @@ class Settings(commands.Cog):
             """
         )
         await self.databases.users.commit()
-        await self.bot.terminal.load("Users")
+        self.bot.user_manager = users.UserManager(self.bot, self.databases.users)
 
-    async def cog_unload(self) -> None:
+    @commands.Cog.listener()
+    async def on_load_users(self) -> None:
         """
-        On cog unload, close connections
+        Loading users into cache
         """
-        # await self.databases.users.close()
-        # await self.databases.servers.close()
-        # we don't need to close any connections anymore
+        await self.bot.user_manager.load_users()
+        await self.bot.terminal.load("Users")
 
     @commands.Cog.listener()
     async def on_load_prefixes(self) -> None:

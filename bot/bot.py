@@ -21,7 +21,7 @@ import mystbin
 from api import BotApp
 from cogs.tags import Tags
 from discord.ext import commands
-from gears import cooldowns, util
+from gears import cooldowns, users, util
 from gears.terminal_printer import TerminalPrinter
 from interfaces.database import BennyDatabases
 
@@ -89,6 +89,7 @@ async def when_bot_ready() -> None:
         "connect_wavelink",
         "load_sentinel_managers",
         "load_reminders",
+        "load_users",
     )
     for dispatch in dispatches:
         bot.dispatch(dispatch)
@@ -118,6 +119,7 @@ class BennyBot(commands.Bot):
     app: BotApp = None
     ping_list: list = []
     databases: BennyDatabases = BennyDatabases()
+    user_manager: users.UserManager = None
 
     def __init__(self) -> None:
         """
@@ -142,7 +144,6 @@ class BennyBot(commands.Bot):
         3. Create all aiohttp user sessions
         4. Create and set the bot logger
         5. Create and set bot util
-
         """
 
         await super().setup_hook()
@@ -151,9 +152,6 @@ class BennyBot(commands.Bot):
         self.databases.servers = await asqlite.connect("databases/servers.db")
 
         await self.create_sessions()
-
-        self.terminal = util.BotLogger(self)
-        await bot.terminal.load("BotLogger")
 
         self.util = util.BotUtil(bot)
         await bot.terminal.load("Bot Util")
@@ -258,6 +256,10 @@ async def start_bot() -> None:
     Start the bot with everything it needs
     """
     async with bot:
+        bot.terminal = TerminalPrinter(bot)
+        bot.terminal.print_header()
+        await bot.terminal.load("Terminal Printer")
+
         await bot.async_init()
 
         await bot.util.load_cogs(os.listdir("bot/cogs"))
