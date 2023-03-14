@@ -138,14 +138,13 @@ class PrefixManager:
             raise commands.BadArgument(
                 f"You don't have {prefix} as a prefix in your server"
             )
-        else:
-            prefixes.remove(prefix)
-            self.bot.prefixes[str(guild)] = prefixes
-            await self.database.execute(
-                """UPDATE settings_prefixes SET prefixes = ? WHERE guild = ?;""",
-                (self.prefixes_to_string(prefixes), str(guild)),
-            )
-            await self.database.commit()
+        prefixes.remove(prefix)
+        self.bot.prefixes[str(guild)] = prefixes
+        await self.database.execute(
+            """UPDATE settings_prefixes SET prefixes = ? WHERE guild = ?;""",
+            (self.prefixes_to_string(prefixes), str(guild)),
+        )
+        await self.database.commit()
 
     async def add_guild(self, guild: str) -> None:
         """
