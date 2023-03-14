@@ -627,7 +627,7 @@ Total Uptime: {resolved_rel}"""
                 url=word.license.url,
             )
             embed.set_footer(text=f"Meaning -/{len(word.meanings)}")
-            await ctx.send(embed=embed, view=dictionary.DictionaryMenu(ctx, word))
+            await ctx.reply(embed=embed, view=dictionary.DictionaryMenu(ctx, word))
 
     @commands.hybrid_command(
         name="imgread",
