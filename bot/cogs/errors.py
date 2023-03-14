@@ -87,7 +87,8 @@ class Errors(commands.Cog):
         if isinstance(error, commands.CommandError):
             error = getattr(error, "original", error)
         else:
-            error = error
+            # error = error
+            pass
 
         _traceback = None
         embed = None

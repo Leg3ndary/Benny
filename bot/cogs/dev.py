@@ -1,5 +1,6 @@
 import io
 import os
+import platform
 import re
 import textwrap
 import traceback
@@ -7,9 +8,22 @@ from contextlib import redirect_stdout
 
 import discord
 import discord.utils
+import psutil
 from discord.ext import commands, tasks
 from gears import style
 from redis import asyncio as aioredis
+
+
+def get_size(_bytes: int, suffix: str = "B") -> str:
+    """
+    Return the correct data from bytes
+    """
+    factor = 1024
+    for unit in ["", "K", "M", "G", "T", "P"]:
+        if _bytes < factor:
+            return f"{_bytes:.2f}{unit}{suffix}"
+        _bytes /= factor
+    return
 
 
 async def format_git_msg(content: str) -> str:
@@ -33,6 +47,97 @@ async def format_git_msg(content: str) -> str:
         temp.append(line_temp)
 
     return "\n".join(temp)
+
+
+class SystemView(discord.ui.View):
+    """
+    System view with buttons to view all options
+    """
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="Info", emoji="ℹ")
+    async def info_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Send the info embed
+        """
+        uname = platform.uname()
+        embed = discord.Embed(
+            title="System Info - Info",
+            description=f"""```asciidoc
+[ System ]
+= {uname.system} =
+[ Node Name ]
+= {uname.node} =
+[ Release ]
+= {uname.release} =
+[ Version ]
+= {uname.version} =
+[ Machine ]
+= {uname.machine} =
+[ Processor ]
+= {uname.processor} =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(text="Select one of the below options for more info")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="CPU", emoji="🖥️")
+    async def cpu_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Send the cpu embed and related
+        """
+        cpu_core_data = ""
+        for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+            cpu_core_data += f"""[Core {i + 1}]
+= {percentage}% =\n"""
+
+        embed = discord.Embed(
+            title="System Info - CPU",
+            description=f"""```asciidoc
+[ Total Cores ]
+= {psutil.cpu_count(logical=True)} =
+
+[ CPU Usage Per Core ]
+{cpu_core_data}
+[ Total CPU Usage ]
+= {psutil.cpu_percent()}% =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(text="Select one of the below options for more info")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(style=discord.ButtonStyle.primary, label="RAM", emoji="💾")
+    async def ram_button(
+        self, interaction: discord.Interaction, button: discord.Button
+    ) -> None:
+        """
+        Show ram related info
+        """
+        svmem = psutil.virtual_memory()
+        embed = discord.Embed(
+            title="System Info - Memory",
+            description=f"""```asciidoc
+[ Total ]
+= {get_size(svmem.total)} =
+[ Available ]
+= {get_size(svmem.available)} =
+[ Used ]
+= {get_size(svmem.used)} =
+[ Percentage Used ]
+= {svmem.percent}% =
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(text="Select one of the below options for more info")
+        await interaction.response.edit_message(embed=embed, view=self)
 
 
 class Dev(commands.Cog):
@@ -741,6 +846,38 @@ Shutting down the bot...
         """
         await self.bot.redis.set("updater", "0")
         await self.bot.redis.set("updater", "1")
+
+    @commands.command(
+        name="system",
+        description="""Systeminfo group""",
+        help="""Systeminfo group""",
+        brief="Systeminfo group",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(2.0, 5.0, commands.BucketType.user)
+    async def system_group(self, ctx: commands.Context) -> None:
+        """
+        Actual system info
+        """
+        uname = platform.uname()
+        svmem = psutil.virtual_memory()
+        embed = discord.Embed(
+            title="System Info",
+            description=f"""```asciidoc
+[ System ]
+= {uname.system} =
+[ Total Cores ]
+= {psutil.cpu_count(logical=True)} =
+[ Total Used vs Total Free]
+= {get_size(svmem.used)}/{get_size(svmem.total)} = 
+```""",
+            timestamp=discord.utils.utcnow(),
+            color=style.Color.GREY,
+        )
+        embed.set_footer(text="Select one of the below options for more info")
+        await ctx.reply(embed=embed, view=SystemView())
 
 
 async def setup(bot: commands.Bot) -> None:
