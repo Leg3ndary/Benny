@@ -289,13 +289,13 @@ Total Uptime: {resolved_rel}"""
         await self.afk.set_afk(ctx, message)
 
     @commands.Cog.listener()
-    async def on_message(self, msg: discord.Message) -> None:
+    async def on_message(self, message: discord.Message) -> None:
         """
         On a message, check if that user is either pinging an afk user or is an afk user with an
         active afk
         """
-        if not msg.author.bot:
-            await self.afk.manage_afk(msg)
+        if not message.author.bot:
+            await self.afk.manage_afk(message)
 
     @commands.hybrid_command(
         name="version",
@@ -313,7 +313,7 @@ Total Uptime: {resolved_rel}"""
         """
         repo = pygit2.Repository(".git")
 
-        commits = self.get_latest_commits(8)
+        commits = self.get_latest_commits(5)
 
         embed = discord.Embed(
             title=f"Current Version: {repo.head.target.hex[0:8]}",
@@ -355,6 +355,7 @@ Total Uptime: {resolved_rel}"""
         hidden=False,
     )
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.guild_only()
     async def custom_embed_cmd(self, ctx: commands.Context) -> None:
         """
         Create a custom embed
@@ -554,7 +555,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
-        await ctx.send(embed=embed, view=RoleAllView(ctx, members, role))
+        await ctx.reply(embed=embed, view=RoleAllView(ctx, members, role))
 
     @role_group.command(
         name="rall",
@@ -584,7 +585,7 @@ Total Uptime: {resolved_rel}"""
             timestamp=discord.utils.utcnow(),
             color=style.Color.AQUA,
         )
-        await ctx.send(embed=embed, view=RoleRallView(ctx, members, role))
+        await ctx.reply(embed=embed, view=RoleRallView(ctx, members, role))
 
     @commands.hybrid_command(
         name="define",
