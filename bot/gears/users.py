@@ -1,19 +1,23 @@
 from typing import List, Optional
 
 import asqlite
+import discord
 from discord.ext import commands
 
 
 def benny_only() -> commands.check:
-    async def predicate(ctx: commands.Context) -> None:
+    """
+    A check to see if the user is in the BennyBot server
+    """
+
+    async def predicate(ctx: commands.Context) -> bool:
         """
         Check if the user is in the BennyBot server
         """
-        if ctx.author.id in ctx.bot.user_manager.get_user(ctx.author.id).joined_server:
-            return True
-        raise commands.CheckFailure(
-            "You must be in the BennyBot server to use this command."
-        )
+        guild: discord.Guild = ctx.bot.get_guild(
+            993972438754922526
+        ) or await ctx.bot.fetch_guild(993972438754922526)
+        return ctx.author in guild.members
 
     return commands.check(predicate)
 
@@ -23,7 +27,7 @@ class User:
     Represents a users data profile for the bot
     """
 
-    def __init__(self, user: tuple, joined_server: bool) -> None:
+    def __init__(self, user: tuple) -> None:
         """
         Init with a tuple of the users data
         """
@@ -31,7 +35,6 @@ class User:
         self.premium_level: int = user[1]
         self.is_blacklisted: bool = user[2]
         self.timezone: Optional[str] = user[3]
-        self.joined_server: bool = joined_server
 
 
 class UserManager:
@@ -47,7 +50,7 @@ class UserManager:
         self.database = database
         self.users: List[User] = []
 
-    async def get_user(self, user_id: int) -> Optional[User]:
+    async def get_user(self, user_id: int) -> User:
         """
         Get a user from our database
         """
@@ -84,12 +87,5 @@ class UserManager:
         Load every single user that we know of into our database
         Does not contain any private information.
         """
-        users_in_benny = set(
-            member.id
-            for member in (await self.bot.fetch_guild(993972438754922526)).members
-        )
-
         for user in self.bot.users:
-            self.users.append(
-                User(await self.fetch_user(user.id), user.id in users_in_benny)
-            )
+            self.users.append(User(await self.fetch_user(user.id)))
