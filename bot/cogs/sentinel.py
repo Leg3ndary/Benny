@@ -10,7 +10,7 @@ from colorama import Fore
 from detoxify import Detoxify
 from discord.ext import commands
 from gears import style
-from interfaces.database import BennyDatabases
+from gears.database import BennyDatabases
 
 
 class Toxicity:

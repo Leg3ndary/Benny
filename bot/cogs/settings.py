@@ -4,7 +4,7 @@ import discord.utils
 from colorama import Fore
 from discord.ext import commands
 from gears import style, users
-from interfaces.database import BennyDatabases
+from gears.database import BennyDatabases
 
 
 class PrefixManager:

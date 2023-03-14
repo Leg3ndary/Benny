@@ -10,7 +10,7 @@ import discord.utils
 import parsedatetime
 from discord.ext import commands, tasks
 from gears import style
-from interfaces.database import BennyDatabases
+from gears.database import BennyDatabases
 
 
 class Infraction:

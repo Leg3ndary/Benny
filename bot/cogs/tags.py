@@ -8,7 +8,7 @@ import discord
 import discord.utils
 from discord.ext import commands
 from gears import style
-from interfaces.database import BennyDatabases
+from gears.database import BennyDatabases
 
 FAKE_SEED = {
     "user": None,

@@ -6,7 +6,7 @@ import discord.utils
 from bTagScript import AsyncInterpreter
 from discord.ext import commands
 from gears import embed_creator, style
-from interfaces.database import BennyDatabases
+from gears.database import BennyDatabases
 
 
 async def process_embed(embed: discord.Embed, tsei: AsyncInterpreter) -> discord.Embed:

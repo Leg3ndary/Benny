@@ -22,8 +22,8 @@ from api import BotApp
 from cogs.tags import Tags
 from discord.ext import commands
 from gears import cooldowns, users, util
+from gears.database import BennyDatabases
 from gears.terminal_printer import TerminalPrinter
-from interfaces.database import BennyDatabases
 
 start = time.monotonic()
 
