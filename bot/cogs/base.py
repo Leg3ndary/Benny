@@ -32,9 +32,9 @@ class Base(commands.Cog):
         self.bot = bot
         self.MemberConverter = commands.MemberConverter()
         self.RoleConverter = commands.RoleConverter()
-        self.afk = AFKManager(bot)
+        self.afk = AFKManager(bot, bot.databases.servers)
         self.session = bot.sessions.get("base")
-        self.imgr: IMGReader = IMGReader(bot, bot.databases.servers)
+        self.imgr: IMGReader = IMGReader(bot)
         self.dc: dictionary.DictClient = dictionary.DictClient(bot.sessions.get("main"))
 
     async def cog_load(self) -> None:
@@ -43,7 +43,7 @@ class Base(commands.Cog):
         """
         await self.bot.databases.servers.execute(
             """
-            CREATE TABLE IF NOT EXISTS sasdasd (
+            CREATE TABLE IF NOT EXISTS base_afk (
                 guild   TEXT    PRIMARY KEY
                                 NOT NULL,
                 user    TEXT    NOT NULL,
@@ -271,48 +271,31 @@ Total Uptime: {resolved_rel}"""
         )
         await ctx.reply(embed=embed)
 
-    # @commands.hybrid_group(
-    #     name="afk",
-    #     description="""All AFK related commands""",
-    #     help="""All AFK related commands""",
-    #     brief="AFK commands",
-    #     aliases=[],
-    #     enabled=True,
-    #     hidden=False,
-    # )
-    # @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    # @commands.guild_only()
-    # async def afk_group(self, ctx: commands.Context) -> None:
-    #     """
-    #     Afk hybrid_group
-    #     """
-    #     if not ctx.invoked_subcommand:
-    #         await ctx.send_help(ctx.command)
+    @commands.hybrid_command(
+        name="afk",
+        description="""AFK command""",
+        help="""AFK command""",
+        brief="AFK command",
+        aliases=[],
+        enabled=True,
+        hidden=False,
+    )
+    @commands.cooldown(1.0, 5.0, commands.BucketType.user)
+    @commands.guild_only()
+    async def afk_group(self, ctx: commands.Context, *, message: str) -> None:
+        """
+        Afk hybrid_group
+        """
+        await self.afk.set_afk(ctx, message)
 
-    # @afk_group.command(
-    #     name="set",
-    #     description="""Set an AFK status for mentions""",
-    #     help="""Set a custom AFK message""",
-    #     brief="Set a custom AFK message",
-    #     aliases=[],
-    #     enabled=True,
-    #     hidden=False,
-    # )
-    # @commands.cooldown(1.0, 5.0, commands.BucketType.user)
-    # async def afk_set_cmd(self, ctx: commands.Context, *, message: str) -> None:
-    #     """
-    #     Set your afk
-    #     """
-    #     await self.afk.set_afk(ctx, message)
-
-    # @commands.Cog.listener()
-    # async def on_message(self, msg: discord.Message) -> None:
-    #     """
-    #     On a message, check if that user is either pinging an afk user or is an afk user with an
-    #     active afk
-    #     """
-    #     if not msg.author.bot:
-    #         await self.afk.manage_afk(msg)
+    @commands.Cog.listener()
+    async def on_message(self, msg: discord.Message) -> None:
+        """
+        On a message, check if that user is either pinging an afk user or is an afk user with an
+        active afk
+        """
+        if not msg.author.bot:
+            await self.afk.manage_afk(msg)
 
     @commands.hybrid_command(
         name="version",
