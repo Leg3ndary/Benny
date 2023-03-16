@@ -11,6 +11,7 @@ User data refers to any data that is stored by the bot that could reasonably ide
 1. This bot will not store any user data that is not neccessary for it to function.
 2. Any data it does store will be kept only for as long as it is needed and will be deleted immediately upon request.
     - This does not include identification data such as ID's, as they are needed to identify users and guilds (eg for blacklisting).
+    - If you do not comply with this set out regulation the bot will simply not function for you. (You can still request data deletion but you will not be able to use the bot.)
 3.  User data which the bot stores or otherwise accesses will not be shared with other parties except to the minimum extent required for bot functionality. (eg. A leaderboard command will require the bot to access the data of all users who have used the command). Users will always have some sort of option to opt out of this functionality.
 4. The data the bot stores will be held responsibly and protected from unauthorized access through the use of encryption and other security measures. This includes passwords, ssh key file as well as an encrypted key file for the bot's database.
 5. I, the owner of the bot and this website, will not access any user data unless it is absolutely neccessary for the bot to function or for me to debug an issue. I will not access any user data for any other reason.
