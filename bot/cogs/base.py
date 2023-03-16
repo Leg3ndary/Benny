@@ -646,7 +646,7 @@ Total Uptime: {resolved_rel}"""
         if url:
             async with self.session as session:
                 async with session.get(
-                    url, timeout=aiohttp.ClientTimeout(total=10)
+                    url, timeout=aiohttp.ClientTimeout(total=3)
                 ) as response:
                     image_bytes = await response.read()
 
