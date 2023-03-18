@@ -109,6 +109,7 @@ class BennyBot(commands.Bot):
     sessions: dict = {
         "main": None,
         "base": None,
+        "music": None,
         "sentinel": None,
         "discordstatus": None,
         "translate": None,
@@ -120,6 +121,7 @@ class BennyBot(commands.Bot):
     ping_list: list = []
     databases: BennyDatabases = BennyDatabases()
     user_manager: users.UserManager = None
+    wavelink = None
 
     def __init__(self) -> None:
         """

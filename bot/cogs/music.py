@@ -11,7 +11,7 @@ import wavelink
 from discord.ext import commands
 from gears import style, util
 from gears.database import BennyDatabases
-from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty, QueueFull
+from gears.music_exceptions import NotConnected, NothingPlaying, QueueEmpty
 from wavelink.ext import spotify
 
 
@@ -27,16 +27,15 @@ class Player(wavelink.Player):
         super().__init__()
         self.dj: discord.Member = dj
         self.channel: discord.VoiceChannel = channel
-        self.queue: wavelink.Queue = wavelink.Queue(max_size=250)
-        self.looping: bool = False
+        self.queue: wavelink.Queue = wavelink.Queue()
 
-    async def request(self, track: wavelink.Track) -> None:
+    async def request(self, track: wavelink.tracks.Playable) -> None:
         """
         Requests a song without having any of the other troublesome stuff
         """
-        if self.queue.is_full:
-            raise QueueFull()
-        if self.queue.is_empty and not self.track:
+        # if self.queue:
+        #     raise QueueFull() I have to figure this out smh
+        if self.queue.is_empty and not self.current:
             await self.play(track)
         else:
             self.queue.put(track)
@@ -45,7 +44,7 @@ class Player(wavelink.Player):
         """
         Skip the currently playing track, just an alias
         """
-        if self.queue.is_empty and not self.track:
+        if self.queue.is_empty and not self.current:
             raise NothingPlaying()
         await self.stop()
 
@@ -70,14 +69,6 @@ class Player(wavelink.Player):
             self.queue._queue.append(temp[ri])
             index_list.pop(index_list.index(ri))
 
-    async def loop(self) -> None:
-        """
-        Loop the queue
-        """
-        if self.queue.is_empty and not self.is_playing():
-            raise QueueEmpty()
-        self.looping = not self.looping
-
 
 class PlayerDropdown(discord.ui.Select):
     """
@@ -85,7 +76,10 @@ class PlayerDropdown(discord.ui.Select):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+        self,
+        ctx: commands.Context,
+        player: Player,
+        songs: List[wavelink.tracks.Playable],
     ) -> None:
         """
         Constructing the dropdown view
@@ -162,7 +156,10 @@ class RecentlyPlayedDropdown(discord.ui.Select):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+        self,
+        ctx: commands.Context,
+        player: Player,
+        songs: List[wavelink.tracks.Playable],
     ) -> None:
         """
         Constructing the dropdown view
@@ -244,7 +241,7 @@ class PlayerSelector(discord.ui.View):
         ctx: commands.Context,
         node: wavelink.Node,
         player: Player,
-        songs: List[wavelink.Track],
+        songs: List[wavelink.tracks.Playable],
     ) -> None:
         """
         Constructing the player selector
@@ -289,7 +286,11 @@ class PlayerSelector(discord.ui.View):
             built = []
             for song in songs.split("|"):
                 if song:
-                    built.append(await self.node.build_track(wavelink.Track, song))
+                    built.append(
+                        await self.node.build_track(
+                            cls=wavelink.tracks.Playable, encoded=song
+                        )
+                    )
             self.add_item(RecentlyPlayedDropdown(self.ctx, self.player, built))
 
     @discord.ui.button(
@@ -316,7 +317,7 @@ class QueueDropdown(discord.ui.Select):
         self,
         ctx: commands.Context,
         player: Player,
-        songs: List[wavelink.Track],
+        songs: List[wavelink.tracks.Playable],
         page_num: int,
     ) -> None:
         """
@@ -376,7 +377,10 @@ class QueueView(discord.ui.View):
     """
 
     def __init__(
-        self, ctx: commands.Context, player: Player, songs: List[wavelink.Track]
+        self,
+        ctx: commands.Context,
+        player: Player,
+        songs: List[wavelink.tracks.Playable],
     ) -> None:
         """
         Construct the queue view with dropdown attached
@@ -521,11 +525,91 @@ class FilterSpinView(discord.ui.View):
         await self.edit_spin_embed(interaction)
 
 
+class LoopButton(discord.ui.Button):
+    """
+    A button for controlling looping
+    """
+
+    def __init__(self, ctx: commands.Context, player: Player, which: int) -> None:
+        """
+        Construct the loop button
+
+        which: 0 = loop
+        which: 1 = loop_all
+
+        I'll make enumerations later
+        """
+        self.ctx = ctx
+        self.player = player
+        kind = "Loop" if which == 0 else "Loop All"
+        button_style = discord.ButtonStyle.grey
+        if which:
+            button_style = (
+                discord.ButtonStyle.green if player.queue.loop_all else button_style
+            )
+        else:
+            button_style = (
+                discord.ButtonStyle.green if player.queue.loop else button_style
+            )
+        super().__init__(style=button_style, label=kind)
+
+    async def callback(self, interaction: discord.Interaction) -> None:
+        """
+        Callback for the button
+        """
+        if self.label == "Loop":
+            self.player.queue.loop = not self.player.queue.loop
+            self.style = (
+                discord.ButtonStyle.green
+                if self.player.queue.loop
+                else discord.ButtonStyle.grey
+            )
+        else:
+            self.player.queue.loop_all = not self.player.queue.loop_all
+            self.style = (
+                discord.ButtonStyle.green
+                if self.player.queue.loop_all
+                else discord.ButtonStyle.grey
+            )
+        await interaction.response.edit_message(view=self.view)
+
+
+class LoopView(discord.ui.View):
+    """
+    Display a UI for looping
+    """
+
+    def __init__(self, ctx: commands.Context, player: Player) -> None:
+        """
+        Construct the UI
+        """
+        super().__init__()
+        self.ctx = ctx
+        self.player = player
+        self.add_item(LoopButton(ctx, player, 0))
+        self.add_item(LoopButton(ctx, player, 1))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        """
+        If the interaction isn't by the user, return a fail.
+        """
+        if interaction.user != self.ctx.author:
+            return False
+        return True
+
+    async def on_timeout(self) -> None:
+        """
+        On timeout make this look cool
+        """
+        for item in self.children:
+            item.disabled = True
+
+
 def duration(seconds: float) -> str:
     """
     Return a human readable duration because
     """
-    return util.remove_zcs(str(datetime.timedelta(seconds=seconds)))
+    return util.remove_zcs(str(datetime.timedelta(seconds=seconds / 1000)))
 
 
 class Music(commands.Cog):
@@ -559,18 +643,21 @@ class Music(commands.Cog):
         if not self.bot.MUSIC_ENABLED:
             return
 
-        if hasattr(self.bot, "wavelink"):
+        if self.bot.wavelink:
             self.wavelink = self.bot.wavelink
-
         else:
-            self.bot.wavelink = await wavelink.NodePool.create_node(
-                bot=self.bot,
-                host="localhost",
-                port=2333,
-                region="na",
+            node = wavelink.Node(
+                id="BennyMusic",
+                uri="http://localhost:2333",
+                session=self.bot.sessions.get("Music"),
                 password="BennyBotRoot",
-                identifier="BennyMusic",
-                spotify_client=spotify.SpotifyClient(
+                secure=False,
+                retries=3,
+            )
+            await wavelink.NodePool.connect(
+                client=self.bot,
+                nodes=[node],
+                spotify=spotify.SpotifyClient(
                     client_id=self.bot.config.get("Spotify").get("ID"),
                     client_secret=self.bot.config.get("Spotify").get("Secret"),
                 ),
@@ -617,27 +704,22 @@ class Music(commands.Cog):
         """
         Event fired when a node has finished connecting.
         """
-        await self.bot.terminal.connect(f"{node.identifier} is ready.")
+        await self.bot.terminal.connect(f"{node.id} is ready.")
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(
-        self, player: Player, track: wavelink.Track, reason: str
+        self, player: Player, track: wavelink.tracks.Playable, reason: str
     ) -> None:
         """
         On end, check if the queue has another song to play if not disconnect after 5 min
         """
         if player.queue.is_empty:
-            if player.looping:
-                await player.request(track)
-            elif not player.is_playing() or not player.is_paused():
+            if not player.is_playing() or not player.is_paused():
                 self.disconnect_tasks[player.channel.id] = self.bot.loop.create_task(
                     self.await_disconnect(player)
                 )
         else:
-            if player.looping:
-                await player.request(track)
-            else:
-                await player.play(player.queue.get())
+            await player.play(player.queue.get())
 
     @commands.Cog.listener()
     async def on_voice_state_update(
@@ -770,7 +852,9 @@ class Music(commands.Cog):
         )
         await sent.edit(embed=finished)
 
-    async def add_to_recent(self, user_id: str, track: wavelink.Track) -> None:
+    async def add_to_recent(
+        self, user_id: str, track: wavelink.tracks.Playable
+    ) -> None:
         """
         Add a track to the recently played table
         """
@@ -783,11 +867,11 @@ class Music(commands.Cog):
             )
             previous = (await previous.fetchone())[0].split("|")
             if previous:
-                if track.id == previous[0]:
+                if track.encoded == previous[0]:
                     return
                 if len(previous) >= 25:
                     previous.pop(0)
-                previous = [track.id] + previous
+                previous = [track.encoded] + previous
 
                 new = "|".join(previous).replace("||", "|")  # I don't even know
                 await cursor.execute(
@@ -801,12 +885,14 @@ class Music(commands.Cog):
                     """
                     INSERT INTO music_recently_played VALUES (?, ?);
                     """,
-                    (user_id, track.id),
+                    (user_id, track.encoded),
                 )
         await self.databases.servers.commit()
 
     @commands.Cog.listener()
-    async def on_music_add_to_recent(self, user_id: str, track: wavelink.Track) -> None:
+    async def on_music_add_to_recent(
+        self, user_id: str, track: wavelink.tracks.Playable
+    ) -> None:
         """
         Add a track to the recently played table
         """
@@ -880,14 +966,14 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        if not player.track:
+        if not player.current:
             raise NothingPlaying()
 
         if player.queue.is_empty:
             raise QueueEmpty()
 
         visual = ""
-        total_dur = player.track.length
+        total_dur = player.current.length
 
         for count, track in enumerate(player.queue._queue, 1):
             if isinstance(track, wavelink.PartialTrack):
@@ -928,7 +1014,7 @@ class Music(commands.Cog):
         if not player.is_playing():
             raise NothingPlaying
 
-        current = player.track
+        current = player.current
 
         embed = discord.Embed(
             title="Now Playing",
@@ -958,7 +1044,7 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        current = player.track
+        current = player.current
         await player.skip()
         embed = discord.Embed(
             title="Skipped",
@@ -1049,7 +1135,7 @@ class Music(commands.Cog):
         """
         player = await self.get_player(ctx)
 
-        current = player.track
+        current = player.current
         await player.shuffle()
         embed = discord.Embed(
             title=f"{style.Emoji.REGULAR.shuffle} Shuffling",
@@ -1062,9 +1148,9 @@ class Music(commands.Cog):
 
     @commands.hybrid_command(
         name="loop",
-        description="""Loop/Unloop the queue""",
-        help="""Either loop or unloop the queue""",
-        brief="Loop/Unloop the queue",
+        description="""Loop manager""",
+        help="""Loop manager""",
+        brief="Loop manager",
         aliases=[],
         enabled=True,
         hidden=False,
@@ -1072,20 +1158,17 @@ class Music(commands.Cog):
     @commands.cooldown(1.0, 5.0, commands.BucketType.user)
     async def loop_cmd(self, ctx: commands.Context) -> None:
         """
-        Looping command
+        Sends an embed with all the whatever loop is activated
         """
         player = await self.get_player(ctx)
 
-        current = player.track
-        await player.loop()
         embed = discord.Embed(
-            title=f"{style.Emoji.REGULAR.loop} {'Looping' if player.loop else 'Unlooping'}",
-            url=current.uri,
-            description=f"""{'Looped' if player.loop else 'Unlooped'} the queue""",
+            title="Loop Manager",
+            description="""Press the buttons below to toggle the loop mode""",
             timestamp=discord.utils.utcnow(),
-            color=style.Color.AQUA,
+            color=style.Color.ORANGE,
         )
-        await ctx.reply(embed=embed)
+        await ctx.reply(embed=embed, view=LoopView(ctx, player))
 
     @commands.hybrid_command(
         name="pause",
