@@ -1,7 +1,7 @@
 import aiogtrans
 import discord
-import discord.app_commands as app_commands
 import discord.utils
+from discord import app_commands
 from discord.ext import commands
 from gears import style
 
