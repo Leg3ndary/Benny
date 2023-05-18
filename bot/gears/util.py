@@ -58,6 +58,7 @@ class BotUtil:
                 ".vscode",
                 "assets",
                 "plugins",
+                "venv",
             ):
                 directories = []
             else:
