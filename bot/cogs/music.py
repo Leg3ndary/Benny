@@ -765,9 +765,7 @@ class Music(commands.Cog):
         """
         Handle a spotify track
         """
-        track = await spotify.SpotifyTrack.search(
-            query=decoded["id"], return_first=True
-        )
+        track = (await spotify.SpotifyTrack.search(query=decoded["id"]))[0]
         await player.request(track)
         ctx.bot.dispatch("music_add_to_recent", str(ctx.author.id), track)
 
