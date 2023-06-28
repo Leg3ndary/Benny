@@ -289,7 +289,7 @@ async def start_bot() -> None:
         )
 
 
-if bot.PLATFORM == "linux":
+# if bot.PLATFORM == "linux":
     # uvloop.install()
 
 asyncio.run(start_bot())
