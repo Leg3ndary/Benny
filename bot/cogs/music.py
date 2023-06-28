@@ -798,7 +798,7 @@ class Music(commands.Cog):
             .get("total")
         )
 
-        if length >= 100 and ctx.author.id != self.bot.owner_id:
+        if length >= 300:
             raise commands.BadArgument(
                 "You may only add up to 100 songs through spotify playlists at this time."
             )
