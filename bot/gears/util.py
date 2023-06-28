@@ -28,7 +28,7 @@ class BotUtil:
         -------
         Tuple[int, int]
         """
-        if file not in (".github", ".vscode"):
+        if file not in (".github", ".vscode", ".venv"):
             with open(file, encoding="utf8") as _file:
                 lines = len(_file.readlines())
             with open(file, encoding="utf8") as _file:
@@ -56,6 +56,7 @@ class BotUtil:
                 "databases",
                 "logs",
                 ".vscode",
+                ".venv",
                 "assets",
                 "plugins",
                 "venv",
