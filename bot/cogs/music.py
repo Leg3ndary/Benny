@@ -108,7 +108,7 @@ class PlayerDropdown(discord.ui.Select):
         """
         Callback for the queue
         """
-        track = self.songs[int(self.values[0])]
+        track: wavelink.YouTubeTrack = self.songs[int(self.values[0])]
 
         total = track.length
 
@@ -138,7 +138,7 @@ class PlayerDropdown(discord.ui.Select):
             timestamp=discord.utils.utcnow(),
             color=style.Color.GREEN,
         )
-        embed.set_author(name=track.author)
+        embed.set_author(name=track.author or "Unknown")
         embed.set_footer(
             text=self.ctx.author.display_name,
             icon_url=self.ctx.author.display_avatar.url,
@@ -194,20 +194,17 @@ class RecentlyPlayedDropdown(discord.ui.Select):
         total = track.length
 
         for queued_track in self.player.queue._queue:
-            if isinstance(queued_track, wavelink.PartialTrack):
-                pass
-            else:
-                total += queued_track.length
+            total += queued_track.length
 
         if self.player.queue.count == 0 and not self.player.is_playing():
             title = "Playing now"
             playing_message = ""
         elif self.player.queue.count == 0 and self.player.is_playing():
             title = "Up Next"
-            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
+            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(milliseconds=total), style='R')}"
         else:
             title = f"Queue Position {self.player.queue.count + 1 if self.player.queue.count != 0 and (not self.player.is_playing() or self.player.is_paused()) else 'Unknown'}"
-            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(seconds=total), style='R')}"
+            playing_message = f"\nPlaying {discord.utils.format_dt(datetime.datetime.now() + datetime.timedelta(milliseconds=total), style='R')}"
 
         embed = discord.Embed(
             title=f"Track Queued - {title}",
@@ -254,7 +251,7 @@ class PlayerSelector(discord.ui.View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         """
-        If the interaction isn't by the user, return a fail.
+        If the interaction isn't from the song requester ignore.
         """
         if interaction.user != self.ctx.author:
             return False
@@ -262,14 +259,14 @@ class PlayerSelector(discord.ui.View):
 
     async def on_timeout(self) -> None:
         """
-        On timeout make this look cool
+        On timeout disable all items in the view.
         """
         for item in self.children:
             item.disabled = True
 
     async def add_recently_played(self, cursor: asqlite.Cursor) -> None:
         """
-        Add recently played to the view
+        Add recently played songs to as a dropdown.
         """
         await cursor.execute(
             """INSERT OR IGNORE INTO music_recently_played (id, recent) VALUES (?, ?);""",
