@@ -644,11 +644,11 @@ class Music(commands.Cog):
             self.wavelink = self.bot.wavelink
         else:
             node = wavelink.Node(
-                id="BennyMusic",
+                id="1",
                 uri="http://localhost:2333",
                 session=self.bot.sessions.get("Music"),
                 password="BennyBotRoot",
-                secure=False,
+                secure=True,
                 retries=3,
             )
             await wavelink.NodePool.connect(
