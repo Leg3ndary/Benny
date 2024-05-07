@@ -18,7 +18,6 @@ import aiohttp
 import asqlite
 import discord
 import mystbin
-
 from api import BotApp
 from cogs.tags import Tags
 from discord.ext import commands
