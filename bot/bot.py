@@ -19,7 +19,6 @@ import asqlite
 import discord
 import mystbin
 
-# import uvloop
 from api import BotApp
 from cogs.tags import Tags
 from discord.ext import commands
@@ -291,6 +290,6 @@ async def start_bot() -> None:
 
 
 # if bot.PLATFORM == "linux":
-# uvloop.install()
+#     uvloop.install()
 
 asyncio.run(start_bot())
