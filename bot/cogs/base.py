@@ -616,9 +616,11 @@ Total Uptime: {resolved_rel}"""
             embed = discord.Embed(
                 title=f"{word.word} Definition",
                 description="""Select one of the below to view different meanings of the word.""",
-                url=(word.phonetics[0].audio if word.phonetics[0].audio else None)
-                if word.phonetics
-                else None,
+                url=(
+                    (word.phonetics[0].audio if word.phonetics[0].audio else None)
+                    if word.phonetics
+                    else None
+                ),
                 timestamp=discord.utils.utcnow(),
                 color=style.Color.MAROON,
             )

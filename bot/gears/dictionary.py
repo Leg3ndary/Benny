@@ -1,6 +1,7 @@
 """
 A small dataclass I made for a dictionary api
 """
+
 from typing import Any, Dict, Tuple
 
 import aiohttp
@@ -146,9 +147,11 @@ class DictDropdown(discord.ui.Select):
             options.append(
                 discord.SelectOption(
                     label=meaning.part_of_speech,
-                    description=f"{meaning.definitions[0].definition[:47]}..."
-                    if len(meaning.definitions[0].definition) > 50
-                    else meaning.definitions[0].definition,
+                    description=(
+                        f"{meaning.definitions[0].definition[:47]}..."
+                        if len(meaning.definitions[0].definition) > 50
+                        else meaning.definitions[0].definition
+                    ),
                     value=counter,
                 )
             )

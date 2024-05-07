@@ -431,9 +431,9 @@ class CustomEmbedImageModal(discord.ui.Modal):
             label="Thumbnail URL",
             style=discord.TextStyle.long,
             placeholder="Thumbnail URL",
-            default=self.view.embed.thumbnail.url
-            if self.view.embed.thumbnail
-            else None,
+            default=(
+                self.view.embed.thumbnail.url if self.view.embed.thumbnail else None
+            ),
             max_length=4000,
             min_length=1,
             required=False,

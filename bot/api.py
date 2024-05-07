@@ -28,9 +28,11 @@ class BotApp(web.Application):
         return web.json_response(
             {
                 "status": "ok",
-                "latency": self.bot.ping_list
-                if self.bot.ping_list is not None
-                else self.bot.latency,
+                "latency": (
+                    self.bot.ping_list
+                    if self.bot.ping_list is not None
+                    else self.bot.latency
+                ),
             }
         )
 

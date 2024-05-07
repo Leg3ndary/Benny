@@ -65,9 +65,11 @@ class Info(commands.Cog):
             text=f"{member.id}{' - This user is a bot.' if member.bot else ''}",
         )
         embed.set_thumbnail(
-            url=member.display_avatar.url
-            if member.display_avatar
-            else member.avatar.url
+            url=(
+                member.display_avatar.url
+                if member.display_avatar
+                else member.avatar.url
+            )
         )
         await ctx.reply(embed=embed)
 

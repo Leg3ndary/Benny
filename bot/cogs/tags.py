@@ -423,9 +423,11 @@ class Tags(commands.Cog):
         debug.update(
             {
                 "user": f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
-                "target": f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})"
-                if ctx.message.mentions
-                else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})",
+                "target": (
+                    f"{ctx.message.mentions[0].name}#{ctx.message.mentions[0].discriminator} ({ctx.message.mentions[0].id})"
+                    if ctx.message.mentions
+                    else f"{ctx.author.name}#{ctx.author.discriminator} ({ctx.author.id})"
+                ),
                 "channel": f"{ctx.channel.name} ({ctx.channel.id})",
                 "server": f"{ctx.guild.name} ({ctx.guild.id})",
             }
