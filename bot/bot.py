@@ -112,7 +112,6 @@ class BennyBot(commands.Bot):
         "music": None,
         "sentinel": None,
         "discordstatus": None,
-        "translate": None,
     }
     terminal: TerminalPrinter = None
     config: dict = config

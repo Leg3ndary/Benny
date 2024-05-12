@@ -15,7 +15,7 @@ class Translator:
         """
         Init with stuff we need mmhm
         """
-        self.translator = aiogtrans.Translator(bot.loop, bot.sessions.get("translate"))
+        self.translator = aiogtrans.Translator(bot.loop)
 
     async def process(self, text: str) -> aiogtrans.Translated:
         """
