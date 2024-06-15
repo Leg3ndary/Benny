@@ -1,6 +1,8 @@
 # Benny Bot
 ![image](https://user-images.githubusercontent.com/57199957/185969892-cd62402c-b323-4b63-bc54-aa0dbdccc7ff.png)
 
+This bot is currently not being worked on and is in a "pre beta" stage. Please come back later to see if the bot has been updated.
+
 The bot that does basically you could ever need (WIP).
 
 This is my attempt at that with all the features I feel a bot should and can have.
