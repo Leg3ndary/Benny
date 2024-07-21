@@ -1,23 +1,13 @@
 # Benny Bot
 ![image](https://user-images.githubusercontent.com/57199957/185969892-cd62402c-b323-4b63-bc54-aa0dbdccc7ff.png)
 
-This bot is currently not being worked on and is in a "pre beta" stage. Please come back later to see if the bot has been updated.
-
-The bot that does basically you could ever need (WIP).
-
-This is my attempt at that with all the features I feel a bot should and can have.
-
-Consider this a side project if you will that I make to fulfill what I want.
-
-Please note if somehow your seeing this, the bot is still in a "pre beta" stage, and is nowhere close to where it should be.
-
-If you do think that this is an interesting project, come back to it later, and hopefully I've released v1 of the bot.
+This bot will be updated on a weekly basis, features will be added and removed at my discretion until I see it fit to release a first version.
 
 ## More Features
-Please join our discord server [here](https://discord.gg/V55WS7Vsfx) to suggest any changes you would like to add.
+Please join our discord server [here](https://discord.gg/V55WS7Vsfx) to suggest any changes or features you would like to see in the bot.
 
-## Terms of Service? Privacy Policy?
-You can view all of this at our website [here](https://bennybot.me/).
+## Website
+The bot no longer has a website and this will be a post 1.0 feature.
 
 ## License Info
 Under the Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0);
